@@ -11,11 +11,13 @@ import { createGift } from "@/lib/gifts.functions";
 import { CartaGift, type CartaData } from "@/components/gifts/CartaGift";
 import { MusicaGift, type MusicaData } from "@/components/gifts/MusicaGift";
 import { MomentosGift, type MomentosData } from "@/components/gifts/MomentosGift";
+import { MapaGift, type MapaData } from "@/components/gifts/MapaGift";
 import { PhotoUploader, resolvePhotoUrls } from "@/components/PhotoUploader";
+import { geocodeCity } from "@/lib/geocode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const VALID = ["carta", "musica", "momentos"] as const;
+const VALID = ["carta", "musica", "momentos", "mapa"] as const;
 type GiftType = (typeof VALID)[number];
 
 export const Route = createFileRoute("/_authenticated/criar/$type")({
@@ -59,6 +61,19 @@ const DEFAULTS: Record<GiftType, { title: string; data: any }> = {
       ],
       outro: "E daqui pra frente é só você e eu.",
     } as MomentosData,
+  },
+  mapa: {
+    title: "Nosso mapa do amor",
+    data: {
+      coupleNames: "Ana & João",
+      startDate: new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10),
+      personA: { name: "Ana", city: "São Paulo, Brasil" },
+      personB: { name: "João", city: "Lisboa, Portugal" },
+      photo: "",
+      message: "Mesmo separados por {km} km, meu coração está sempre ao seu lado.",
+      themeColor: "#f47975",
+      finalMessage: "Eu te amo — em qualquer lugar do mundo.",
+    } as MapaData,
   },
 };
 
