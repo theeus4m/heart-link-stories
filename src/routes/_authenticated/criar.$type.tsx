@@ -191,8 +191,12 @@ function MusicaFields({ data, set }: { data: MusicaData; set: (d: MusicaData) =>
       <Field label="Link da música (Spotify)">
         <Input placeholder="https://open.spotify.com/track/…" value={data.songUrl ?? ""} onChange={(e) => set({ ...data, songUrl: e.target.value })} />
       </Field>
-      <Field label="Capa (URL da imagem)">
-        <Input placeholder="https://…" value={data.coverUrl ?? ""} onChange={(e) => set({ ...data, coverUrl: e.target.value })} />
+      <Field label="Capa do presente (imagem)">
+        <PhotoUploader
+          value={data.coverUrl ? [data.coverUrl] : []}
+          onChange={(arr) => set({ ...data, coverUrl: arr[0] ?? "" })}
+          max={1}
+        />
       </Field>
       <Field label="Mensagem especial">
         <Textarea rows={3} value={data.message ?? ""} onChange={(e) => set({ ...data, message: e.target.value })} />
