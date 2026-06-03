@@ -304,6 +304,10 @@ function ResolvedPreview({ type, title, data }: { type: GiftType; title: string;
         const [url] = await resolvePhotoUrls([next.coverUrl]);
         next.coverUrl = url ?? "";
       }
+      if (type === "mapa" && next.photo) {
+        const [url] = await resolvePhotoUrls([next.photo]);
+        next.photo = url ?? "";
+      }
       if (alive) setResolved(next);
     })();
     return () => { alive = false; };
@@ -319,5 +323,74 @@ function ResolvedPreview({ type, title, data }: { type: GiftType; title: string;
 
   if (type === "carta") return <CartaGift title={title} data={resolved} />;
   if (type === "musica") return <MusicaGift title={title} data={resolved} />;
+  if (type === "mapa") return <MapaGift title={title} data={resolved} />;
   return <MomentosGift title={title} data={resolved} />;
+}
+
+function MapaFields({ data, set }: { data: MapaData; set: (d: MapaData) => void }) {
+  const updatePerson = (key: "personA" | "personB", patch: Partial<MapaData["personA"]>) =>
+    set({ ...data, [key]: { ...data[key], ...patch, lat: undefined, lng: undefined } });
+
+  return (
+    <>
+      <Field label="Nomes do casal">
+        <Input value={data.coupleNames} onChange={(e) => set({ ...data, coupleNames: e.target.value })} />
+      </Field>
+      <Field label="Início do relacionamento">
+        <Input type="date" value={data.startDate} onChange={(e) => set({ ...data, startDate: e.target.value })} />
+      </Field>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-xl border border-border p-4">
+          <p className="text-sm font-medium text-violet">Pessoa 1</p>
+          <div className="mt-3 space-y-3">
+            <Input placeholder="Nome" value={data.personA.name}
+              onChange={(e) => set({ ...data, personA: { ...data.personA, name: e.target.value } })} />
+            <Input placeholder="Cidade, País" value={data.personA.city}
+              onChange={(e) => updatePerson("personA", { city: e.target.value })} />
+          </div>
+        </div>
+        <div className="rounded-xl border border-border p-4">
+          <p className="text-sm font-medium text-violet">Pessoa 2</p>
+          <div className="mt-3 space-y-3">
+            <Input placeholder="Nome" value={data.personB.name}
+              onChange={(e) => set({ ...data, personB: { ...data.personB, name: e.target.value } })} />
+            <Input placeholder="Cidade, País" value={data.personB.city}
+              onChange={(e) => updatePerson("personB", { city: e.target.value })} />
+          </div>
+        </div>
+      </div>
+      <p className="-mt-1 text-xs text-muted-foreground">
+        As coordenadas serão calculadas automaticamente quando você publicar.
+      </p>
+
+      <Field label="Foto do casal">
+        <PhotoUploader
+          value={data.photo ? [data.photo] : []}
+          onChange={(arr) => set({ ...data, photo: arr[0] ?? "" })}
+          max={1}
+        />
+      </Field>
+
+      <Field label="Mensagem romântica (use {km} para inserir a distância)">
+        <Textarea rows={3} value={data.message}
+          onChange={(e) => set({ ...data, message: e.target.value })} />
+      </Field>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Cor do tema">
+          <div className="flex items-center gap-3">
+            <input type="color" value={data.themeColor || "#f47975"}
+              onChange={(e) => set({ ...data, themeColor: e.target.value })}
+              className="h-10 w-14 cursor-pointer rounded border border-border bg-transparent" />
+            <Input value={data.themeColor || "#f47975"}
+              onChange={(e) => set({ ...data, themeColor: e.target.value })} />
+          </div>
+        </Field>
+        <Field label="Mensagem final (ao clicar em Eu Te Amo)">
+          <Input value={data.finalMessage ?? ""} onChange={(e) => set({ ...data, finalMessage: e.target.value })} />
+        </Field>
+      </div>
+    </>
+  );
 }
