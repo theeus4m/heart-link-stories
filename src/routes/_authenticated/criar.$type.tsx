@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Eye, Plus, Trash2, Sparkles } from "lucide-react";
+import { ArrowLeft, Eye, Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { createGift } from "@/lib/gifts.functions";
 import { CartaGift, type CartaData } from "@/components/gifts/CartaGift";
 import { MusicaGift, type MusicaData } from "@/components/gifts/MusicaGift";
 import { MomentosGift, type MomentosData } from "@/components/gifts/MomentosGift";
+import { PhotoUploader, resolvePhotoUrls } from "@/components/PhotoUploader";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const VALID = ["carta", "musica", "momentos"] as const;
