@@ -33,7 +33,7 @@ const DEFAULTS: Record<GiftType, { title: string; data: any }> = {
       recipient: "Meu amor",
       message: "Cada dia ao seu lado é um presente.\nEu te escolho — hoje e sempre.",
       signature: "Com todo meu amor",
-      photos: ["", "", ""],
+      photos: [] as string[],
       song: "",
     } as CartaData,
   },
