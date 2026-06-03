@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Heart, Music, Sparkles, ArrowRight, Mail } from "lucide-react";
+import { Heart, Music, Sparkles, ArrowRight, Mail, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 
@@ -22,6 +22,7 @@ const gifts = [
   { icon: Mail, title: "Carta Romântica", desc: "Animação de abertura com chuva de rosas e galeria de fotos do casal.", to: "carta" },
   { icon: Music, title: "Nossa Música", desc: "Player elegante com a música de vocês e contador em tempo real.", to: "musica" },
   { icon: Sparkles, title: "Nossos Momentos", desc: "Um ursinho revela a linha do tempo do relacionamento.", to: "momentos" },
+  { icon: MapPin, title: "Mapa do Amor", desc: "Mapa interativo com a distância entre vocês e uma linha em forma de coração.", to: "mapa" },
 ];
 
 function Landing() {
@@ -105,9 +106,9 @@ function Landing() {
       <section id="presentes" className="mx-auto max-w-6xl px-5 py-20">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-medium uppercase tracking-widest text-violet">Os presentes</p>
-          <h2 className="mt-3 font-display text-4xl text-plum lg:text-5xl">Três formas de dizer eu te amo</h2>
+          <h2 className="mt-3 font-display text-4xl text-plum lg:text-5xl">Quatro formas de dizer eu te amo</h2>
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {gifts.map((g, i) => (
             <motion.div
               key={g.title}
