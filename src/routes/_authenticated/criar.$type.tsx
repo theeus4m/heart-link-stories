@@ -161,26 +161,12 @@ function CartaFields({ data, set }: { data: CartaData; set: (d: CartaData) => vo
       <Field label="Assinatura">
         <Input value={data.signature} onChange={(e) => set({ ...data, signature: e.target.value })} />
       </Field>
-      <Field label="Fotos (URLs) — até 6">
-        <div className="space-y-2">
-          {(data.photos ?? []).map((url, i) => (
-            <Input
-              key={i}
-              placeholder="https://…"
-              value={url}
-              onChange={(e) => {
-                const next = [...(data.photos ?? [])];
-                next[i] = e.target.value;
-                set({ ...data, photos: next });
-              }}
-            />
-          ))}
-          {(data.photos?.length ?? 0) < 6 && (
-            <Button type="button" variant="outline" size="sm" onClick={() => set({ ...data, photos: [...(data.photos ?? []), ""] })}>
-              <Plus className="h-3.5 w-3.5" /> Adicionar foto
-            </Button>
-          )}
-        </div>
+      <Field label="Fotos — até 6">
+        <PhotoUploader
+          value={data.photos ?? []}
+          onChange={(photos) => set({ ...data, photos })}
+          max={6}
+        />
       </Field>
       <Field label="Música (link Spotify, opcional)">
         <Input placeholder="https://open.spotify.com/track/…" value={data.song ?? ""} onChange={(e) => set({ ...data, song: e.target.value })} />
