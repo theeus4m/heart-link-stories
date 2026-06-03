@@ -74,6 +74,30 @@ export const deleteGift = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+async function signPath(admin: any, path: string): Promise<string> {
+  if (!path) return path;
+  if (path.startsWith("http")) return path;
+  const { data } = await admin.storage.from("gift-photos").createSignedUrl(path, 60 * 60 * 24 * 7);
+  return data?.signedUrl ?? "";
+}
+
+async function resolveGiftPhotos(admin: any, type: string, data: any) {
+  if (!data || typeof data !== "object") return data;
+  const next = { ...data };
+  if (type === "carta" && Array.isArray(next.photos)) {
+    next.photos = await Promise.all(next.photos.map((p: string) => signPath(admin, p)));
+  }
+  if (type === "momentos" && Array.isArray(next.moments)) {
+    next.moments = await Promise.all(
+      next.moments.map(async (m: any) => ({ ...m, photo: m?.photo ? await signPath(admin, m.photo) : "" })),
+    );
+  }
+  if (type === "musica" && typeof next.coverUrl === "string") {
+    next.coverUrl = await signPath(admin, next.coverUrl);
+  }
+  return next;
+}
+
 export const getPublicGift = createServerFn({ method: "GET" })
   .inputValidator((input) => z.object({ slug: z.string().min(3).max(40) }).parse(input))
   .handler(async ({ data }) => {
@@ -84,5 +108,7 @@ export const getPublicGift = createServerFn({ method: "GET" })
       .eq("slug", data.slug)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return row;
+    if (!row) return null;
+    const resolved = await resolveGiftPhotos(supabaseAdmin, row.type, row.data);
+    return { ...row, data: resolved };
   });

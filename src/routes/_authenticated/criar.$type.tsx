@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Eye, Plus, Trash2, Sparkles } from "lucide-react";
+import { ArrowLeft, Eye, Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,8 @@ import { createGift } from "@/lib/gifts.functions";
 import { CartaGift, type CartaData } from "@/components/gifts/CartaGift";
 import { MusicaGift, type MusicaData } from "@/components/gifts/MusicaGift";
 import { MomentosGift, type MomentosData } from "@/components/gifts/MomentosGift";
+import { PhotoUploader, resolvePhotoUrls } from "@/components/PhotoUploader";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const VALID = ["carta", "musica", "momentos"] as const;
@@ -31,7 +33,7 @@ const DEFAULTS: Record<GiftType, { title: string; data: any }> = {
       recipient: "Meu amor",
       message: "Cada dia ao seu lado é um presente.\nEu te escolho — hoje e sempre.",
       signature: "Com todo meu amor",
-      photos: ["", "", ""],
+      photos: [] as string[],
       song: "",
     } as CartaData,
   },
@@ -96,9 +98,7 @@ function Editor() {
             {saving ? "Salvando…" : "Publicar e gerar link"}
           </Button>
         </div>
-        {type === "carta" && <CartaGift title={title} data={data} />}
-        {type === "musica" && <MusicaGift title={title} data={data} />}
-        {type === "momentos" && <MomentosGift title={title} data={data} />}
+        <ResolvedPreview type={type} title={title} data={data} />
       </div>
     );
   }
@@ -161,26 +161,12 @@ function CartaFields({ data, set }: { data: CartaData; set: (d: CartaData) => vo
       <Field label="Assinatura">
         <Input value={data.signature} onChange={(e) => set({ ...data, signature: e.target.value })} />
       </Field>
-      <Field label="Fotos (URLs) — até 6">
-        <div className="space-y-2">
-          {(data.photos ?? []).map((url, i) => (
-            <Input
-              key={i}
-              placeholder="https://…"
-              value={url}
-              onChange={(e) => {
-                const next = [...(data.photos ?? [])];
-                next[i] = e.target.value;
-                set({ ...data, photos: next });
-              }}
-            />
-          ))}
-          {(data.photos?.length ?? 0) < 6 && (
-            <Button type="button" variant="outline" size="sm" onClick={() => set({ ...data, photos: [...(data.photos ?? []), ""] })}>
-              <Plus className="h-3.5 w-3.5" /> Adicionar foto
-            </Button>
-          )}
-        </div>
+      <Field label="Fotos — até 6">
+        <PhotoUploader
+          value={data.photos ?? []}
+          onChange={(photos) => set({ ...data, photos })}
+          max={6}
+        />
       </Field>
       <Field label="Música (link Spotify, opcional)">
         <Input placeholder="https://open.spotify.com/track/…" value={data.song ?? ""} onChange={(e) => set({ ...data, song: e.target.value })} />
@@ -205,8 +191,12 @@ function MusicaFields({ data, set }: { data: MusicaData; set: (d: MusicaData) =>
       <Field label="Link da música (Spotify)">
         <Input placeholder="https://open.spotify.com/track/…" value={data.songUrl ?? ""} onChange={(e) => set({ ...data, songUrl: e.target.value })} />
       </Field>
-      <Field label="Capa (URL da imagem)">
-        <Input placeholder="https://…" value={data.coverUrl ?? ""} onChange={(e) => set({ ...data, coverUrl: e.target.value })} />
+      <Field label="Capa do presente (imagem)">
+        <PhotoUploader
+          value={data.coverUrl ? [data.coverUrl] : []}
+          onChange={(arr) => set({ ...data, coverUrl: arr[0] ?? "" })}
+          max={1}
+        />
       </Field>
       <Field label="Mensagem especial">
         <Textarea rows={3} value={data.message ?? ""} onChange={(e) => set({ ...data, message: e.target.value })} />
@@ -240,8 +230,11 @@ function MomentosFields({ data, set }: { data: MomentosData; set: (d: MomentosDa
                 </div>
                 <Textarea placeholder="Legenda" rows={2} value={m.caption}
                   onChange={(e) => { const arr = [...data.moments]; arr[i] = { ...arr[i], caption: e.target.value }; set({ ...data, moments: arr }); }} />
-                <Input placeholder="URL da foto (opcional)" value={m.photo ?? ""}
-                  onChange={(e) => { const arr = [...data.moments]; arr[i] = { ...arr[i], photo: e.target.value }; set({ ...data, moments: arr }); }} />
+                <PhotoUploader
+                  value={m.photo ? [m.photo] : []}
+                  onChange={(arr) => { const next = [...data.moments]; next[i] = { ...next[i], photo: arr[0] ?? "" }; set({ ...data, moments: next }); }}
+                  max={1}
+                />
               </div>
             </div>
           ))}
@@ -254,4 +247,44 @@ function MomentosFields({ data, set }: { data: MomentosData; set: (d: MomentosDa
       <Field label="Mensagem de encerramento"><Textarea rows={2} value={data.outro} onChange={(e) => set({ ...data, outro: e.target.value })} /></Field>
     </>
   );
+}
+
+function ResolvedPreview({ type, title, data }: { type: GiftType; title: string; data: any }) {
+  const [resolved, setResolved] = useState<any>(null);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const next: any = { ...data };
+      if (type === "carta" && Array.isArray(next.photos)) {
+        next.photos = await resolvePhotoUrls(next.photos);
+      }
+      if (type === "momentos" && Array.isArray(next.moments)) {
+        next.moments = await Promise.all(
+          next.moments.map(async (m: any) => {
+            if (!m?.photo) return { ...m, photo: "" };
+            const [url] = await resolvePhotoUrls([m.photo]);
+            return { ...m, photo: url ?? "" };
+          }),
+        );
+      }
+      if (type === "musica" && next.coverUrl) {
+        const [url] = await resolvePhotoUrls([next.coverUrl]);
+        next.coverUrl = url ?? "";
+      }
+      if (alive) setResolved(next);
+    })();
+    return () => { alive = false; };
+  }, [type, data]);
+
+  if (!resolved) {
+    return (
+      <div className="grid min-h-[60vh] place-items-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (type === "carta") return <CartaGift title={title} data={resolved} />;
+  if (type === "musica") return <MusicaGift title={title} data={resolved} />;
+  return <MomentosGift title={title} data={resolved} />;
 }
