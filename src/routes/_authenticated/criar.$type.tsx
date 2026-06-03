@@ -248,3 +248,43 @@ function MomentosFields({ data, set }: { data: MomentosData; set: (d: MomentosDa
     </>
   );
 }
+
+function ResolvedPreview({ type, title, data }: { type: GiftType; title: string; data: any }) {
+  const [resolved, setResolved] = useState<any>(null);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const next: any = { ...data };
+      if (type === "carta" && Array.isArray(next.photos)) {
+        next.photos = await resolvePhotoUrls(next.photos);
+      }
+      if (type === "momentos" && Array.isArray(next.moments)) {
+        next.moments = await Promise.all(
+          next.moments.map(async (m: any) => {
+            if (!m?.photo) return { ...m, photo: "" };
+            const [url] = await resolvePhotoUrls([m.photo]);
+            return { ...m, photo: url ?? "" };
+          }),
+        );
+      }
+      if (type === "musica" && next.coverUrl) {
+        const [url] = await resolvePhotoUrls([next.coverUrl]);
+        next.coverUrl = url ?? "";
+      }
+      if (alive) setResolved(next);
+    })();
+    return () => { alive = false; };
+  }, [type, data]);
+
+  if (!resolved) {
+    return (
+      <div className="grid min-h-[60vh] place-items-center text-muted-foreground">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
+  }
+
+  if (type === "carta") return <CartaGift title={title} data={resolved} />;
+  if (type === "musica") return <MusicaGift title={title} data={resolved} />;
+  return <MomentosGift title={title} data={resolved} />;
+}
