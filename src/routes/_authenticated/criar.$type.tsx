@@ -98,9 +98,7 @@ function Editor() {
             {saving ? "Salvando…" : "Publicar e gerar link"}
           </Button>
         </div>
-        {type === "carta" && <CartaGift title={title} data={data} />}
-        {type === "musica" && <MusicaGift title={title} data={data} />}
-        {type === "momentos" && <MomentosGift title={title} data={data} />}
+        <ResolvedPreview type={type} title={title} data={data} />
       </div>
     );
   }
