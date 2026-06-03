@@ -11,11 +11,13 @@ import { createGift } from "@/lib/gifts.functions";
 import { CartaGift, type CartaData } from "@/components/gifts/CartaGift";
 import { MusicaGift, type MusicaData } from "@/components/gifts/MusicaGift";
 import { MomentosGift, type MomentosData } from "@/components/gifts/MomentosGift";
+import { MapaGift, type MapaData } from "@/components/gifts/MapaGift";
 import { PhotoUploader, resolvePhotoUrls } from "@/components/PhotoUploader";
+import { geocodeCity } from "@/lib/geocode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const VALID = ["carta", "musica", "momentos"] as const;
+const VALID = ["carta", "musica", "momentos", "mapa"] as const;
 type GiftType = (typeof VALID)[number];
 
 export const Route = createFileRoute("/_authenticated/criar/$type")({
@@ -60,6 +62,19 @@ const DEFAULTS: Record<GiftType, { title: string; data: any }> = {
       outro: "E daqui pra frente é só você e eu.",
     } as MomentosData,
   },
+  mapa: {
+    title: "Nosso mapa do amor",
+    data: {
+      coupleNames: "Ana & João",
+      startDate: new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10),
+      personA: { name: "Ana", city: "São Paulo, Brasil" },
+      personB: { name: "João", city: "Lisboa, Portugal" },
+      photo: "",
+      message: "Mesmo separados por {km} km, meu coração está sempre ao seu lado.",
+      themeColor: "#f47975",
+      finalMessage: "Eu te amo — em qualquer lugar do mundo.",
+    } as MapaData,
+  },
 };
 
 function Editor() {
@@ -74,10 +89,26 @@ function Editor() {
   async function save() {
     setSaving(true);
     try {
-      const row = await create({ data: { type, title, data } });
+      let payload = data;
+      // Geocode cities on the Mapa gift if coords are missing
+      if (type === "mapa") {
+        const d = { ...data } as MapaData;
+        const needA = d.personA?.city && (typeof d.personA.lat !== "number" || typeof d.personA.lng !== "number");
+        const needB = d.personB?.city && (typeof d.personB.lat !== "number" || typeof d.personB.lng !== "number");
+        if (needA) {
+          const r = await geocodeCity(d.personA.city);
+          if (r) d.personA = { ...d.personA, ...r };
+        }
+        if (needB) {
+          const r = await geocodeCity(d.personB.city);
+          if (r) d.personB = { ...d.personB, ...r };
+        }
+        payload = d;
+        setData(d);
+      }
+      const row = await create({ data: { type, title, data: payload } });
       toast.success("Presente criado!");
       navigate({ to: "/dashboard" });
-      // copy link
       await navigator.clipboard.writeText(`${window.location.origin}/g/${row.slug}`);
       toast.success("Link copiado para você compartilhar 💌");
     } catch (err) {
@@ -114,6 +145,7 @@ function Editor() {
           {type === "carta" && "Carta Romântica"}
           {type === "musica" && "Nossa Música"}
           {type === "momentos" && "Nossos Momentos"}
+          {type === "mapa" && "Mapa do Amor"}
         </h1>
         <p className="mt-1 text-muted-foreground">Personalize cada detalhe. Você poderá editar a qualquer momento.</p>
 
@@ -125,6 +157,7 @@ function Editor() {
           {type === "carta" && <CartaFields data={data} set={setData} />}
           {type === "musica" && <MusicaFields data={data} set={setData} />}
           {type === "momentos" && <MomentosFields data={data} set={setData} />}
+          {type === "mapa" && <MapaFields data={data} set={setData} />}
         </div>
 
         <div className="mt-6 flex flex-wrap justify-end gap-3">
@@ -271,6 +304,10 @@ function ResolvedPreview({ type, title, data }: { type: GiftType; title: string;
         const [url] = await resolvePhotoUrls([next.coverUrl]);
         next.coverUrl = url ?? "";
       }
+      if (type === "mapa" && next.photo) {
+        const [url] = await resolvePhotoUrls([next.photo]);
+        next.photo = url ?? "";
+      }
       if (alive) setResolved(next);
     })();
     return () => { alive = false; };
@@ -286,5 +323,74 @@ function ResolvedPreview({ type, title, data }: { type: GiftType; title: string;
 
   if (type === "carta") return <CartaGift title={title} data={resolved} />;
   if (type === "musica") return <MusicaGift title={title} data={resolved} />;
+  if (type === "mapa") return <MapaGift title={title} data={resolved} />;
   return <MomentosGift title={title} data={resolved} />;
+}
+
+function MapaFields({ data, set }: { data: MapaData; set: (d: MapaData) => void }) {
+  const updatePerson = (key: "personA" | "personB", patch: Partial<MapaData["personA"]>) =>
+    set({ ...data, [key]: { ...data[key], ...patch, lat: undefined, lng: undefined } });
+
+  return (
+    <>
+      <Field label="Nomes do casal">
+        <Input value={data.coupleNames} onChange={(e) => set({ ...data, coupleNames: e.target.value })} />
+      </Field>
+      <Field label="Início do relacionamento">
+        <Input type="date" value={data.startDate} onChange={(e) => set({ ...data, startDate: e.target.value })} />
+      </Field>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-xl border border-border p-4">
+          <p className="text-sm font-medium text-violet">Pessoa 1</p>
+          <div className="mt-3 space-y-3">
+            <Input placeholder="Nome" value={data.personA.name}
+              onChange={(e) => set({ ...data, personA: { ...data.personA, name: e.target.value } })} />
+            <Input placeholder="Cidade, País" value={data.personA.city}
+              onChange={(e) => updatePerson("personA", { city: e.target.value })} />
+          </div>
+        </div>
+        <div className="rounded-xl border border-border p-4">
+          <p className="text-sm font-medium text-violet">Pessoa 2</p>
+          <div className="mt-3 space-y-3">
+            <Input placeholder="Nome" value={data.personB.name}
+              onChange={(e) => set({ ...data, personB: { ...data.personB, name: e.target.value } })} />
+            <Input placeholder="Cidade, País" value={data.personB.city}
+              onChange={(e) => updatePerson("personB", { city: e.target.value })} />
+          </div>
+        </div>
+      </div>
+      <p className="-mt-1 text-xs text-muted-foreground">
+        As coordenadas serão calculadas automaticamente quando você publicar.
+      </p>
+
+      <Field label="Foto do casal">
+        <PhotoUploader
+          value={data.photo ? [data.photo] : []}
+          onChange={(arr) => set({ ...data, photo: arr[0] ?? "" })}
+          max={1}
+        />
+      </Field>
+
+      <Field label="Mensagem romântica (use {km} para inserir a distância)">
+        <Textarea rows={3} value={data.message}
+          onChange={(e) => set({ ...data, message: e.target.value })} />
+      </Field>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field label="Cor do tema">
+          <div className="flex items-center gap-3">
+            <input type="color" value={data.themeColor || "#f47975"}
+              onChange={(e) => set({ ...data, themeColor: e.target.value })}
+              className="h-10 w-14 cursor-pointer rounded border border-border bg-transparent" />
+            <Input value={data.themeColor || "#f47975"}
+              onChange={(e) => set({ ...data, themeColor: e.target.value })} />
+          </div>
+        </Field>
+        <Field label="Mensagem final (ao clicar em Eu Te Amo)">
+          <Input value={data.finalMessage ?? ""} onChange={(e) => set({ ...data, finalMessage: e.target.value })} />
+        </Field>
+      </div>
+    </>
+  );
 }

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Mail, Music, Sparkles, Plus, Copy, Trash2, ExternalLink } from "lucide-react";
+import { Mail, Music, Sparkles, Plus, Copy, Trash2, ExternalLink, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { listMyGifts, deleteGift } from "@/lib/gifts.functions";
@@ -23,6 +23,7 @@ const TYPE_META = {
   carta: { icon: Mail, label: "Carta Romântica" },
   musica: { icon: Music, label: "Nossa Música" },
   momentos: { icon: Sparkles, label: "Nossos Momentos" },
+  mapa: { icon: MapPin, label: "Mapa do Amor" },
 } as const;
 
 function Dashboard() {
@@ -54,7 +55,7 @@ function Dashboard() {
         </div>
 
         {/* Create cards */}
-        <section className="mt-8 grid gap-4 md:grid-cols-3">
+        <section className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {(Object.keys(TYPE_META) as Array<keyof typeof TYPE_META>).map((t) => {
             const M = TYPE_META[t];
             return (
