@@ -89,10 +89,26 @@ function Editor() {
   async function save() {
     setSaving(true);
     try {
-      const row = await create({ data: { type, title, data } });
+      let payload = data;
+      // Geocode cities on the Mapa gift if coords are missing
+      if (type === "mapa") {
+        const d = { ...data } as MapaData;
+        const needA = d.personA?.city && (typeof d.personA.lat !== "number" || typeof d.personA.lng !== "number");
+        const needB = d.personB?.city && (typeof d.personB.lat !== "number" || typeof d.personB.lng !== "number");
+        if (needA) {
+          const r = await geocodeCity(d.personA.city);
+          if (r) d.personA = { ...d.personA, ...r };
+        }
+        if (needB) {
+          const r = await geocodeCity(d.personB.city);
+          if (r) d.personB = { ...d.personB, ...r };
+        }
+        payload = d;
+        setData(d);
+      }
+      const row = await create({ data: { type, title, data: payload } });
       toast.success("Presente criado!");
       navigate({ to: "/dashboard" });
-      // copy link
       await navigator.clipboard.writeText(`${window.location.origin}/g/${row.slug}`);
       toast.success("Link copiado para você compartilhar 💌");
     } catch (err) {
@@ -129,6 +145,7 @@ function Editor() {
           {type === "carta" && "Carta Romântica"}
           {type === "musica" && "Nossa Música"}
           {type === "momentos" && "Nossos Momentos"}
+          {type === "mapa" && "Mapa do Amor"}
         </h1>
         <p className="mt-1 text-muted-foreground">Personalize cada detalhe. Você poderá editar a qualquer momento.</p>
 
@@ -140,6 +157,7 @@ function Editor() {
           {type === "carta" && <CartaFields data={data} set={setData} />}
           {type === "musica" && <MusicaFields data={data} set={setData} />}
           {type === "momentos" && <MomentosFields data={data} set={setData} />}
+          {type === "mapa" && <MapaFields data={data} set={setData} />}
         </div>
 
         <div className="mt-6 flex flex-wrap justify-end gap-3">
