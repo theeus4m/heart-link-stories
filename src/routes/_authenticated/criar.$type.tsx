@@ -230,8 +230,11 @@ function MomentosFields({ data, set }: { data: MomentosData; set: (d: MomentosDa
                 </div>
                 <Textarea placeholder="Legenda" rows={2} value={m.caption}
                   onChange={(e) => { const arr = [...data.moments]; arr[i] = { ...arr[i], caption: e.target.value }; set({ ...data, moments: arr }); }} />
-                <Input placeholder="URL da foto (opcional)" value={m.photo ?? ""}
-                  onChange={(e) => { const arr = [...data.moments]; arr[i] = { ...arr[i], photo: e.target.value }; set({ ...data, moments: arr }); }} />
+                <PhotoUploader
+                  value={m.photo ? [m.photo] : []}
+                  onChange={(arr) => { const next = [...data.moments]; next[i] = { ...next[i], photo: arr[0] ?? "" }; set({ ...data, moments: next }); }}
+                  max={1}
+                />
               </div>
             </div>
           ))}
