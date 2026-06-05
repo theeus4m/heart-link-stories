@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
 
 const gifts = [
   { icon: Mail, title: "Carta Romântica", desc: "Animação de abertura com chuva de rosas e galeria de fotos do casal.", to: "carta" },
-  { icon: Music, title: "Nossa Música", desc: "Player elegante com a música de vocês e contador em tempo real.", to: "musica" },
+  { icon: Music, title: "Nossa Mixtape", desc: "Fita cassete + rádio retrô com até 5 músicas do YouTube e player interativo.", to: "musica" },
   { icon: Sparkles, title: "Nossos Momentos", desc: "Um ursinho revela a linha do tempo do relacionamento.", to: "momentos" },
   { icon: MapPin, title: "Mapa do Amor", desc: "Mapa interativo com a distância entre vocês e uma linha em forma de coração.", to: "mapa" },
 ];
