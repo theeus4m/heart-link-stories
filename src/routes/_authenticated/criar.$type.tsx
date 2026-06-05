@@ -40,15 +40,16 @@ const DEFAULTS: Record<GiftType, { title: string; data: any }> = {
     } as CartaData,
   },
   musica: {
-    title: "Nossa música",
+    title: "As músicas que me fazem lembrar de você ❤️",
     data: {
+      mixtapeName: "As músicas que me fazem lembrar de você ❤️",
       coupleNames: "Ana & João",
-      startDate: new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10),
-      songTitle: "Perfect",
-      songArtist: "Ed Sheeran",
-      songUrl: "",
+      createdDate: new Date().toISOString().slice(0, 10),
       coverUrl: "",
-      message: "Toda vez que essa toca, eu lembro de você.",
+      message: "Cada música desta fita guarda um momento que vivi ao seu lado.",
+      tracks: [
+        { url: "", title: "", artist: "" },
+      ],
     } as MusicaData,
   },
   momentos: {
