@@ -222,9 +222,16 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
   });
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-plum via-[#2b1e4a] to-[#1a0f33] text-cream">
-      {/* Ambient wood-grain glow */}
-      <div className="pointer-events-none absolute inset-0 opacity-40 [background:radial-gradient(circle_at_20%_20%,#8c54a3_0%,transparent_45%),radial-gradient(circle_at_80%_80%,#f47975_0%,transparent_50%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-[#1a0f08] text-cream">
+      {/* Vintage backdrop */}
+      <div className="pointer-events-none absolute inset-0 opacity-50 [background:radial-gradient(circle_at_20%_20%,#8c54a3_0%,transparent_45%),radial-gradient(circle_at_80%_80%,#f47975_0%,transparent_50%)]" />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.12] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(0deg,rgba(255,255,255,.08) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 1px,transparent 1px 4px)",
+        }}
+      />
 
       <div className="relative mx-auto grid max-w-3xl gap-8 px-5 py-12">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="text-center">
@@ -238,39 +245,157 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
           <div ref={mountRef} />
         </div>
 
-        {/* Retro radio */}
-        <Radio
-          inserted={inserted}
-          playing={playing}
-          current={current}
-          idx={idx}
-          total={tracks.length}
-          progress={progress}
-          duration={duration}
-        />
-
-        {/* Cassette */}
-        <div className="relative mx-auto h-44 w-full max-w-md">
-          <AnimatePresence>
-            {!inserted && (
-              <motion.div
-                key="cassette"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 120, scale: 0.9 }}
-                transition={{ type: "spring", stiffness: 120, damping: 18 }}
-                className="absolute inset-0"
-              >
-                <Cassette
-                  spinning={false}
-                  label={mixtapeName}
-                  couple={data.coupleNames}
-                  date={prettyDate}
-                  coverUrl={data.coverUrl}
+        {/* ====== Console vintage: rádio + fita + tracklist integrados ====== */}
+        <div className="relative mx-auto w-full max-w-md">
+          <div
+            className="relative rounded-[2rem] p-3 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8),inset_0_2px_6px_rgba(255,200,140,0.25)]"
+            style={{
+              background:
+                "linear-gradient(160deg,#5a3a1a 0%,#7a4a20 35%,#3a2510 70%,#2a1808 100%)",
+            }}
+          >
+            {/* Faux wood grain */}
+            <div
+              className="pointer-events-none absolute inset-0 rounded-[2rem] opacity-30 mix-blend-overlay"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(92deg,rgba(0,0,0,.5) 0 2px,transparent 2px 5px),repeating-linear-gradient(180deg,rgba(255,210,150,.15) 0 1px,transparent 1px 8px)",
+              }}
+            />
+            {/* Brass screws */}
+            {["left-3 top-3", "right-3 top-3", "left-3 bottom-3", "right-3 bottom-3"].map(
+              (pos, i) => (
+                <span
+                  key={i}
+                  className={`absolute ${pos} h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-200 to-amber-700 shadow-inner ring-1 ring-black/40`}
                 />
-              </motion.div>
+              ),
             )}
-          </AnimatePresence>
+
+            <Radio
+              inserted={inserted}
+              playing={playing}
+              current={current}
+              idx={idx}
+              total={tracks.length}
+              progress={progress}
+              duration={duration}
+            />
+
+            {/* Cassette deck window */}
+            <div className="relative mx-3 mt-3 overflow-hidden rounded-2xl border border-amber-950/70 bg-[#1a0f08] p-3 shadow-inner">
+              <div className="pointer-events-none absolute inset-x-3 top-0 h-1 bg-gradient-to-b from-black/60 to-transparent" />
+              <div className="relative h-40">
+                <AnimatePresence mode="wait">
+                  {!inserted ? (
+                    <motion.div
+                      key="cassette-out"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 120, scale: 0.9 }}
+                      transition={{ type: "spring", stiffness: 120, damping: 18 }}
+                      className="absolute inset-0"
+                    >
+                      <Cassette
+                        spinning={false}
+                        label={mixtapeName}
+                        couple={data.coupleNames}
+                        date={prettyDate}
+                        coverUrl={data.coverUrl}
+                      />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="cassette-in"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute inset-0"
+                    >
+                      <Cassette
+                        spinning={playing}
+                        label={current?.title || mixtapeName}
+                        couple={data.coupleNames}
+                        date={prettyDate}
+                        coverUrl={data.coverUrl}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <div className="pointer-events-none absolute inset-3 rounded-xl bg-gradient-to-br from-white/10 via-transparent to-transparent" />
+            </div>
+
+            {/* Tracklist integrada — Program Selector vintage */}
+            {tracks.length > 0 && (
+              <div className="mx-3 mt-3 rounded-2xl border border-amber-900/70 bg-[#1a0f08]/95 p-3 shadow-inner">
+                <div className="mb-2 flex items-center justify-between border-b border-amber-900/60 pb-1.5">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-200/70">
+                    Program Selector
+                  </p>
+                  <p className="font-mono text-[10px] text-amber-200/60">
+                    {Math.min(idx + 1, tracks.length).toString().padStart(2, "0")}/
+                    {tracks.length.toString().padStart(2, "0")}
+                  </p>
+                </div>
+                <ol className="space-y-1">
+                  {tracks.map((t, i) => {
+                    const active = i === idx && inserted;
+                    return (
+                      <li key={i}>
+                        <button
+                          onClick={() => {
+                            setIdx(i);
+                            if (!inserted) setInserted(true);
+                          }}
+                          className={`group flex w-full items-center gap-3 rounded-md border px-2.5 py-1.5 text-left font-mono text-[12px] transition active:scale-[0.99] ${
+                            active
+                              ? "border-amber-300/60 bg-amber-200/10 text-amber-100 shadow-[inset_0_0_0_1px_rgba(255,210,140,.2)]"
+                              : "border-amber-950/60 bg-black/30 text-amber-100/70 hover:border-amber-700/70 hover:bg-amber-900/20 hover:text-amber-100"
+                          }`}
+                        >
+                          <span
+                            className={`h-2 w-2 shrink-0 rounded-full ring-1 ring-black/60 ${
+                              active
+                                ? "bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.7)] animate-pulse"
+                                : "bg-red-950"
+                            }`}
+                          />
+                          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-sm bg-gradient-to-b from-amber-200 to-amber-500 text-[10px] font-bold tabular-nums text-amber-950 shadow-inner">
+                            {(i + 1).toString().padStart(2, "0")}
+                          </span>
+                          <span className="min-w-0 flex-1 truncate">
+                            <span className="uppercase tracking-wider">
+                              {t.title || `Track ${i + 1}`}
+                            </span>
+                            {t.artist && (
+                              <span className="ml-2 normal-case text-amber-200/50">· {t.artist}</span>
+                            )}
+                          </span>
+                          {liked[i] && <Heart className="h-3.5 w-3.5 fill-coral text-coral" />}
+                          {active && playing && (
+                            <span className="ml-1 flex items-end gap-[2px]">
+                              {[0, 1, 2].map((b) => (
+                                <motion.span
+                                  key={b}
+                                  className="w-[2px] rounded-sm bg-amber-300"
+                                  animate={{ height: ["6px", "12px", "4px", "10px"] }}
+                                  transition={{
+                                    duration: 0.7 + b * 0.15,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                  }}
+                                />
+                              ))}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Controls */}
@@ -280,7 +405,7 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
           <div className="text-center">
             <button
               onClick={() => setInserted(true)}
-              className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-coral to-[#ff9472] px-7 py-3 font-display text-lg text-white shadow-glow transition hover:scale-[1.03]"
+              className="group inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-coral to-[#ff9472] px-7 py-3 font-display text-lg text-white shadow-glow transition hover:scale-[1.03] active:scale-95"
             >
               <Play className="h-5 w-5 fill-white" /> Inserir Fita
             </button>
@@ -304,37 +429,6 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
             repeat={repeat}
             onToggleRepeat={() => setRepeat((r) => !r)}
           />
-        )}
-
-        {/* Track list */}
-        {tracks.length > 0 && (
-          <ol className="mx-auto w-full max-w-md space-y-1 rounded-2xl border border-cream/10 bg-cream/5 p-3 backdrop-blur">
-            {tracks.map((t, i) => {
-              const active = i === idx && inserted;
-              return (
-                <li key={i}>
-                  <button
-                    onClick={() => {
-                      setIdx(i);
-                      if (!inserted) setInserted(true);
-                    }}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition ${
-                      active ? "bg-coral/20 text-cream" : "hover:bg-cream/10 text-cream/80"
-                    }`}
-                  >
-                    <span className="grid h-7 w-7 place-items-center rounded-full bg-cream/10 text-xs tabular-nums">
-                      {i + 1}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate">
-                      <span className="font-medium">{t.title || `Faixa ${i + 1}`}</span>
-                      {t.artist && <span className="ml-2 text-cream/60">— {t.artist}</span>}
-                    </span>
-                    {liked[i] && <Heart className="h-3.5 w-3.5 fill-coral text-coral" />}
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
         )}
 
         {/* Eject message */}
@@ -399,8 +493,8 @@ function Radio({
   duration: number;
 }) {
   return (
-    <div className="relative mx-auto w-full max-w-md">
-      <div className="relative rounded-[2rem] bg-gradient-to-b from-[#3a2510] via-[#5a3a1a] to-[#2a1808] p-6 shadow-[inset_0_2px_8px_rgba(255,255,255,0.15),0_25px_60px_-20px_rgba(0,0,0,0.7)]">
+    <div className="relative mx-3 mt-0">
+      <div className="relative rounded-2xl bg-gradient-to-b from-[#2a1808] via-[#1e1208] to-[#0f0804] p-5 shadow-[inset_0_2px_8px_rgba(255,200,140,0.18),inset_0_-3px_8px_rgba(0,0,0,0.6)]">
         {/* Top speaker grills + dial */}
         <div className="flex items-center gap-4">
           <SpeakerGrill animate={playing} />
