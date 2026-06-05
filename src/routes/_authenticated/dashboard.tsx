@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 const TYPE_META = {
   carta: { icon: Mail, label: "Carta Romântica" },
-  musica: { icon: Music, label: "Nossa Música" },
+  musica: { icon: Music, label: "Nossa Mixtape" },
   momentos: { icon: Sparkles, label: "Nossos Momentos" },
   mapa: { icon: MapPin, label: "Mapa do Amor" },
 } as const;

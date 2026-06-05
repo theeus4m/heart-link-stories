@@ -40,15 +40,16 @@ const DEFAULTS: Record<GiftType, { title: string; data: any }> = {
     } as CartaData,
   },
   musica: {
-    title: "Nossa música",
+    title: "As músicas que me fazem lembrar de você ❤️",
     data: {
+      mixtapeName: "As músicas que me fazem lembrar de você ❤️",
       coupleNames: "Ana & João",
-      startDate: new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10),
-      songTitle: "Perfect",
-      songArtist: "Ed Sheeran",
-      songUrl: "",
+      createdDate: new Date().toISOString().slice(0, 10),
       coverUrl: "",
-      message: "Toda vez que essa toca, eu lembro de você.",
+      message: "Cada música desta fita guarda um momento que vivi ao seu lado.",
+      tracks: [
+        { url: "", title: "", artist: "" },
+      ],
     } as MusicaData,
   },
   momentos: {
@@ -143,7 +144,7 @@ function Editor() {
         </Link>
         <h1 className="mt-3 font-display text-4xl text-plum">
           {type === "carta" && "Carta Romântica"}
-          {type === "musica" && "Nossa Música"}
+          {type === "musica" && "Nossa Mixtape"}
           {type === "momentos" && "Nossos Momentos"}
           {type === "mapa" && "Mapa do Amor"}
         </h1>
@@ -209,22 +210,32 @@ function CartaFields({ data, set }: { data: CartaData; set: (d: CartaData) => vo
 }
 
 function MusicaFields({ data, set }: { data: MusicaData; set: (d: MusicaData) => void }) {
+  const tracks = data.tracks ?? [];
+  const updateTrack = (i: number, patch: Partial<{ url: string; title: string; artist: string }>) => {
+    const arr = [...tracks];
+    arr[i] = { ...arr[i], ...patch };
+    set({ ...data, tracks: arr });
+  };
   return (
     <>
-      <Field label="Nomes do casal">
+      <Field label="Nome da Mixtape">
+        <Input
+          value={data.mixtapeName ?? ""}
+          placeholder="As músicas que me fazem lembrar de você ❤️"
+          onChange={(e) => set({ ...data, mixtapeName: e.target.value })}
+        />
+      </Field>
+      <Field label="Nome do casal">
         <Input value={data.coupleNames} onChange={(e) => set({ ...data, coupleNames: e.target.value })} />
       </Field>
-      <Field label="Início do relacionamento">
-        <Input type="date" value={data.startDate} onChange={(e) => set({ ...data, startDate: e.target.value })} />
+      <Field label="Data de criação">
+        <Input
+          type="date"
+          value={data.createdDate ?? new Date().toISOString().slice(0, 10)}
+          onChange={(e) => set({ ...data, createdDate: e.target.value })}
+        />
       </Field>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Música"><Input value={data.songTitle} onChange={(e) => set({ ...data, songTitle: e.target.value })} /></Field>
-        <Field label="Artista"><Input value={data.songArtist} onChange={(e) => set({ ...data, songArtist: e.target.value })} /></Field>
-      </div>
-      <Field label="Link da música (Spotify)">
-        <Input placeholder="https://open.spotify.com/track/…" value={data.songUrl ?? ""} onChange={(e) => set({ ...data, songUrl: e.target.value })} />
-      </Field>
-      <Field label="Capa do presente (imagem)">
+      <Field label="Capa da fita (opcional)">
         <PhotoUploader
           value={data.coverUrl ? [data.coverUrl] : []}
           onChange={(arr) => set({ ...data, coverUrl: arr[0] ?? "" })}
@@ -232,8 +243,62 @@ function MusicaFields({ data, set }: { data: MusicaData; set: (d: MusicaData) =>
         />
       </Field>
       <Field label="Mensagem especial">
-        <Textarea rows={3} value={data.message ?? ""} onChange={(e) => set({ ...data, message: e.target.value })} />
+        <Textarea
+          rows={3}
+          value={data.message ?? ""}
+          onChange={(e) => set({ ...data, message: e.target.value })}
+        />
       </Field>
+
+      <div>
+        <Label className="mb-2 block">Músicas do YouTube — até 5</Label>
+        <div className="space-y-3">
+          {tracks.map((t, i) => (
+            <div key={i} className="rounded-xl border border-border p-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-violet">Faixa {i + 1}</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => set({ ...data, tracks: tracks.filter((_, k) => k !== i) })}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <div className="mt-2 space-y-2">
+                <Input
+                  placeholder="https://youtube.com/watch?v=…"
+                  value={t.url}
+                  onChange={(e) => updateTrack(i, { url: e.target.value })}
+                />
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <Input
+                    placeholder="Título (opcional)"
+                    value={t.title ?? ""}
+                    onChange={(e) => updateTrack(i, { title: e.target.value })}
+                  />
+                  <Input
+                    placeholder="Artista (opcional)"
+                    value={t.artist ?? ""}
+                    onChange={(e) => updateTrack(i, { artist: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+          {tracks.length < 5 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => set({ ...data, tracks: [...tracks, { url: "", title: "", artist: "" }] })}
+            >
+              <Plus className="h-3.5 w-3.5" /> Adicionar música
+            </Button>
+          )}
+        </div>
+      </div>
     </>
   );
 }
