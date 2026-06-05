@@ -144,7 +144,7 @@ function Editor() {
         </Link>
         <h1 className="mt-3 font-display text-4xl text-plum">
           {type === "carta" && "Carta Romântica"}
-          {type === "musica" && "Nossa Música"}
+          {type === "musica" && "Nossa Mixtape"}
           {type === "momentos" && "Nossos Momentos"}
           {type === "mapa" && "Mapa do Amor"}
         </h1>
