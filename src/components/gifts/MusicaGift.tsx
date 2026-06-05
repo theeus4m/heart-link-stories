@@ -493,8 +493,8 @@ function Radio({
   duration: number;
 }) {
   return (
-    <div className="relative mx-auto w-full max-w-md">
-      <div className="relative rounded-[2rem] bg-gradient-to-b from-[#3a2510] via-[#5a3a1a] to-[#2a1808] p-6 shadow-[inset_0_2px_8px_rgba(255,255,255,0.15),0_25px_60px_-20px_rgba(0,0,0,0.7)]">
+    <div className="relative mx-3 mt-0">
+      <div className="relative rounded-2xl bg-gradient-to-b from-[#2a1808] via-[#1e1208] to-[#0f0804] p-5 shadow-[inset_0_2px_8px_rgba(255,200,140,0.18),inset_0_-3px_8px_rgba(0,0,0,0.6)]">
         {/* Top speaker grills + dial */}
         <div className="flex items-center gap-4">
           <SpeakerGrill animate={playing} />
