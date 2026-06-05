@@ -79,7 +79,7 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
   }, [data.tracks, data.songUrl, data.songTitle, data.songArtist]);
 
   const mixtapeName = data.mixtapeName || data.songTitle || "Nossa mixtape";
-  const created = data.createdDate || data.startDate || new Date().toISOString();
+  const created = data.createdDate || new Date().toISOString();
 
   const [inserted, setInserted] = useState(false);
   const [idx, setIdx] = useState(0);
