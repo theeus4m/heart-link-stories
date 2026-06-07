@@ -55,9 +55,33 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Create cards */}
-        <section className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {(Object.keys(TYPE_META) as Array<keyof typeof TYPE_META>).map((t) => {
+        {/* Featured bundle */}
+        <Link
+          to="/criar/$type"
+          params={{ type: "bundle" }}
+          className="mt-8 block overflow-hidden rounded-3xl gradient-romance p-8 text-primary-foreground shadow-romance transition hover:opacity-95"
+        >
+          <div className="flex flex-wrap items-center gap-6">
+            <span className="grid h-16 w-16 place-items-center rounded-2xl bg-white/20 backdrop-blur">
+              <Gift className="h-8 w-8" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs uppercase tracking-[0.3em] opacity-80">Recomendado</p>
+              <h2 className="mt-1 font-display text-3xl">Presente Completo — 4 em 1</h2>
+              <p className="mt-1 text-sm opacity-90">
+                Carta, Mixtape, Momentos e Mapa do Amor em um único link. Quem recebe escolhe por onde começar.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-5 py-2 text-sm font-semibold text-plum">
+              <Plus className="h-4 w-4" /> Criar agora
+            </span>
+          </div>
+        </Link>
+
+        {/* Individual gift cards */}
+        <p className="mt-8 text-sm uppercase tracking-widest text-violet">Ou crie presentes individuais</p>
+        <section className="mt-3 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {(["carta", "musica", "momentos", "mapa"] as const).map((t) => {
             const M = TYPE_META[t];
             return (
               <Link
@@ -79,6 +103,7 @@ function Dashboard() {
             );
           })}
         </section>
+
 
         <h2 className="mt-12 font-display text-2xl text-plum">Histórico</h2>
         {data.length === 0 ? (
