@@ -417,31 +417,47 @@ function MomentosFields({ data, set }: { data: MomentosData; set: (d: MomentosDa
   );
 }
 
+async function resolveOne(type: "carta" | "musica" | "momentos" | "mapa", data: any) {
+  const next: any = { ...data };
+  if (type === "carta" && Array.isArray(next.photos)) {
+    next.photos = await resolvePhotoUrls(next.photos);
+  }
+  if (type === "momentos" && Array.isArray(next.moments)) {
+    next.moments = await Promise.all(
+      next.moments.map(async (m: any) => {
+        if (!m?.photo) return { ...m, photo: "" };
+        const [url] = await resolvePhotoUrls([m.photo]);
+        return { ...m, photo: url ?? "" };
+      }),
+    );
+  }
+  if (type === "musica" && next.coverUrl) {
+    const [url] = await resolvePhotoUrls([next.coverUrl]);
+    next.coverUrl = url ?? "";
+  }
+  if (type === "mapa" && next.photo) {
+    const [url] = await resolvePhotoUrls([next.photo]);
+    next.photo = url ?? "";
+  }
+  return next;
+}
+
 function ResolvedPreview({ type, title, data }: { type: GiftType; title: string; data: any }) {
   const [resolved, setResolved] = useState<any>(null);
   useEffect(() => {
     let alive = true;
     (async () => {
-      const next: any = { ...data };
-      if (type === "carta" && Array.isArray(next.photos)) {
-        next.photos = await resolvePhotoUrls(next.photos);
-      }
-      if (type === "momentos" && Array.isArray(next.moments)) {
-        next.moments = await Promise.all(
-          next.moments.map(async (m: any) => {
-            if (!m?.photo) return { ...m, photo: "" };
-            const [url] = await resolvePhotoUrls([m.photo]);
-            return { ...m, photo: url ?? "" };
-          }),
-        );
-      }
-      if (type === "musica" && next.coverUrl) {
-        const [url] = await resolvePhotoUrls([next.coverUrl]);
-        next.coverUrl = url ?? "";
-      }
-      if (type === "mapa" && next.photo) {
-        const [url] = await resolvePhotoUrls([next.photo]);
-        next.photo = url ?? "";
+      let next: any;
+      if (type === "bundle") {
+        next = {
+          ...data,
+          carta: await resolveOne("carta", data.carta),
+          musica: await resolveOne("musica", data.musica),
+          momentos: await resolveOne("momentos", data.momentos),
+          mapa: await resolveOne("mapa", data.mapa),
+        };
+      } else {
+        next = await resolveOne(type, data);
       }
       if (alive) setResolved(next);
     })();
@@ -458,6 +474,7 @@ function ResolvedPreview({ type, title, data }: { type: GiftType; title: string;
 
   if (type === "carta") return <CartaGift title={title} data={resolved} />;
   if (type === "musica") return <MusicaGift title={title} data={resolved} />;
+  if (type === "bundle") return <BundleGift title={title} data={resolved} />;
   if (type === "mapa") return <MapaGift title={title} data={resolved} />;
   return <MomentosGift title={title} data={resolved} />;
 }
