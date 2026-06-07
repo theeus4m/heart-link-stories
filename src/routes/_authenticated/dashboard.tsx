@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Mail, Music, Sparkles, Plus, Copy, Trash2, ExternalLink, MapPin } from "lucide-react";
+import { Mail, Music, Sparkles, Plus, Copy, Trash2, ExternalLink, MapPin, Gift } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { listMyGifts, deleteGift } from "@/lib/gifts.functions";
@@ -20,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 const TYPE_META = {
+  bundle: { icon: Gift, label: "Presente Completo (4 em 1)" },
   carta: { icon: Mail, label: "Carta Romântica" },
   musica: { icon: Music, label: "Nossa Mixtape" },
   momentos: { icon: Sparkles, label: "Nossos Momentos" },
