@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Eye, Plus, Trash2, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Eye, Plus, Trash2, Sparkles, Loader2, Mail, Music, MapPin } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,13 @@ import { CartaGift, type CartaData } from "@/components/gifts/CartaGift";
 import { MusicaGift, type MusicaData } from "@/components/gifts/MusicaGift";
 import { MomentosGift, type MomentosData } from "@/components/gifts/MomentosGift";
 import { MapaGift, type MapaData } from "@/components/gifts/MapaGift";
+import { BundleGift, type BundleData } from "@/components/gifts/BundleGift";
 import { PhotoUploader, resolvePhotoUrls } from "@/components/PhotoUploader";
 import { geocodeCity } from "@/lib/geocode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const VALID = ["carta", "musica", "momentos", "mapa"] as const;
+const VALID = ["carta", "musica", "momentos", "mapa", "bundle"] as const;
 type GiftType = (typeof VALID)[number];
 
 export const Route = createFileRoute("/_authenticated/criar/$type")({
@@ -28,55 +29,74 @@ export const Route = createFileRoute("/_authenticated/criar/$type")({
   component: Editor,
 });
 
-const DEFAULTS: Record<GiftType, { title: string; data: any }> = {
-  carta: {
-    title: "Para você, meu amor",
-    data: {
-      recipient: "Meu amor",
-      message: "Cada dia ao seu lado é um presente.\nEu te escolho — hoje e sempre.",
-      signature: "Com todo meu amor",
-      photos: [] as string[],
-      song: "",
-    } as CartaData,
-  },
-  musica: {
-    title: "As músicas que me fazem lembrar de você ❤️",
-    data: {
-      mixtapeName: "As músicas que me fazem lembrar de você ❤️",
-      coupleNames: "Ana & João",
-      createdDate: new Date().toISOString().slice(0, 10),
-      coverUrl: "",
-      message: "Cada música desta fita guarda um momento que vivi ao seu lado.",
-      tracks: [
-        { url: "", title: "", artist: "" },
-      ],
-    } as MusicaData,
-  },
-  momentos: {
-    title: "Nossa história",
-    data: {
-      intro: "Tudo começou em um dia comum…",
-      moments: [
-        { date: "2023-01-12", title: "O primeiro 'oi'", caption: "Era para ser só uma conversa…", photo: "" },
-        { date: "2023-06-04", title: "Primeiro encontro", caption: "Meu coração não parava.", photo: "" },
-      ],
-      outro: "E daqui pra frente é só você e eu.",
-    } as MomentosData,
-  },
-  mapa: {
-    title: "Nosso mapa do amor",
-    data: {
-      coupleNames: "Ana & João",
-      startDate: new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10),
-      personA: { name: "Ana", city: "São Paulo, Brasil" },
-      personB: { name: "João", city: "Lisboa, Portugal" },
-      photo: "",
-      message: "Mesmo separados por {km} km, meu coração está sempre ao seu lado.",
-      themeColor: "#f47975",
-      finalMessage: "Eu te amo — em qualquer lugar do mundo.",
-    } as MapaData,
-  },
+const CARTA_DEFAULT: CartaData = {
+  recipient: "Meu amor",
+  message: "Cada dia ao seu lado é um presente.\nEu te escolho — hoje e sempre.",
+  signature: "Com todo meu amor",
+  photos: [],
+  song: "",
 };
+
+const MUSICA_DEFAULT: MusicaData = {
+  mixtapeName: "As músicas que me fazem lembrar de você ❤️",
+  coupleNames: "Ana & João",
+  createdDate: new Date().toISOString().slice(0, 10),
+  coverUrl: "",
+  message: "Cada música desta fita guarda um momento que vivi ao seu lado.",
+  tracks: [{ url: "", title: "", artist: "" }],
+};
+
+const MOMENTOS_DEFAULT: MomentosData = {
+  intro: "Tudo começou em um dia comum…",
+  moments: [
+    { date: "2023-01-12", title: "O primeiro 'oi'", caption: "Era para ser só uma conversa…", photo: "" },
+    { date: "2023-06-04", title: "Primeiro encontro", caption: "Meu coração não parava.", photo: "" },
+  ],
+  outro: "E daqui pra frente é só você e eu.",
+};
+
+const MAPA_DEFAULT: MapaData = {
+  coupleNames: "Ana & João",
+  startDate: new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10),
+  personA: { name: "Ana", city: "São Paulo, Brasil" },
+  personB: { name: "João", city: "Lisboa, Portugal" },
+  photo: "",
+  message: "Mesmo separados por {km} km, meu coração está sempre ao seu lado.",
+  themeColor: "#f47975",
+  finalMessage: "Eu te amo — em qualquer lugar do mundo.",
+};
+
+const BUNDLE_DEFAULT: BundleData = {
+  recipient: "Meu amor",
+  intro: "Eu preparei 4 surpresas pra você — abra na ordem que quiser.",
+  carta: CARTA_DEFAULT,
+  musica: MUSICA_DEFAULT,
+  momentos: MOMENTOS_DEFAULT,
+  mapa: MAPA_DEFAULT,
+};
+
+const DEFAULTS: Record<GiftType, { title: string; data: any }> = {
+  carta: { title: "Para você, meu amor", data: CARTA_DEFAULT },
+  musica: { title: MUSICA_DEFAULT.mixtapeName, data: MUSICA_DEFAULT },
+  momentos: { title: "Nossa história", data: MOMENTOS_DEFAULT },
+  mapa: { title: "Nosso mapa do amor", data: MAPA_DEFAULT },
+  bundle: { title: "Um presente só nosso", data: BUNDLE_DEFAULT },
+};
+
+const TYPE_TITLES: Record<GiftType, string> = {
+  carta: "Carta Romântica",
+  musica: "Nossa Mixtape",
+  momentos: "Nossos Momentos",
+  mapa: "Mapa do Amor",
+  bundle: "Presente Completo",
+};
+
+const BUNDLE_TABS: Array<{ key: "carta" | "musica" | "momentos" | "mapa"; label: string; icon: typeof Mail }> = [
+  { key: "carta", label: "Carta", icon: Mail },
+  { key: "musica", label: "Mixtape", icon: Music },
+  { key: "momentos", label: "Momentos", icon: Sparkles },
+  { key: "mapa", label: "Mapa", icon: MapPin },
+];
 
 function Editor() {
   const { type } = Route.useParams() as { type: GiftType };
@@ -86,26 +106,35 @@ function Editor() {
   const [data, setData] = useState<any>(DEFAULTS[type].data);
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
+  const [tab, setTab] = useState<"carta" | "musica" | "momentos" | "mapa">("carta");
+
+  async function geocodeIfNeeded(d: MapaData): Promise<MapaData> {
+    const out = { ...d };
+    const needA = out.personA?.city && (typeof out.personA.lat !== "number" || typeof out.personA.lng !== "number");
+    const needB = out.personB?.city && (typeof out.personB.lat !== "number" || typeof out.personB.lng !== "number");
+    if (needA) {
+      const r = await geocodeCity(out.personA.city);
+      if (r) out.personA = { ...out.personA, ...r };
+    }
+    if (needB) {
+      const r = await geocodeCity(out.personB.city);
+      if (r) out.personB = { ...out.personB, ...r };
+    }
+    return out;
+  }
 
   async function save() {
     setSaving(true);
     try {
       let payload = data;
-      // Geocode cities on the Mapa gift if coords are missing
       if (type === "mapa") {
-        const d = { ...data } as MapaData;
-        const needA = d.personA?.city && (typeof d.personA.lat !== "number" || typeof d.personA.lng !== "number");
-        const needB = d.personB?.city && (typeof d.personB.lat !== "number" || typeof d.personB.lng !== "number");
-        if (needA) {
-          const r = await geocodeCity(d.personA.city);
-          if (r) d.personA = { ...d.personA, ...r };
-        }
-        if (needB) {
-          const r = await geocodeCity(d.personB.city);
-          if (r) d.personB = { ...d.personB, ...r };
-        }
-        payload = d;
-        setData(d);
+        payload = await geocodeIfNeeded(data as MapaData);
+        setData(payload);
+      }
+      if (type === "bundle") {
+        const mapa = await geocodeIfNeeded(data.mapa as MapaData);
+        payload = { ...data, mapa };
+        setData(payload);
       }
       const row = await create({ data: { type, title, data: payload } });
       toast.success("Presente criado!");
@@ -135,6 +164,9 @@ function Editor() {
     );
   }
 
+  const setBundleSub = (k: "carta" | "musica" | "momentos" | "mapa", v: any) =>
+    setData({ ...data, [k]: v });
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
@@ -142,13 +174,12 @@ function Editor() {
         <Link to="/dashboard" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-plum">
           <ArrowLeft className="h-4 w-4" /> Voltar
         </Link>
-        <h1 className="mt-3 font-display text-4xl text-plum">
-          {type === "carta" && "Carta Romântica"}
-          {type === "musica" && "Nossa Mixtape"}
-          {type === "momentos" && "Nossos Momentos"}
-          {type === "mapa" && "Mapa do Amor"}
-        </h1>
-        <p className="mt-1 text-muted-foreground">Personalize cada detalhe. Você poderá editar a qualquer momento.</p>
+        <h1 className="mt-3 font-display text-4xl text-plum">{TYPE_TITLES[type]}</h1>
+        <p className="mt-1 text-muted-foreground">
+          {type === "bundle"
+            ? "Personalize cada um dos 4 presentes. Edite na ordem que preferir — você pode revisitar a qualquer momento."
+            : "Personalize cada detalhe. Você poderá editar a qualquer momento."}
+        </p>
 
         <div className="mt-8 space-y-5 rounded-2xl border border-border bg-card p-6">
           <Field label="Título do presente">
@@ -159,6 +190,45 @@ function Editor() {
           {type === "musica" && <MusicaFields data={data} set={setData} />}
           {type === "momentos" && <MomentosFields data={data} set={setData} />}
           {type === "mapa" && <MapaFields data={data} set={setData} />}
+
+          {type === "bundle" && (
+            <>
+              <Field label="Para quem (aparece na capa)">
+                <Input value={data.recipient ?? ""} onChange={(e) => setData({ ...data, recipient: e.target.value })} />
+              </Field>
+              <Field label="Mensagem de abertura (opcional)">
+                <Textarea rows={2} value={data.intro ?? ""} onChange={(e) => setData({ ...data, intro: e.target.value })} />
+              </Field>
+
+              <div className="-mx-2 flex flex-wrap gap-2 border-b border-border pb-3 pt-2">
+                {BUNDLE_TABS.map((t) => {
+                  const Icon = t.icon;
+                  const active = tab === t.key;
+                  return (
+                    <button
+                      key={t.key}
+                      type="button"
+                      onClick={() => setTab(t.key)}
+                      className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
+                        active
+                          ? "gradient-romance text-primary-foreground shadow-romance"
+                          : "border border-border bg-background text-muted-foreground hover:text-plum"
+                      }`}
+                    >
+                      <Icon className="h-3.5 w-3.5" /> {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-5 pt-2">
+                {tab === "carta" && <CartaFields data={data.carta} set={(v) => setBundleSub("carta", v)} />}
+                {tab === "musica" && <MusicaFields data={data.musica} set={(v) => setBundleSub("musica", v)} />}
+                {tab === "momentos" && <MomentosFields data={data.momentos} set={(v) => setBundleSub("momentos", v)} />}
+                {tab === "mapa" && <MapaFields data={data.mapa} set={(v) => setBundleSub("mapa", v)} />}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="mt-6 flex flex-wrap justify-end gap-3">
@@ -347,31 +417,47 @@ function MomentosFields({ data, set }: { data: MomentosData; set: (d: MomentosDa
   );
 }
 
+async function resolveOne(type: "carta" | "musica" | "momentos" | "mapa", data: any) {
+  const next: any = { ...data };
+  if (type === "carta" && Array.isArray(next.photos)) {
+    next.photos = await resolvePhotoUrls(next.photos);
+  }
+  if (type === "momentos" && Array.isArray(next.moments)) {
+    next.moments = await Promise.all(
+      next.moments.map(async (m: any) => {
+        if (!m?.photo) return { ...m, photo: "" };
+        const [url] = await resolvePhotoUrls([m.photo]);
+        return { ...m, photo: url ?? "" };
+      }),
+    );
+  }
+  if (type === "musica" && next.coverUrl) {
+    const [url] = await resolvePhotoUrls([next.coverUrl]);
+    next.coverUrl = url ?? "";
+  }
+  if (type === "mapa" && next.photo) {
+    const [url] = await resolvePhotoUrls([next.photo]);
+    next.photo = url ?? "";
+  }
+  return next;
+}
+
 function ResolvedPreview({ type, title, data }: { type: GiftType; title: string; data: any }) {
   const [resolved, setResolved] = useState<any>(null);
   useEffect(() => {
     let alive = true;
     (async () => {
-      const next: any = { ...data };
-      if (type === "carta" && Array.isArray(next.photos)) {
-        next.photos = await resolvePhotoUrls(next.photos);
-      }
-      if (type === "momentos" && Array.isArray(next.moments)) {
-        next.moments = await Promise.all(
-          next.moments.map(async (m: any) => {
-            if (!m?.photo) return { ...m, photo: "" };
-            const [url] = await resolvePhotoUrls([m.photo]);
-            return { ...m, photo: url ?? "" };
-          }),
-        );
-      }
-      if (type === "musica" && next.coverUrl) {
-        const [url] = await resolvePhotoUrls([next.coverUrl]);
-        next.coverUrl = url ?? "";
-      }
-      if (type === "mapa" && next.photo) {
-        const [url] = await resolvePhotoUrls([next.photo]);
-        next.photo = url ?? "";
+      let next: any;
+      if (type === "bundle") {
+        next = {
+          ...data,
+          carta: await resolveOne("carta", data.carta),
+          musica: await resolveOne("musica", data.musica),
+          momentos: await resolveOne("momentos", data.momentos),
+          mapa: await resolveOne("mapa", data.mapa),
+        };
+      } else {
+        next = await resolveOne(type, data);
       }
       if (alive) setResolved(next);
     })();
@@ -388,6 +474,7 @@ function ResolvedPreview({ type, title, data }: { type: GiftType; title: string;
 
   if (type === "carta") return <CartaGift title={title} data={resolved} />;
   if (type === "musica") return <MusicaGift title={title} data={resolved} />;
+  if (type === "bundle") return <BundleGift title={title} data={resolved} />;
   if (type === "mapa") return <MapaGift title={title} data={resolved} />;
   return <MomentosGift title={title} data={resolved} />;
 }
