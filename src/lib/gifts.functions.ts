@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const giftTypeSchema = z.enum(["carta", "musica", "momentos", "mapa"]);
+const giftTypeSchema = z.enum(["carta", "musica", "momentos", "mapa", "bundle"]);
 
 function makeSlug() {
   return Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6);
@@ -97,6 +97,12 @@ async function resolveGiftPhotos(admin: any, type: string, data: any) {
   }
   if (type === "mapa" && typeof next.photo === "string") {
     next.photo = await signPath(admin, next.photo);
+  }
+  if (type === "bundle") {
+    if (next.carta) next.carta = await resolveGiftPhotos(admin, "carta", next.carta);
+    if (next.musica) next.musica = await resolveGiftPhotos(admin, "musica", next.musica);
+    if (next.momentos) next.momentos = await resolveGiftPhotos(admin, "momentos", next.momentos);
+    if (next.mapa) next.mapa = await resolveGiftPhotos(admin, "mapa", next.mapa);
   }
   return next;
 }
