@@ -35,6 +35,9 @@ const CARTA_DEFAULT: CartaData = {
   signature: "Com todo meu amor",
   photos: [],
   song: "",
+  startDate: new Date(Date.now() - 365 * 24 * 3600 * 1000).toISOString().slice(0, 10),
+  secretMessages: [],
+  bgMusic: "",
 };
 
 const MUSICA_DEFAULT: MusicaData = {
@@ -274,6 +277,33 @@ function CartaFields({ data, set }: { data: CartaData; set: (d: CartaData) => vo
       </Field>
       <Field label="Música (link Spotify, opcional)">
         <Input placeholder="https://open.spotify.com/track/…" value={data.song ?? ""} onChange={(e) => set({ ...data, song: e.target.value })} />
+      </Field>
+      <Field label="Início do relacionamento (para o contador)">
+        <Input
+          type="date"
+          value={data.startDate ?? ""}
+          onChange={(e) => set({ ...data, startDate: e.target.value })}
+        />
+      </Field>
+      <Field label="Mensagens secretas (uma por linha — aparecem ao clicar nos corações da árvore)">
+        <Textarea
+          rows={5}
+          placeholder={"Te amo mais a cada dia.\nVocê é meu lugar favorito no mundo.\nObrigado por existir na minha vida."}
+          value={(data.secretMessages ?? []).join("\n")}
+          onChange={(e) =>
+            set({
+              ...data,
+              secretMessages: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean),
+            })
+          }
+        />
+      </Field>
+      <Field label="Música de fundo (URL .mp3, opcional)">
+        <Input
+          placeholder="https://…/musica.mp3"
+          value={data.bgMusic ?? ""}
+          onChange={(e) => set({ ...data, bgMusic: e.target.value })}
+        />
       </Field>
     </>
   );
