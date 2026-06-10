@@ -1,15 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, MapPin } from "lucide-react";
+import { Heart, MapPin, Plane, Sparkles } from "lucide-react";
 
 export type MapaData = {
   coupleNames: string;
   startDate: string;
-  personA: { name: string; city: string; lat?: number; lng?: number };
-  personB: { name: string; city: string; lat?: number; lng?: number };
+  personA: { name: string; city: string; country?: string; lat?: number; lng?: number };
+  personB: { name: string; city: string; country?: string; lat?: number; lng?: number };
   photo?: string;
   message: string;
-  themeColor?: string; // hex
+  themeColor?: string;
   finalMessage?: string;
 };
 
@@ -24,6 +24,21 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 2 * R * Math.asin(Math.sqrt(x));
 }
 
+function midpoint(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const toDeg = (r: number) => (r * 180) / Math.PI;
+  const φ1 = toRad(a.lat), φ2 = toRad(b.lat);
+  const λ1 = toRad(a.lng), λ2 = toRad(b.lng);
+  const Bx = Math.cos(φ2) * Math.cos(λ2 - λ1);
+  const By = Math.cos(φ2) * Math.sin(λ2 - λ1);
+  const φ3 = Math.atan2(
+    Math.sin(φ1) + Math.sin(φ2),
+    Math.sqrt((Math.cos(φ1) + Bx) ** 2 + By ** 2),
+  );
+  const λ3 = λ1 + Math.atan2(By, Math.cos(φ1) + Bx);
+  return { lat: toDeg(φ3), lng: toDeg(λ3) };
+}
+
 function diff(start: Date) {
   const now = new Date();
   let s = Math.max(0, Math.floor((now.getTime() - start.getTime()) / 1000));
@@ -35,17 +50,209 @@ function diff(start: Date) {
   return { years, months: Math.floor(months), days, hours, minutes, seconds: Math.floor(s) };
 }
 
-// Equirectangular projection into a 800x400 viewBox
-function project(lat: number, lng: number) {
-  const x = ((lng + 180) / 360) * 800;
-  const y = ((90 - lat) / 180) * 400;
-  return { x, y };
+function GlobeStage({
+  a,
+  b,
+  theme,
+  onHover,
+}: {
+  a: { lat: number; lng: number; label: string; sub: string; whisper: string };
+  b: { lat: number; lng: number; label: string; sub: string; whisper: string };
+  theme: string;
+  onHover: (p: null | { label: string; sub: string; whisper: string }) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const globeRef = useRef<any>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let disposed = false;
+    let globe: any;
+    let resizeObs: ResizeObserver | null = null;
+    let particleTimer: any;
+
+    (async () => {
+      const GlobeMod = await import("globe.gl");
+      const THREE = await import("three");
+      if (disposed || !containerRef.current) return;
+
+      const Globe = (GlobeMod as any).default;
+      globe = Globe()(containerRef.current)
+        .globeImageUrl("//unpkg.com/three-globe/example/img/earth-night.jpg")
+        .bumpImageUrl("//unpkg.com/three-globe/example/img/earth-topology.png")
+        .backgroundColor("rgba(0,0,0,0)")
+        .atmosphereColor(theme)
+        .atmosphereAltitude(0.28)
+        .showGraticules(false);
+
+      globeRef.current = globe;
+
+      // Heart-shaped HTML markers
+      const heartHTML = (color: string, label: string) => `
+        <div class="lovelink-pin" data-label="${label}">
+          <svg viewBox="0 0 32 32" width="34" height="34" style="filter: drop-shadow(0 0 12px ${color}); transform: translate(-50%, -100%);">
+            <defs>
+              <radialGradient id="hg-${label.replace(/\W/g, "")}" cx="50%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="#fff7fa"/>
+                <stop offset="55%" stop-color="${color}"/>
+                <stop offset="100%" stop-color="#7a1430"/>
+              </radialGradient>
+            </defs>
+            <path d="M16 28 C 6 20, 2 14, 6 8 C 9 4, 14 5, 16 9 C 18 5, 23 4, 26 8 C 30 14, 26 20, 16 28 Z"
+              fill="url(#hg-${label.replace(/\W/g, "")})" stroke="#fff" stroke-width="0.8" stroke-opacity="0.7"/>
+          </svg>
+          <div style="position:absolute; left:50%; top:0; transform:translate(-50%,-160%); white-space:nowrap;
+            font-family: 'DM Serif Display', serif; font-size: 13px; color:#fff;
+            text-shadow: 0 2px 12px rgba(0,0,0,.8); letter-spacing:.04em;">
+            ${label}
+          </div>
+        </div>`;
+
+      globe
+        .htmlElementsData([
+          { lat: a.lat, lng: a.lng, label: a.label, sub: a.sub, whisper: a.whisper },
+          { lat: b.lat, lng: b.lng, label: b.label, sub: b.sub, whisper: b.whisper },
+        ])
+        .htmlAltitude(0.012)
+        .htmlElement((d: any) => {
+          const el = document.createElement("div");
+          el.style.pointerEvents = "auto";
+          el.style.cursor = "pointer";
+          el.innerHTML = heartHTML(theme, d.label);
+          el.addEventListener("mouseenter", () => onHover({ label: d.label, sub: d.sub, whisper: d.whisper }));
+          el.addEventListener("mouseleave", () => onHover(null));
+          return el;
+        });
+
+      // Curved arc connecting the two locations
+      globe
+        .arcsData([{ startLat: a.lat, startLng: a.lng, endLat: b.lat, endLng: b.lng }])
+        .arcColor(() => [`${theme}`, "#ffd6e2", `${theme}`])
+        .arcStroke(0.7)
+        .arcAltitudeAutoScale(0.55)
+        .arcDashLength(0.35)
+        .arcDashGap(0.15)
+        .arcDashAnimateTime(4500);
+
+      // Heart particles travelling along the arc as moving rings
+      globe
+        .ringsData([])
+        .ringColor(() => (t: number) => `rgba(255, 180, 200, ${1 - t})`)
+        .ringMaxRadius(2.2)
+        .ringPropagationSpeed(2)
+        .ringRepeatPeriod(900);
+
+      const steps = 24;
+      const interpPoints: Array<{ lat: number; lng: number }> = [];
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        interpPoints.push({
+          lat: a.lat + (b.lat - a.lat) * t,
+          lng: a.lng + (b.lng - a.lng) * t,
+        });
+      }
+      let idx = 0;
+      particleTimer = setInterval(() => {
+        const p = interpPoints[idx % interpPoints.length];
+        globe.ringsData([{ lat: p.lat, lng: p.lng }]);
+        idx++;
+      }, 220);
+
+      // Controls + cinematic intro
+      const controls = globe.controls();
+      controls.autoRotate = false;
+      controls.enableZoom = true;
+      controls.enablePan = false;
+
+      const mid = midpoint(a, b);
+      // Start far + spinning
+      globe.pointOfView({ lat: 0, lng: a.lng, altitude: 4 }, 0);
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 1.4;
+
+      setTimeout(() => {
+        if (disposed) return;
+        controls.autoRotate = false;
+        globe.pointOfView({ lat: mid.lat, lng: mid.lng, altitude: 2.4 }, 3500);
+      }, 800);
+
+      // Add starfield + soft pink lighting
+      const scene = globe.scene();
+      const starGeo = new THREE.BufferGeometry();
+      const starCount = 1200;
+      const positions = new Float32Array(starCount * 3);
+      for (let i = 0; i < starCount; i++) {
+        const r = 600 + Math.random() * 400;
+        const θ = Math.random() * Math.PI * 2;
+        const φ = Math.acos(2 * Math.random() - 1);
+        positions[i * 3] = r * Math.sin(φ) * Math.cos(θ);
+        positions[i * 3 + 1] = r * Math.sin(φ) * Math.sin(θ);
+        positions[i * 3 + 2] = r * Math.cos(φ);
+      }
+      starGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const starMat = new THREE.PointsMaterial({
+        color: 0xffe6f0,
+        size: 1.6,
+        transparent: true,
+        opacity: 0.85,
+      });
+      const stars = new THREE.Points(starGeo, starMat);
+      scene.add(stars);
+
+      const pinkLight = new THREE.PointLight(new THREE.Color(theme), 1.2, 1200);
+      pinkLight.position.set(200, 100, 300);
+      scene.add(pinkLight);
+      const goldLight = new THREE.PointLight(0xffd27a, 0.8, 1200);
+      goldLight.position.set(-300, -80, -200);
+      scene.add(goldLight);
+
+      // Sizing
+      const resize = () => {
+        if (!containerRef.current) return;
+        const { clientWidth, clientHeight } = containerRef.current;
+        globe.width(clientWidth).height(clientHeight);
+      };
+      resize();
+      resizeObs = new ResizeObserver(resize);
+      resizeObs.observe(containerRef.current);
+
+      setReady(true);
+    })();
+
+    return () => {
+      disposed = true;
+      if (particleTimer) clearInterval(particleTimer);
+      if (resizeObs) resizeObs.disconnect();
+      if (globe && containerRef.current) {
+        try {
+          globe._destructor?.();
+        } catch {}
+        containerRef.current.innerHTML = "";
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [a.lat, a.lng, b.lat, b.lng, theme]);
+
+  return (
+    <div className="relative h-[60vh] min-h-[420px] w-full sm:h-[70vh]">
+      <div ref={containerRef} className="absolute inset-0" />
+      {!ready && (
+        <div className="absolute inset-0 grid place-items-center text-cream/60">
+          <div className="flex items-center gap-2 text-sm">
+            <Sparkles className="h-4 w-4 animate-pulse" style={{ color: theme }} />
+            Preparando o globo do amor…
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function MapaGift({ data, title }: { data: MapaData; title: string }) {
   const theme = data.themeColor || "#f47975";
   const start = new Date(data.startDate || new Date().toISOString());
   const [t, setT] = useState(() => diff(start));
+  const [hover, setHover] = useState<null | { label: string; sub: string; whisper: string }>(null);
   const [showHearts, setShowHearts] = useState(false);
 
   useEffect(() => {
@@ -64,33 +271,24 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
     [hasCoords, a, b],
   );
 
-  const { pA, pB, pathD } = useMemo(() => {
-    if (!hasCoords) return { pA: { x: 250, y: 200 }, pB: { x: 550, y: 200 }, pathD: "" };
-    const pA = project(a!.lat!, a!.lng!);
-    const pB = project(b!.lat!, b!.lng!);
-    // heart-arched curve: two control points pulled up
-    const mx = (pA.x + pB.x) / 2;
-    const my = (pA.y + pB.y) / 2;
-    const dx = pB.x - pA.x;
-    const lift = Math.max(60, Math.abs(dx) * 0.35);
-    const c1x = pA.x + (mx - pA.x) * 0.4;
-    const c2x = pB.x - (pB.x - mx) * 0.4;
-    const c1y = my - lift;
-    const c2y = my - lift;
-    const pathD = `M ${pA.x} ${pA.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${pB.x} ${pB.y}`;
-    return { pA, pB, pathD };
-  }, [hasCoords, a, b]);
+  // Approx commercial flight time (avg 850 km/h cruise + 30 min taxi/climb)
+  const flightHours = hasCoords ? distanceKm / 850 + 0.5 : 0;
+  const flightH = Math.floor(flightHours);
+  const flightM = Math.round((flightHours - flightH) * 60);
 
   return (
     <div
       className="relative min-h-screen overflow-hidden text-cream"
       style={{
-        background: `radial-gradient(ellipse at top, ${theme}33, transparent 60%), linear-gradient(180deg, #1a0f2e 0%, #2b1747 50%, #0b0617 100%)`,
+        background: `
+          radial-gradient(ellipse at 20% 0%, ${theme}33, transparent 55%),
+          radial-gradient(ellipse at 80% 100%, #c8923a22, transparent 55%),
+          linear-gradient(180deg, #150821 0%, #2a1140 45%, #08030f 100%)`,
       }}
     >
-      {/* Stars */}
+      {/* Ambient stars */}
       <div className="pointer-events-none absolute inset-0">
-        {Array.from({ length: 60 }).map((_, i) => (
+        {Array.from({ length: 70 }).map((_, i) => (
           <motion.span
             key={i}
             className="absolute rounded-full bg-white"
@@ -99,184 +297,203 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               top: `${(i * 37) % 100}%`,
               width: `${1 + (i % 3)}px`,
               height: `${1 + (i % 3)}px`,
-              opacity: 0.6,
+              opacity: 0.5,
             }}
-            animate={{ opacity: [0.2, 0.9, 0.2] }}
-            transition={{ duration: 2 + (i % 4), repeat: Infinity, delay: i * 0.05 }}
+            animate={{ opacity: [0.15, 0.8, 0.15] }}
+            transition={{ duration: 2 + (i % 4), repeat: Infinity, delay: i * 0.04 }}
           />
         ))}
       </div>
 
-      <div className="relative mx-auto max-w-4xl px-5 py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-          <p className="text-xs uppercase tracking-[0.3em]" style={{ color: theme }}>
+      <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <p
+            className="text-[11px] uppercase tracking-[0.4em]"
+            style={{ color: theme }}
+          >
             Mapa do amor
           </p>
-          <h1 className="mt-3 font-display text-5xl">{title || data.coupleNames}</h1>
+          <h1 className="mt-3 font-display text-4xl sm:text-6xl">
+            {title || data.coupleNames}
+          </h1>
           {data.coupleNames && (
-            <p className="mt-1 text-cream/70 font-display text-2xl italic">{data.coupleNames}</p>
+            <p className="mt-2 font-display text-xl italic text-cream/70 sm:text-2xl">
+              {data.coupleNames}
+            </p>
           )}
         </motion.div>
 
-        {/* Map */}
+        {/* Globe stage */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-          className="mt-10 overflow-hidden rounded-3xl border border-white/10 bg-black/30 backdrop-blur shadow-romance"
+          transition={{ delay: 0.2, duration: 1 }}
+          className="relative mt-8 overflow-hidden rounded-3xl border border-white/10 shadow-romance"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.4))",
+          }}
         >
-          <svg viewBox="0 0 800 400" className="block w-full" preserveAspectRatio="xMidYMid meet">
-            <defs>
-              <linearGradient id="lineGrad" x1="0" x2="1">
-                <stop offset="0%" stopColor={theme} />
-                <stop offset="50%" stopColor="#ffffff" />
-                <stop offset="100%" stopColor={theme} />
-              </linearGradient>
-              <radialGradient id="pinGlow">
-                <stop offset="0%" stopColor={theme} stopOpacity="0.7" />
-                <stop offset="100%" stopColor={theme} stopOpacity="0" />
-              </radialGradient>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeOpacity="0.06" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="800" height="400" fill="url(#grid)" />
-            {/* Stylized continents (simple blobs) */}
-            <g fill="white" fillOpacity="0.08">
-              <ellipse cx="180" cy="170" rx="90" ry="55" />
-              <ellipse cx="200" cy="290" rx="55" ry="80" />
-              <ellipse cx="420" cy="170" rx="70" ry="50" />
-              <ellipse cx="470" cy="280" rx="45" ry="60" />
-              <ellipse cx="600" cy="180" rx="100" ry="70" />
-              <ellipse cx="650" cy="310" rx="50" ry="35" />
-            </g>
-
-            {hasCoords && (
-              <>
-                {/* Glow pulses */}
-                <circle cx={pA.x} cy={pA.y} r="30" fill="url(#pinGlow)">
-                  <animate attributeName="r" values="20;45;20" dur="2.5s" repeatCount="indefinite" />
-                </circle>
-                <circle cx={pB.x} cy={pB.y} r="30" fill="url(#pinGlow)">
-                  <animate attributeName="r" values="20;45;20" dur="2.5s" repeatCount="indefinite" />
-                </circle>
-                {/* Animated path */}
-                <motion.path
-                  d={pathD}
-                  fill="none"
-                  stroke="url(#lineGrad)"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeDasharray="6 6"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 2.5, delay: 0.8, ease: "easeInOut" }}
-                />
-                {/* Pins */}
-                {[{ p: pA, who: a }, { p: pB, who: b }].map((it, i) => (
-                  <g key={i}>
-                    <circle cx={it.p.x} cy={it.p.y} r="6" fill={theme} stroke="white" strokeWidth="2" />
-                    <text
-                      x={it.p.x}
-                      y={it.p.y - 14}
-                      textAnchor="middle"
-                      fill="white"
-                      fontSize="13"
-                      fontFamily="DM Serif Display, serif"
-                    >
-                      {it.who?.name}
-                    </text>
-                    <text
-                      x={it.p.x}
-                      y={it.p.y + 20}
-                      textAnchor="middle"
-                      fill="white"
-                      fillOpacity="0.7"
-                      fontSize="10"
-                    >
-                      {it.who?.city}
-                    </text>
-                  </g>
-                ))}
-              </>
-            )}
-          </svg>
-
           {hasCoords ? (
-            <div className="border-t border-white/10 px-6 py-4 text-center">
-              <p className="text-xs uppercase tracking-[0.3em] text-cream/60">Distância entre nós</p>
-              <p className="mt-1 font-display text-3xl" style={{ color: theme }}>
-                {Math.round(distanceKm).toLocaleString("pt-BR")} km
+            <GlobeStage
+              a={{
+                lat: a.lat!,
+                lng: a.lng!,
+                label: a.name,
+                sub: `${a.city}${a.country ? `, ${a.country}` : ""}`,
+                whisper: "onde tudo começou em pensamento",
+              }}
+              b={{
+                lat: b.lat!,
+                lng: b.lng!,
+                label: b.name,
+                sub: `${b.city}${b.country ? `, ${b.country}` : ""}`,
+                whisper: "onde meu coração mora",
+              }}
+              theme={theme}
+              onHover={setHover}
+            />
+          ) : (
+            <div className="grid h-[50vh] place-items-center px-6 text-center text-cream/70">
+              <div>
+                <MapPin className="mx-auto h-8 w-8" style={{ color: theme }} />
+                <p className="mt-3 font-display text-2xl">
+                  Preencha as cidades para abrir o globo do amor
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Floating hover card */}
+          <AnimatePresence>
+            {hover && (
+              <motion.div
+                key={hover.label}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 12 }}
+                className="pointer-events-none absolute left-1/2 top-4 z-10 w-[min(90%,360px)] -translate-x-1/2 rounded-2xl border border-white/15 bg-white/10 p-4 text-center backdrop-blur-xl"
+              >
+                <p className="text-[10px] uppercase tracking-[0.3em] text-cream/60">
+                  {hover.sub}
+                </p>
+                <p className="mt-1 font-display text-2xl">{hover.label}</p>
+                <p className="mt-1 text-sm italic text-cream/80">
+                  "{hover.whisper}"
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Glass info cards */}
+        {hasCoords && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3"
+          >
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+              <p className="text-[10px] uppercase tracking-[0.3em] text-cream/60">
+                Distância entre nós
+              </p>
+              <p
+                className="mt-2 font-display text-4xl tabular-nums"
+                style={{ color: theme }}
+              >
+                {Math.round(distanceKm).toLocaleString("pt-BR")}
+              </p>
+              <p className="text-xs uppercase tracking-widest text-cream/60">
+                quilômetros
               </p>
             </div>
-          ) : (
-            <div className="border-t border-white/10 px-6 py-4 text-center text-sm text-cream/60">
-              Preencha as cidades para calcular a distância.
-            </div>
-          )}
-        </motion.div>
 
-        {/* Couple photo */}
-        {data.photo && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="mx-auto mt-8 max-w-sm"
-          >
-            <div className="overflow-hidden rounded-3xl border border-white/10 shadow-romance">
-              <img src={data.photo} alt="" className="block aspect-square w-full object-cover" />
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+              <Plane className="mx-auto h-5 w-5" style={{ color: theme }} />
+              <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-cream/60">
+                Em um voo até você
+              </p>
+              <p className="mt-1 font-display text-2xl">
+                {flightH}h {flightM.toString().padStart(2, "0")}min
+              </p>
+              <p className="text-[11px] italic text-cream/60">
+                e meu coração já chegou primeiro
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+              <Heart
+                className="mx-auto h-5 w-5 fill-current animate-heartbeat"
+                style={{ color: theme }}
+              />
+              <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-cream/60">
+                Há
+              </p>
+              <p className="mt-1 font-display text-2xl tabular-nums">
+                {t.years}a {t.months}m {t.days}d
+              </p>
+              <p className="text-[11px] italic text-cream/60">
+                {String(t.hours).padStart(2, "0")}:
+                {String(t.minutes).padStart(2, "0")}:
+                {String(t.seconds).padStart(2, "0")} amando você
+              </p>
             </div>
           </motion.div>
         )}
 
-        {/* Counter */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="mt-10">
-          <p className="text-center text-sm uppercase tracking-widest" style={{ color: theme }}>
-            Estamos juntos há
-          </p>
-          <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
-            {[
-              { v: t.years, l: "anos" },
-              { v: t.months, l: "meses" },
-              { v: t.days, l: "dias" },
-              { v: t.hours, l: "h" },
-              { v: t.minutes, l: "min" },
-              { v: t.seconds, l: "seg" },
-            ].map((b) => (
-              <div key={b.l} className="rounded-2xl bg-white/5 p-3 text-center backdrop-blur">
-                <p className="font-display text-2xl tabular-nums">{b.v}</p>
-                <p className="mt-1 text-[10px] uppercase tracking-widest text-cream/60">{b.l}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
+        {/* Couple photo */}
+        {data.photo && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mx-auto mt-10 max-w-sm"
+          >
+            <div className="overflow-hidden rounded-3xl border border-white/10 shadow-romance">
+              <img
+                src={data.photo}
+                alt=""
+                className="block aspect-square w-full object-cover"
+              />
+            </div>
+          </motion.div>
+        )}
 
-        {/* Dynamic romantic message */}
+        {/* Message */}
         {data.message && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-            className="mx-auto mt-10 max-w-xl text-center font-display text-2xl italic text-cream/90"
+            transition={{ delay: 0.8 }}
+            className="mx-auto mt-10 max-w-2xl text-center font-display text-2xl italic text-cream/90 sm:text-3xl"
           >
             "{hasCoords
-              ? data.message.replace(/\{km\}/g, Math.round(distanceKm).toLocaleString("pt-BR"))
+              ? data.message.replace(
+                  /\{km\}/g,
+                  Math.round(distanceKm).toLocaleString("pt-BR"),
+                )
               : data.message}"
           </motion.p>
         )}
 
-        {/* Final CTA */}
+        {/* CTA */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-16 rounded-3xl p-10 text-center shadow-romance"
-          style={{ background: `linear-gradient(135deg, ${theme}, #8c54a3)` }}
+          className="mt-14 rounded-3xl p-10 text-center shadow-romance"
+          style={{
+            background: `linear-gradient(135deg, ${theme}, #b65a8c 55%, #8c54a3)`,
+          }}
         >
           <Heart className="mx-auto h-8 w-8 fill-white text-white animate-heartbeat" />
-          <p className="mt-4 font-display text-2xl italic">
-            "Cada quilômetro entre nós é apenas uma prova de que nosso amor é forte o suficiente para superar qualquer distância."
+          <p className="mt-4 font-display text-2xl italic sm:text-3xl">
+            "Cada quilômetro entre nós é apenas mais uma prova de que o nosso amor atravessa o mundo."
           </p>
           <button
             onClick={() => setShowHearts(true)}
@@ -303,19 +520,30 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               <motion.div
                 key={i}
                 className="absolute"
-                initial={{ x: `${(i * 53) % 100}%`, y: "-10%", opacity: 0 }}
+                initial={{ y: "-10%", opacity: 0 }}
                 animate={{ y: "110%", opacity: [0, 1, 1, 0] }}
-                transition={{ duration: 3 + (i % 4), delay: (i % 10) * 0.1, repeat: Infinity }}
+                transition={{
+                  duration: 3 + (i % 4),
+                  delay: (i % 10) * 0.1,
+                  repeat: Infinity,
+                }}
                 style={{ left: `${(i * 13) % 100}%` }}
               >
                 <Heart
                   className="fill-current"
-                  style={{ color: theme, width: 12 + (i % 5) * 6, height: 12 + (i % 5) * 6 }}
+                  style={{
+                    color: theme,
+                    width: 12 + (i % 5) * 6,
+                    height: 12 + (i % 5) * 6,
+                  }}
                 />
               </motion.div>
             ))}
             <div className="relative z-10 mx-5 max-w-lg rounded-3xl bg-white/10 p-8 text-center backdrop-blur-xl">
-              <Heart className="mx-auto h-10 w-10 fill-current animate-heartbeat" style={{ color: theme }} />
+              <Heart
+                className="mx-auto h-10 w-10 fill-current animate-heartbeat"
+                style={{ color: theme }}
+              />
               <p className="mt-4 font-display text-3xl text-white">
                 {data.finalMessage || "Eu te amo, infinitamente."}
               </p>
