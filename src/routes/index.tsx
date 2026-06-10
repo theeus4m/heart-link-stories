@@ -300,7 +300,7 @@ function Landing() {
           <h3 className="mt-1 font-display text-3xl text-plum">Os 4 presentes em 1</h3>
           <div className="mt-5 flex items-baseline gap-2">
             <span className="text-sm text-muted-foreground line-through">R$ 97</span>
-            <span className="font-display text-6xl text-plum">R$ 50</span>
+            <span className="font-display text-6xl text-plum">R$ 40</span>
             <span className="text-sm text-muted-foreground">pagamento único</span>
           </div>
           <p className="mt-1 text-xs font-medium text-coral">Oferta de lançamento — por tempo limitado</p>
