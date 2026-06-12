@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { Heart } from "lucide-react";
 import logoAsset from "@/assets/chronelo-logo.png.asset.json";
 import { motion } from "motion/react";
 import { supabase } from "@/integrations/supabase/client";
