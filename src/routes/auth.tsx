@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Heart } from "lucide-react";
+import logoAsset from "@/assets/chronelo-logo.png.asset.json";
 import { motion } from "motion/react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -88,9 +88,8 @@ function AuthPage() {
 
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <Link to="/" className="mb-8 inline-flex items-center gap-2.5">
-            <Heart className="h-4 w-4 fill-gold text-gold" />
-            <span className="font-display text-xl tracking-[0.18em] uppercase text-plum">Chronelo</span>
+          <Link to="/" className="mb-8 inline-flex items-center" aria-label="Chronelo">
+            <img src={logoAsset.url} alt="Chronelo" className="h-14 w-auto" />
           </Link>
           <h1 className="font-display text-4xl text-plum">
             {mode === "signin" ? "Bem-vindo de volta" : "Crie sua conta"}
