@@ -64,13 +64,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Love Link — Presentes virtuais para casais" },
+      { title: "Chronelo — Presentes virtuais para casais" },
       { name: "description", content: "Crie cartas, playlists e linhas do tempo românticas e envie por um link exclusivo." },
-      { name: "author", content: "Love Link" },
-      { property: "og:title", content: "Love Link — Presentes virtuais para casais" },
+      { name: "author", content: "Chronelo" },
+      { property: "og:title", content: "Chronelo — Presentes virtuais para casais" },
       { property: "og:description", content: "Transforme mensagens em experiências digitais inesquecíveis." },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Love Link" },
+      { property: "og:site_name", content: "Chronelo" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [

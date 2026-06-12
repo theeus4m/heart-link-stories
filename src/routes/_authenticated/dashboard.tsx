@@ -14,7 +14,7 @@ const giftsQuery = queryOptions({
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   loader: ({ context }) => context.queryClient.ensureQueryData(giftsQuery),
-  head: () => ({ meta: [{ title: "Meus presentes — Love Link" }] }),
+  head: () => ({ meta: [{ title: "Meus presentes — Chronelo" }] }),
   errorComponent: ({ error }) => <div className="p-8">Erro: {error.message}</div>,
   component: Dashboard,
 });

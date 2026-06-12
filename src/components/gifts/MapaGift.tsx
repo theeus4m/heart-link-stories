@@ -503,7 +503,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
           </button>
         </motion.div>
 
-        <div className="py-10 text-center text-xs text-cream/40">Love Link</div>
+        <div className="py-10 text-center text-xs text-cream/40">Chronelo</div>
       </div>
 
       {/* Heart rain overlay */}
