@@ -15,23 +15,23 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-md bg-background/70 border-b border-border/60">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
-        <Link to="/" className="flex items-center gap-2 group">
-          <span className="grid h-9 w-9 place-items-center rounded-full gradient-romance shadow-romance">
-            <Heart className="h-4 w-4 fill-white text-white" />
-          </span>
-          <span className="font-display text-xl text-plum">Love Link</span>
+    <header className="sticky top-0 z-40 backdrop-blur-md bg-background/80 border-b border-border/50">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <Link to="/" className="flex items-baseline gap-2 group">
+          <span className="font-display text-2xl tracking-tight text-plum">Love</span>
+          <span className="font-display italic text-2xl text-coral">Link</span>
+          <Heart className="ml-1 h-3 w-3 fill-coral text-coral opacity-80" />
         </Link>
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-1">
           {authed ? (
             <>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="text-plum hover:text-coral">
                 <Link to="/dashboard">Meus presentes</Link>
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant="ghost"
+                className="text-plum hover:text-coral"
                 onClick={async () => {
                   await supabase.auth.signOut();
                   navigate({ to: "/" });
@@ -42,10 +42,10 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="text-plum hover:text-coral">
                 <Link to="/auth">Entrar</Link>
               </Button>
-              <Button asChild size="sm" className="gradient-romance border-0 text-primary-foreground shadow-romance">
+              <Button asChild size="sm" className="rounded-full bg-plum text-cream hover:bg-coral border-0 px-5">
                 <Link to="/auth">Criar presente</Link>
               </Button>
             </>
