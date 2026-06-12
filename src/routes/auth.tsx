@@ -89,8 +89,9 @@ function AuthPage() {
 
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <Link to="/" className="mb-8 inline-flex items-center" aria-label="Chronelo">
-            <img src={logoAsset.url} alt="Chronelo" className="h-14 w-auto" />
+          <Link to="/" className="mb-8 inline-flex items-center gap-3" aria-label="Chronelo">
+            <img src={logoAsset.url} alt="" className="h-10 w-auto" />
+            <span className="font-display text-xl tracking-[0.22em] uppercase text-plum">Chronelo</span>
           </Link>
           <h1 className="font-display text-4xl text-plum">
             {mode === "signin" ? "Bem-vindo de volta" : "Crie sua conta"}

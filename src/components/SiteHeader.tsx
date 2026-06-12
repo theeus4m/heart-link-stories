@@ -18,8 +18,9 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 backdrop-blur-md bg-cream/85 border-b border-gold/30">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link to="/" className="flex items-center group" aria-label="Chronelo">
-          <img src={logoAsset.url} alt="Chronelo" className="h-12 w-auto md:h-14 transition-transform duration-500 group-hover:scale-[1.02]" />
+        <Link to="/" className="flex items-center gap-2.5 group" aria-label="Chronelo">
+          <img src={logoAsset.url} alt="" className="h-9 w-auto md:h-10 transition-transform duration-500 group-hover:scale-[1.04]" />
+          <span className="font-display text-2xl tracking-[0.22em] uppercase text-plum">Chronelo</span>
         </Link>
         <nav className="flex items-center gap-1">
           {authed ? (
