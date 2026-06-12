@@ -20,13 +20,13 @@ import { Button } from "@/components/ui/button";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Love Link — Presentes digitais inesquecíveis para casais" },
+      { title: "Chronelo — Presentes digitais inesquecíveis para casais" },
       {
         name: "description",
         content:
           "Quatro experiências românticas em um único link: Carta, Mixtape, Mapa do Amor e Linha do Tempo. Feitas com a delicadeza de uma carta italiana.",
       },
-      { property: "og:title", content: "Love Link — Presentes digitais para casais" },
+      { property: "og:title", content: "Chronelo — Presentes digitais para casais" },
       {
         property: "og:description",
         content: "Transforme distância em emoção com 4 presentes em 1 link.",
@@ -83,7 +83,7 @@ const steps = [
 ];
 
 const testimonials = [
-  { name: "—", text: "Espaço reservado para o primeiro depoimento real do seu Love Link." },
+  { name: "—", text: "Espaço reservado para o primeiro depoimento real do seu Chronelo." },
   { name: "—", text: "Espaço para depoimento — talvez um print de WhatsApp, talvez uma frase escrita à mão." },
   { name: "—", text: "Espaço para uma história real — conte como o presente emocionou." },
 ];
@@ -210,7 +210,7 @@ function Landing() {
       <section className="bg-background py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="eyebrow">Perché Love Link</p>
+            <p className="eyebrow">Perché Chronelo</p>
             <h2 className="mt-4 font-display text-5xl text-plum">
               Feito para <em className="text-coral">emocionar</em> de verdade
             </h2>
@@ -370,7 +370,7 @@ function Landing() {
       <footer className="border-t border-border/50 py-10 text-center">
         <p className="font-display italic text-coral">amore · sempre</p>
         <p className="mt-2 text-xs uppercase tracking-[0.3em] text-muted-foreground">
-          Love Link · Atelier digitale
+          Chronelo · Atelier digitale
         </p>
       </footer>
     </div>

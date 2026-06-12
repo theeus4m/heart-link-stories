@@ -4,10 +4,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Love Link — Amalfi Blush
-   Italian editorial · marble, blush, bordeaux, aubergine
-   Palette: #faf3ee marble · #f3d4d0 blush · #b34755 bordeaux · #2b1e2e aubergine
-   Fonts: Cormorant Garamond (display, high-contrast serif) · Karla (humanist sans)
+/* Chronelo — Italian Luxury Editorial
+   Palette: #FDFBF7 marfim · #2B0C14 vinho nero · #D4AF37 champagne · #111111 nero · #4A4A4A grafite
+   Fonts: Cormorant Garamond (display) · Karla (sans)
+   Rule 60-30-10 : marfim · vinho nero · champagne
 */
 
 @theme inline {
@@ -45,46 +45,51 @@
   --color-cream: var(--cream);
   --color-blush: var(--blush);
   --color-gold: var(--gold);
+  --color-nero: var(--nero);
+  --color-grafite: var(--grafite);
 
-  --shadow-glow: 0 30px 80px -30px color-mix(in oklab, var(--coral) 40%, transparent);
-  --shadow-soft: 0 10px 40px -20px color-mix(in oklab, var(--plum) 35%, transparent);
+  --shadow-glow: 0 30px 80px -30px color-mix(in oklab, var(--gold) 35%, transparent);
+  --shadow-soft: 0 10px 40px -20px color-mix(in oklab, var(--plum) 25%, transparent);
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.25rem;
 
-  /* Amalfi Blush — Italian editorial palette */
-  --coral: oklch(0.52 0.135 14);          /* #b34755 bordeaux — primary */
-  --violet: oklch(0.62 0.10 10);          /* dusty rose — accent */
-  --plum: oklch(0.22 0.04 320);           /* #2b1e2e aubergine — headings */
-  --cream: oklch(0.975 0.010 60);         /* #faf3ee marble */
-  --blush: oklch(0.90 0.045 18);          /* #f3d4d0 blush */
-  --gold: oklch(0.78 0.06 75);            /* warm champagne */
+  /* Chronelo palette — exact hex */
+  --cream: #FDFBF7;     /* Marfim Real — 60% */
+  --plum: #2B0C14;      /* Vinho Nero — 30% (titles, primary) */
+  --coral: #2B0C14;     /* alias — primary CTAs */
+  --gold: #D4AF37;      /* Dourado Champagne — 10% accents */
+  --nero: #111111;      /* Preto Absoluto — footer/overlays */
+  --grafite: #4A4A4A;   /* Texto secundário */
+  --blush: #F5EFE5;     /* champagne soft — surfaces */
+  --violet: #111111;    /* alias */
 
-  /* Semantic — marble light */
-  --background: oklch(0.975 0.010 60);
-  --foreground: oklch(0.22 0.04 320);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.04 320);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.04 320);
-  --primary: var(--coral);
-  --primary-foreground: oklch(0.985 0.005 60);
-  --secondary: oklch(0.94 0.025 18);
-  --secondary-foreground: var(--plum);
-  --muted: oklch(0.95 0.012 30);
-  --muted-foreground: oklch(0.45 0.03 320);
-  --accent: var(--violet);
-  --accent-foreground: oklch(0.99 0.005 60);
+  --background: #FDFBF7;
+  --foreground: #2B0C14;
+  --card: #FFFFFF;
+  --card-foreground: #2B0C14;
+  --popover: #FFFFFF;
+  --popover-foreground: #2B0C14;
+  --primary: #2B0C14;
+  --primary-foreground: #FDFBF7;
+  --secondary: #F5EFE5;
+  --secondary-foreground: #2B0C14;
+  --muted: #F2EDE4;
+  --muted-foreground: #4A4A4A;
+  --accent: #D4AF37;
+  --accent-foreground: #2B0C14;
   --destructive: oklch(0.55 0.20 25);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.89 0.018 30);
-  --input: oklch(0.92 0.015 30);
-  --ring: var(--coral);
+  --destructive-foreground: #FDFBF7;
+  --border: #E8E1D3;
+  --input: #EDE6D8;
+  --ring: #D4AF37;
 
-  --gradient-romance: linear-gradient(135deg, var(--blush) 0%, var(--coral) 55%, var(--plum));
-  --gradient-soft: linear-gradient(180deg, oklch(0.985 0.010 60), oklch(0.94 0.030 18));
+  --gradient-romance: linear-gradient(135deg, #2B0C14 0%, #111111 100%);
+  --gradient-soft: linear-gradient(180deg, #FDFBF7 0%, #F5EFE5 100%);
+  --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #B8902A 100%);
 }
+
 
 .dark {
   --background: oklch(0.18 0.03 320);

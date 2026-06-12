@@ -21,9 +21,9 @@ export const Route = createFileRoute("/g/$slug")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: loaderData ? `${loaderData.title} — Love Link` : "Love Link" },
-      { name: "description", content: "Você recebeu um presente do Love Link 💌" },
-      { property: "og:title", content: loaderData?.title ?? "Love Link" },
+      { title: loaderData ? `${loaderData.title} — Chronelo` : "Chronelo" },
+      { name: "description", content: "Você recebeu um presente do Chronelo 💌" },
+      { property: "og:title", content: loaderData?.title ?? "Chronelo" },
       { property: "og:description", content: "Toque para abrir o seu presente." },
       { property: "og:type", content: "article" },
     ],

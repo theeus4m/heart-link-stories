@@ -12,8 +12,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Entrar — Love Link" },
-      { name: "description", content: "Acesse sua conta Love Link para criar e gerenciar presentes virtuais." },
+      { title: "Entrar — Chronelo" },
+      { name: "description", content: "Acesse sua conta Chronelo para criar e gerenciar presentes virtuais." },
     ],
   }),
   component: AuthPage,
@@ -88,11 +88,9 @@ function AuthPage() {
 
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <Link to="/" className="mb-8 inline-flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full gradient-romance shadow-romance">
-              <Heart className="h-4 w-4 fill-white text-white" />
-            </span>
-            <span className="font-display text-xl text-plum">Love Link</span>
+          <Link to="/" className="mb-8 inline-flex items-center gap-2.5">
+            <Heart className="h-4 w-4 fill-gold text-gold" />
+            <span className="font-display text-xl tracking-[0.18em] uppercase text-plum">Chronelo</span>
           </Link>
           <h1 className="font-display text-4xl text-plum">
             {mode === "signin" ? "Bem-vindo de volta" : "Crie sua conta"}

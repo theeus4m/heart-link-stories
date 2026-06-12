@@ -167,7 +167,7 @@ export function BundleGift({ data, title }: { data: BundleData; title: string })
               </div>
 
               <p className="mt-10 text-center text-xs text-cream/70">
-                Feito com <Heart className="inline h-3 w-3 fill-current" /> no Love Link
+                Feito com <Heart className="inline h-3 w-3 fill-current" /> no Chronelo
               </p>
             </motion.div>
           )}

@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/criar/$type")({
   beforeLoad: ({ params }) => {
     if (!VALID.includes(params.type as GiftType)) throw notFound();
   },
-  head: () => ({ meta: [{ title: "Criar presente — Love Link" }] }),
+  head: () => ({ meta: [{ title: "Criar presente — Chronelo" }] }),
   component: Editor,
 });
 

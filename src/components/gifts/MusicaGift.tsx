@@ -909,7 +909,7 @@ function Cassette({
         <div className="relative flex h-full flex-col justify-between">
           <div>
             <p className="text-[9px] uppercase tracking-[0.3em] text-violet/80">
-              Love Link · Side A
+              Chronelo · Side A
             </p>
             <p className="mt-1 line-clamp-1 font-display text-lg leading-tight sm:text-xl">
               {label}
