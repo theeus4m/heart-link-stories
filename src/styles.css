@@ -150,14 +150,14 @@
   align-items: center;
   gap: 0.75rem;
   color: var(--coral);
-}
-@utility rule-ornate::before, @utility rule-ornate::after {
-  content: "";
-  display: inline-block;
-  width: 2.5rem;
-  height: 1px;
-  background: currentColor;
-  opacity: 0.5;
+  &::before, &::after {
+    content: "";
+    display: inline-block;
+    width: 2.5rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+  }
 }
 
 /* Romantic animations */
