@@ -15,23 +15,22 @@ export function SiteHeader() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-md bg-background/80 border-b border-border/50">
+    <header className="sticky top-0 z-40 backdrop-blur-md bg-cream/85 border-b border-gold/30">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link to="/" className="flex items-baseline gap-2 group">
-          <span className="font-display text-2xl tracking-tight text-plum">Love</span>
-          <span className="font-display italic text-2xl text-coral">Link</span>
-          <Heart className="ml-1 h-3 w-3 fill-coral text-coral opacity-80" />
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <Heart className="h-4 w-4 fill-gold text-gold transition-transform duration-500 group-hover:scale-110" />
+          <span className="font-display text-2xl tracking-[0.18em] uppercase text-plum">Chronelo</span>
         </Link>
         <nav className="flex items-center gap-1">
           {authed ? (
             <>
-              <Button asChild variant="ghost" size="sm" className="text-plum hover:text-coral">
+              <Button asChild variant="ghost" size="sm" className="text-plum hover:text-gold transition-colors duration-300">
                 <Link to="/dashboard">Meus presentes</Link>
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-plum hover:text-coral"
+                className="text-plum hover:text-gold transition-colors duration-300"
                 onClick={async () => {
                   await supabase.auth.signOut();
                   navigate({ to: "/" });
@@ -42,10 +41,10 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className="text-plum hover:text-coral">
+              <Button asChild variant="ghost" size="sm" className="text-plum hover:text-gold transition-colors duration-300">
                 <Link to="/auth">Entrar</Link>
               </Button>
-              <Button asChild size="sm" className="rounded-full bg-plum text-cream hover:bg-coral border-0 px-5">
+              <Button asChild size="sm" className="rounded-none bg-plum text-cream hover:bg-nero hover:text-gold border border-plum hover:border-gold transition-all duration-500 px-6 tracking-wider uppercase text-xs">
                 <Link to="/auth">Criar presente</Link>
               </Button>
             </>
