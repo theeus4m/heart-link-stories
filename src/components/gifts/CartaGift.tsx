@@ -90,7 +90,7 @@ export function CartaGift({ data, title }: { data: CartaData; title: string }) {
                 transition={{ duration: 1.6, delay: p.delay, ease: "easeOut" }}
                 style={{ marginLeft: -p.size / 2, marginTop: -p.size / 2 }}
               >
-                <Rose className="drop-shadow-[0_6px_10px_rgba(107,39,55,0.35)]" style={{ width: p.size, height: p.size } as never} />
+                <Rose className="drop-shadow-[0_6px_10px_rgba(107,39,55,0.35)]" style={{ width: p.size, height: p.size }} />
               </motion.div>
             ))}
           </div>
