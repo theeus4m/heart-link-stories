@@ -229,13 +229,20 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
             <motion.div
               key={p.id}
               className="absolute"
-              style={{ left: `${p.left}%`, top: "-12%", width: p.size, height: p.size }}
-              initial={{ y: -80, x: 0, rotate: 0, opacity: 0 }}
+              style={{
+                left: `${p.left}%`,
+                top: "-12%",
+                width: p.size,
+                height: p.size * 1.125,
+                transformStyle: "preserve-3d",
+              }}
+              initial={{ y: -80, x: 0, rotate: 0, rotateY: p.tilt, opacity: 0 }}
               animate={{
                 y: "115vh",
                 x: [0, p.sway, -p.sway, 0],
                 rotate: p.rotate,
-                opacity: [0, 1, 1, 0.85, 0],
+                rotateY: [p.tilt, -p.tilt, p.tilt],
+                opacity: [0, 1, 1, 0.9, 0],
               }}
               transition={{
                 duration: p.duration,
@@ -245,7 +252,10 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 times: [0, 0.1, 0.5, 0.85, 1],
               }}
             >
-              <Rose className="h-full w-full drop-shadow-[0_4px_8px_rgba(107,39,55,0.3)]" />
+              <Rose
+                variant={p.variant}
+                className="h-full w-full drop-shadow-[0_6px_10px_rgba(107,39,55,0.35)]"
+              />
             </motion.div>
           ))}
         </div>
