@@ -212,8 +212,9 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 style={{ marginLeft: -p.size / 2, marginTop: -p.size / 2 }}
               >
                 <Rose
-                  className="drop-shadow-[0_6px_12px_rgba(107,39,55,0.45)]"
-                  style={{ width: p.size, height: p.size }}
+                  variant={p.variant}
+                  className="drop-shadow-[0_8px_14px_rgba(107,39,55,0.5)]"
+                  style={{ width: p.size, height: p.size * 1.125 }}
                 />
               </motion.div>
             ))}
