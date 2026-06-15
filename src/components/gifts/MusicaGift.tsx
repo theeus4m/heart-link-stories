@@ -19,7 +19,7 @@ export type MusicaData = {
   coupleNames: string;
   message?: string;
   coverUrl?: string;
-  createdDate?: string; // ISO
+  createdDate?: string;
   tracks: Track[];
   // legacy fallback
   songTitle?: string;
@@ -51,7 +51,6 @@ function formatTime(s: number) {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
-// Loads the YouTube IFrame API once
 let ytPromise: Promise<any> | null = null;
 function loadYT(): Promise<any> {
   if (typeof window === "undefined") return Promise.reject();
@@ -74,7 +73,6 @@ function loadYT(): Promise<any> {
 /* ─────────────────────── main ─────────────────────── */
 
 export function MusicaGift({ data, title }: { data: MusicaData; title: string }) {
-  // Normalize tracks (with legacy fallback)
   const tracks: Track[] = useMemo(() => {
     const arr = (data.tracks ?? []).filter((t) => extractYouTubeId(t?.url));
     if (arr.length === 0 && data.songUrl) {
@@ -88,8 +86,7 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
 
   const reduceMotion = useReducedMotion();
 
-  const [inserted, setInserted] = useState(false);
-  const [inserting, setInserting] = useState(false);
+  const [started, setStarted] = useState(false);
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
@@ -99,7 +96,6 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [hearts, setHearts] = useState(false);
-  const [farewell, setFarewell] = useState(false);
 
   const playerRef = useRef<any>(null);
   const mountRef = useRef<HTMLDivElement | null>(null);
@@ -110,7 +106,7 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
 
   /* ───── Player lifecycle ───── */
   useEffect(() => {
-    if (!inserted || !currentId || !mountRef.current) return;
+    if (!started || !currentId || !mountRef.current) return;
     let cancelled = false;
     loadYT().then((YT) => {
       if (cancelled || !mountRef.current) return;
@@ -148,7 +144,7 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inserted]);
+  }, [started]);
 
   useEffect(() => {
     if (!playerRef.current || !currentId) return;
@@ -186,11 +182,16 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
   }, [volume, muted]);
 
   /* ───── actions ───── */
+  const start = useCallback(() => setStarted(true), []);
   const togglePlay = useCallback(() => {
+    if (!started) {
+      setStarted(true);
+      return;
+    }
     const p = playerRef.current;
     if (!p) return;
     playing ? p.pauseVideo() : p.playVideo();
-  }, [playing]);
+  }, [playing, started]);
 
   const next = useCallback(() => {
     if (tracks.length === 0) return;
@@ -218,33 +219,16 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
     setIdx((i) => (i - 1 + tracks.length) % tracks.length);
   }, [tracks.length, progress]);
 
-  const seek = useCallback((pct: number) => {
-    const p = playerRef.current;
-    if (!p?.seekTo || !duration) return;
-    const t = Math.max(0, Math.min(1, pct)) * duration;
-    p.seekTo(t, true);
-    setProgress(t);
-  }, [duration]);
-
-  const insertTape = useCallback(() => {
-    if (inserted || inserting) return;
-    setInserting(true);
-    window.setTimeout(() => {
-      setInserting(false);
-      setInserted(true);
-    }, reduceMotion ? 250 : 1400);
-  }, [inserted, inserting, reduceMotion]);
-
-  const eject = useCallback(() => {
-    try {
-      playerRef.current?.pauseVideo?.();
-    } catch {}
-    setPlaying(false);
-    setInserted(false);
-    setProgress(0);
-    setFarewell(true);
-    window.setTimeout(() => setFarewell(false), 4500);
-  }, []);
+  const seek = useCallback(
+    (pct: number) => {
+      const p = playerRef.current;
+      if (!p?.seekTo || !duration) return;
+      const t = Math.max(0, Math.min(1, pct)) * duration;
+      p.seekTo(t, true);
+      setProgress(t);
+    },
+    [duration],
+  );
 
   const toggleLike = useCallback(() => {
     setLiked((m) => ({ ...m, [idx]: !m[idx] }));
@@ -264,21 +248,33 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
 
   const pct = duration > 0 ? progress / duration : 0;
 
+  // golden particles drifting around the turntable while playing
+  const particles = useMemo(
+    () =>
+      [...Array(14)].map((_, i) => ({
+        id: i,
+        angle: (i / 14) * Math.PI * 2,
+        radius: 160 + Math.random() * 80,
+        size: 2 + Math.random() * 2.5,
+        delay: Math.random() * 3,
+        duration: 5 + Math.random() * 4,
+      })),
+    [],
+  );
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0d0805] text-cream">
-      {/* atmospheric backdrop */}
-      <div className="pointer-events-none absolute inset-0 opacity-60 [background:radial-gradient(circle_at_20%_15%,rgba(140,84,163,0.35)_0%,transparent_50%),radial-gradient(circle_at_85%_90%,rgba(244,121,117,0.30)_0%,transparent_55%),radial-gradient(circle_at_50%_50%,rgba(255,180,120,0.10)_0%,transparent_70%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-[#1a0a10] text-[#FDFBF7]">
+      {/* atmospheric backdrop — wine to ink with gold vignette */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.22),transparent_55%),radial-gradient(ellipse_at_center,rgba(107,39,55,0.5),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(26,10,16,1),transparent_80%)]" />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-overlay"
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(0deg,rgba(255,255,255,.08) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 1px,transparent 1px 4px)",
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")",
         }}
       />
-      {/* film grain */}
-      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22120%22 height=%22120%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22/></filter><rect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22 opacity=%220.6%22/></svg>')]" />
 
-      <div className="relative mx-auto grid max-w-3xl gap-7 px-4 py-10 sm:gap-10 sm:px-5 sm:py-14">
+      <div className="relative mx-auto grid max-w-3xl gap-10 px-5 py-12 sm:py-16">
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -286,65 +282,108 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="text-center"
         >
-          <p className="text-[10px] uppercase tracking-[0.55em] text-coral/90 sm:text-xs">
-            ★ Mixtape ★
+          <p className="font-mono text-[10px] uppercase tracking-[0.55em] text-[#C9A84C] sm:text-xs">
+            ★ Chronelo Mixtape ★
           </p>
-          <h1 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">{mixtapeName}</h1>
-          <p className="mt-2 text-xs text-cream/60 sm:text-sm">
+          <h1 className="mt-3 font-display text-4xl italic leading-tight text-[#FDFBF7] sm:text-6xl">
+            {mixtapeName}
+          </h1>
+          <p className="mt-3 text-xs text-[#FDFBF7]/60 sm:text-sm">
             {data.coupleNames} · {prettyDate}
           </p>
         </motion.div>
 
-        {/* Hidden YouTube player mount */}
+        {/* Hidden YouTube mount */}
         <div className="absolute -z-10 h-0 w-0 overflow-hidden">
           <div ref={mountRef} />
         </div>
 
-        {/* Console */}
+        {/* Turntable scene */}
         <div className="relative mx-auto w-full max-w-md">
-          <Console
-            inserted={inserted}
-            inserting={inserting}
-            playing={playing}
+          {/* golden particles around the deck */}
+          {started && playing && !reduceMotion && (
+            <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 h-0 w-0">
+              {particles.map((p) => (
+                <motion.div
+                  key={p.id}
+                  className="absolute rounded-full bg-[#F0D78C]"
+                  style={{
+                    width: p.size,
+                    height: p.size,
+                    boxShadow: "0 0 10px 1px rgba(240,215,140,0.9)",
+                    filter: "blur(0.3px)",
+                    marginLeft: -p.size / 2,
+                    marginTop: -p.size / 2,
+                  }}
+                  animate={{
+                    x: [
+                      Math.cos(p.angle) * p.radius,
+                      Math.cos(p.angle + 0.6) * p.radius,
+                      Math.cos(p.angle + 1.2) * p.radius,
+                    ],
+                    y: [
+                      Math.sin(p.angle) * p.radius - 20,
+                      Math.sin(p.angle + 0.6) * p.radius - 40,
+                      Math.sin(p.angle + 1.2) * p.radius - 60,
+                    ],
+                    opacity: [0, 1, 0],
+                    scale: [0.4, 1.2, 0.4],
+                  }}
+                  transition={{
+                    duration: p.duration,
+                    delay: p.delay,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
+          <Turntable
+            playing={playing && started}
+            started={started}
+            coverUrl={data.coverUrl}
+            mixtapeName={mixtapeName}
+            couple={data.coupleNames}
+            reduceMotion={!!reduceMotion}
+            onStart={start}
+          />
+        </div>
+
+        {/* Now playing display */}
+        {started && (
+          <NowPlaying
             current={current}
             idx={idx}
             total={tracks.length}
             progress={progress}
             duration={duration}
             pct={pct}
-            mixtapeName={mixtapeName}
-            couple={data.coupleNames}
-            date={prettyDate}
-            coverUrl={data.coverUrl}
-            tracks={tracks}
-            liked={liked}
-            onSelect={(i) => {
-              setIdx(i);
-              if (!inserted && !inserting) insertTape();
-            }}
+            playing={playing}
             onSeek={seek}
-            reduceMotion={!!reduceMotion}
           />
-        </div>
+        )}
 
-        {/* Controls or Insert CTA */}
+        {/* Controls */}
         {tracks.length === 0 ? (
-          <p className="text-center text-cream/60">Nenhuma música foi adicionada nesta mixtape.</p>
-        ) : !inserted ? (
+          <p className="text-center text-[#FDFBF7]/60">
+            Nenhuma música foi adicionada nesta mixtape.
+          </p>
+        ) : !started ? (
           <div className="text-center">
             <motion.button
-              onClick={insertTape}
-              disabled={inserting}
+              onClick={start}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
-              className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full bg-gradient-to-r from-coral to-[#ff9472] px-7 py-3 font-display text-lg text-white shadow-[0_15px_40px_-10px_rgba(244,121,117,0.6)] transition disabled:opacity-70"
+              className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full border border-[#C9A84C]/60 bg-gradient-to-br from-[#C9A84C] to-[#9C7E2C] px-8 py-3 font-display text-lg italic text-[#1a0a10] shadow-[0_18px_40px_-12px_rgba(201,168,76,0.6)]"
             >
-              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-              <Play className="h-5 w-5 fill-white" />
-              {inserting ? "Inserindo fita…" : "Inserir Fita"}
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <Play className="h-5 w-5 fill-[#1a0a10]" />
+              Tocar o disco
             </motion.button>
-            <p className="mt-3 text-[10px] uppercase tracking-[0.4em] text-cream/40">
-              toque para começar
+            <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.4em] text-[#FDFBF7]/40">
+              pouse a agulha
             </p>
           </div>
         ) : (
@@ -353,7 +392,6 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
             onPrev={prev}
             onNext={next}
             onTogglePlay={togglePlay}
-            onEject={eject}
             onLike={toggleLike}
             liked={!!liked[idx]}
             volume={volume}
@@ -365,318 +403,253 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
           />
         )}
 
-        {/* Farewell message after eject */}
-        <AnimatePresence>
-          {farewell && (
-            <motion.div
-              key="farewell"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.8 }}
-              className="mx-auto max-w-xl text-center"
-            >
-              <p className="font-display text-xl italic text-cream/90 sm:text-2xl">
-                "Cada música desta fita guarda um momento que vivi ao seu lado."
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Tracklist */}
+        {tracks.length > 0 && (
+          <Tracklist
+            tracks={tracks}
+            currentIdx={idx}
+            playing={playing && started}
+            liked={liked}
+            onSelect={(i) => {
+              setIdx(i);
+              if (!started) setStarted(true);
+            }}
+          />
+        )}
 
-        {/* Sender message (subtle, only before insertion) */}
-        <AnimatePresence>
-          {!inserted && !inserting && !farewell && data.message && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mx-auto max-w-xl text-center font-display text-xl italic text-cream/80 sm:text-2xl"
-            >
-              "{data.message}"
-            </motion.p>
-          )}
-        </AnimatePresence>
+        {/* Optional dedication */}
+        {data.message && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.9 }}
+            className="mx-auto max-w-xl text-center font-display text-xl italic text-[#FDFBF7]/80 sm:text-2xl"
+          >
+            "{data.message}"
+          </motion.p>
+        )}
 
-        {/* Floating hearts */}
+        {/* Floating hearts on like */}
         <AnimatePresence>
           {hearts &&
-            Array.from({ length: 18 }).map((_, i) => (
+            Array.from({ length: 16 }).map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: 0, y: 0, scale: 0.6 }}
                 animate={{
                   opacity: [0, 1, 0],
-                  x: (Math.random() - 0.5) * 300,
-                  y: -200 - Math.random() * 200,
-                  scale: [0.6, 1.1, 0.9],
+                  x: (Math.random() - 0.5) * 320,
+                  y: -200 - Math.random() * 220,
+                  scale: [0.6, 1.15, 0.9],
                 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 1.6, delay: i * 0.05 }}
+                transition={{ duration: 1.7, delay: i * 0.04 }}
                 className="pointer-events-none fixed bottom-24 left-1/2 z-50"
               >
-                <Heart className="h-6 w-6 fill-coral text-coral drop-shadow" />
+                <Heart className="h-6 w-6 fill-[#C4714A] text-[#C4714A] drop-shadow" />
               </motion.div>
             ))}
         </AnimatePresence>
       </div>
 
-      <p className="pb-6 text-center text-[10px] uppercase tracking-[0.4em] text-cream/30">
+      <p className="pb-6 text-center font-mono text-[10px] uppercase tracking-[0.4em] text-[#FDFBF7]/30">
         {title}
       </p>
     </div>
   );
 }
 
-/* ─────────────────────── Console (wood + radio + deck + tracklist) ─────────────────────── */
+/* ─────────────────────── Turntable ─────────────────────── */
 
-function Console(props: {
-  inserted: boolean;
-  inserting: boolean;
+function Turntable({
+  playing,
+  started,
+  coverUrl,
+  mixtapeName,
+  couple,
+  reduceMotion,
+  onStart,
+}: {
   playing: boolean;
-  current?: Track;
-  idx: number;
-  total: number;
-  progress: number;
-  duration: number;
-  pct: number;
+  started: boolean;
+  coverUrl?: string;
   mixtapeName: string;
   couple: string;
-  date: string;
-  coverUrl?: string;
-  tracks: Track[];
-  liked: Record<number, boolean>;
-  onSelect: (i: number) => void;
-  onSeek: (pct: number) => void;
   reduceMotion: boolean;
+  onStart: () => void;
 }) {
-  const {
-    inserted,
-    inserting,
-    playing,
-    current,
-    idx,
-    total,
-    progress,
-    duration,
-    pct,
-    mixtapeName,
-    couple,
-    date,
-    coverUrl,
-    tracks,
-    liked,
-    onSelect,
-    onSeek,
-    reduceMotion,
-  } = props;
-
   return (
     <div
-      className="relative rounded-[2rem] p-3 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.9),0_15px_30px_-15px_rgba(0,0,0,0.5),inset_0_2px_6px_rgba(255,200,140,0.25)]"
+      className="relative aspect-square w-full rounded-[2rem] p-6 shadow-[0_50px_90px_-30px_rgba(0,0,0,0.85),inset_0_2px_4px_rgba(255,220,170,0.15),inset_0_-4px_10px_rgba(0,0,0,0.5)]"
       style={{
         background:
-          "linear-gradient(160deg,#6b441f 0%,#8a5424 30%,#4a2f14 65%,#2a1808 100%)",
+          "linear-gradient(160deg,#3a1a22 0%,#2a0f17 35%,#1a0710 65%,#0d030a 100%)",
       }}
     >
-      {/* faux wood grain */}
+      {/* fine grain wood / leather overlay */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-[2rem] opacity-30 mix-blend-overlay"
+        className="pointer-events-none absolute inset-0 rounded-[2rem] opacity-[0.18] mix-blend-overlay"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(92deg,rgba(0,0,0,.5) 0 2px,transparent 2px 5px),repeating-linear-gradient(180deg,rgba(255,210,150,.18) 0 1px,transparent 1px 8px)",
+            "repeating-linear-gradient(92deg,rgba(0,0,0,.4) 0 2px,transparent 2px 6px),repeating-linear-gradient(180deg,rgba(255,210,150,.16) 0 1px,transparent 1px 10px)",
         }}
       />
-      {/* sheen */}
-      <div className="pointer-events-none absolute inset-0 rounded-[2rem] bg-gradient-to-br from-white/10 via-transparent to-transparent" />
+      {/* gold inner frame */}
+      <div className="pointer-events-none absolute inset-3 rounded-[1.6rem] border border-[#C9A84C]/35" />
+      <div className="pointer-events-none absolute inset-4 rounded-[1.5rem] border border-[#C9A84C]/15" />
 
-      {/* Brass screws */}
-      {["left-3 top-3", "right-3 top-3", "left-3 bottom-3", "right-3 bottom-3"].map((pos, i) => (
+      {/* brass screws */}
+      {["left-4 top-4", "right-4 top-4", "left-4 bottom-4", "right-4 bottom-4"].map((pos, i) => (
         <span
           key={i}
-          className={`absolute ${pos} h-2.5 w-2.5 rounded-full bg-gradient-to-br from-amber-100 via-amber-400 to-amber-800 shadow-[inset_0_-1px_1px_rgba(0,0,0,0.5)] ring-1 ring-black/40`}
+          className={`absolute ${pos} h-2.5 w-2.5 rounded-full bg-gradient-to-br from-[#F0D78C] via-[#C9A84C] to-[#6B5020] shadow-[inset_0_-1px_1px_rgba(0,0,0,0.5)] ring-1 ring-black/40`}
         >
           <span className="absolute inset-x-[3px] top-1/2 h-px -translate-y-1/2 bg-black/40" />
         </span>
       ))}
 
-      <Radio
-        inserted={inserted}
-        playing={playing}
-        current={current}
-        idx={idx}
-        total={total}
-        progress={progress}
-        duration={duration}
-        pct={pct}
-        onSeek={onSeek}
-      />
+      {/* watermark monogram */}
+      <p className="pointer-events-none absolute right-6 top-5 font-display text-xs italic tracking-[0.3em] text-[#C9A84C]/40">
+        Chronelo
+      </p>
 
-      {/* Cassette deck window */}
-      <div className="relative mx-3 mt-3 overflow-hidden rounded-2xl border border-amber-950/80 bg-gradient-to-b from-[#0a0604] to-[#1a0f08] p-3 shadow-[inset_0_2px_8px_rgba(0,0,0,0.9)]">
-        {/* glass reflection */}
-        <div className="pointer-events-none absolute inset-x-3 top-0 h-1/2 bg-gradient-to-b from-white/[0.06] to-transparent" />
-        {/* deck slot guides */}
-        <div className="pointer-events-none absolute inset-x-5 top-0 h-[1px] bg-amber-100/10" />
-        <div className="pointer-events-none absolute inset-x-5 bottom-0 h-[1px] bg-amber-100/10" />
+      {/* Vinyl platter */}
+      <div className="relative grid h-full w-full place-items-center">
+        <button
+          type="button"
+          onClick={!started ? onStart : undefined}
+          aria-label={started ? "Vinil" : "Tocar disco"}
+          className="relative aspect-square w-[88%] cursor-pointer"
+          style={{ cursor: started ? "default" : "pointer" }}
+        >
+          {/* outer halo */}
+          <div className="absolute -inset-3 rounded-full bg-[radial-gradient(circle,rgba(201,168,76,0.18),transparent_70%)] blur-xl" />
 
-        <div className="relative h-44 sm:h-48">
-          <AnimatePresence mode="wait">
-            {!inserted && !inserting ? (
-              <motion.div
-                key="cassette-rest"
-                initial={{ opacity: 0, y: -12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -160, rotate: -4, scale: 0.92 }}
-                transition={{ type: "spring", stiffness: 90, damping: 18 }}
-                className="absolute inset-0"
-              >
-                <Cassette
-                  spinning={false}
-                  pct={0}
-                  label={mixtapeName}
-                  couple={couple}
-                  date={date}
-                  coverUrl={coverUrl}
-                  reduceMotion={reduceMotion}
-                />
-              </motion.div>
-            ) : inserting ? (
-              <motion.div
-                key="cassette-inserting"
-                initial={{ y: -200, rotate: -3, opacity: 0.9, scale: 0.95 }}
-                animate={{
-                  y: [-200, -40, 6, 0],
-                  rotate: [-3, -1, 0, 0],
-                  opacity: 1,
-                  scale: [0.95, 0.98, 1, 1],
-                }}
-                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], times: [0, 0.45, 0.85, 1] }}
-                className="absolute inset-0"
-              >
-                <Cassette
-                  spinning={false}
-                  pct={0}
-                  label={mixtapeName}
-                  couple={couple}
-                  date={date}
-                  coverUrl={coverUrl}
-                  reduceMotion={reduceMotion}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="cassette-in"
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0"
-              >
-                <Cassette
-                  spinning={playing}
-                  pct={pct}
-                  label={current?.title || mixtapeName}
-                  couple={couple}
-                  date={date}
-                  coverUrl={coverUrl}
-                  reduceMotion={reduceMotion}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Tracklist — Program Selector */}
-      {tracks.length > 0 && (
-        <div className="mx-3 mb-1 mt-3 rounded-2xl border border-amber-900/70 bg-[#120a05]/95 p-3 shadow-[inset_0_2px_6px_rgba(0,0,0,0.8)]">
-          <div className="mb-2 flex items-center justify-between border-b border-amber-900/60 pb-1.5">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-amber-200/70">
-              Program Selector
-            </p>
-            <p className="font-mono text-[10px] text-amber-200/60">
-              {Math.min(idx + 1, tracks.length).toString().padStart(2, "0")}/
-              {tracks.length.toString().padStart(2, "0")}
-            </p>
-          </div>
-          <ol className="space-y-1">
-            {tracks.map((t, i) => {
-              const active = i === idx && inserted;
+          <motion.div
+            className="relative h-full w-full rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 50%, #1a0a10 0%, #0a0407 65%, #000 100%)",
+              boxShadow:
+                "0 25px 50px -15px rgba(0,0,0,0.8), inset 0 0 0 2px rgba(201,168,76,0.18), inset 0 4px 8px rgba(255,210,150,0.08)",
+            }}
+            animate={playing && !reduceMotion ? { rotate: 360 } : { rotate: 0 }}
+            transition={
+              playing && !reduceMotion
+                ? { duration: 6, repeat: Infinity, ease: "linear" }
+                : { duration: 0.6 }
+            }
+          >
+            {/* vinyl grooves — concentric rings */}
+            {Array.from({ length: 22 }).map((_, i) => {
+              const inset = 6 + i * 1.6;
               return (
-                <li key={i}>
-                  <motion.button
-                    onClick={() => onSelect(i)}
-                    whileHover={{ x: 2 }}
-                    whileTap={{ scale: 0.985 }}
-                    className={`group flex w-full items-center gap-3 rounded-md border px-2.5 py-1.5 text-left font-mono text-[12px] transition-colors ${
-                      active
-                        ? "border-amber-300/60 bg-amber-200/10 text-amber-100 shadow-[inset_0_0_0_1px_rgba(255,210,140,.2)]"
-                        : "border-amber-950/60 bg-black/30 text-amber-100/70 hover:border-amber-700/70 hover:bg-amber-900/20 hover:text-amber-100"
-                    }`}
-                  >
-                    <span
-                      className={`h-2 w-2 shrink-0 rounded-full ring-1 ring-black/60 ${
-                        active
-                          ? "bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.7)] animate-pulse"
-                          : "bg-red-950"
-                      }`}
-                    />
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-sm bg-gradient-to-b from-amber-100 via-amber-300 to-amber-600 text-[10px] font-bold tabular-nums text-amber-950 shadow-[inset_0_-1px_1px_rgba(0,0,0,0.3)]">
-                      {(i + 1).toString().padStart(2, "0")}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate">
-                      <span className="uppercase tracking-wider">
-                        {t.title || `Track ${i + 1}`}
-                      </span>
-                      {t.artist && (
-                        <span className="ml-2 normal-case text-amber-200/50">· {t.artist}</span>
-                      )}
-                    </span>
-                    {liked[i] && <Heart className="h-3.5 w-3.5 fill-coral text-coral" />}
-                    {active && playing && <EqBars />}
-                  </motion.button>
-                </li>
+                <div
+                  key={i}
+                  className="pointer-events-none absolute rounded-full border border-[#FDFBF7]/[0.04]"
+                  style={{ inset: `${inset}%` }}
+                />
               );
             })}
-          </ol>
-        </div>
-      )}
+            {/* highlight reflection */}
+            <div className="pointer-events-none absolute inset-0 rounded-full bg-[conic-gradient(from_140deg,transparent_0deg,rgba(255,220,170,0.06)_60deg,transparent_120deg,transparent_240deg,rgba(255,220,170,0.04)_300deg,transparent_360deg)]" />
+
+            {/* center label */}
+            <div
+              className="absolute left-1/2 top-1/2 grid aspect-square w-[36%] -translate-x-1/2 -translate-y-1/2 place-items-center overflow-hidden rounded-full text-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.4),0_4px_10px_rgba(0,0,0,0.4)]"
+              style={{
+                background:
+                  "radial-gradient(circle at 30% 25%, #9B3344 0%, #6B2737 55%, #3F1620 100%)",
+              }}
+            >
+              {coverUrl && (
+                <img
+                  src={coverUrl}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay"
+                />
+              )}
+              <div className="absolute inset-1 rounded-full border border-[#C9A84C]/40" />
+              <div className="relative px-2">
+                <p className="font-display text-[10px] italic tracking-[0.3em] text-[#C9A84C]">
+                  CHRONELO
+                </p>
+                <p className="mt-1 line-clamp-2 font-display text-xs italic leading-tight text-[#FDFBF7]">
+                  {mixtapeName}
+                </p>
+                <p className="mt-1 truncate font-mono text-[8px] uppercase tracking-[0.25em] text-[#FDFBF7]/60">
+                  {couple}
+                </p>
+              </div>
+              {/* spindle */}
+              <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#1a0a10] ring-1 ring-[#C9A84C]/40" />
+            </div>
+          </motion.div>
+
+          {/* Tonearm */}
+          <motion.div
+            className="pointer-events-none absolute -right-2 -top-2 h-[55%] w-[55%] origin-top-right"
+            animate={{ rotate: started ? 28 : 0 }}
+            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <svg viewBox="0 0 200 200" className="h-full w-full drop-shadow-[0_8px_14px_rgba(0,0,0,0.6)]">
+              <defs>
+                <linearGradient id="arm" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0%" stopColor="#F0D78C" />
+                  <stop offset="50%" stopColor="#C9A84C" />
+                  <stop offset="100%" stopColor="#6B5020" />
+                </linearGradient>
+              </defs>
+              {/* pivot base */}
+              <circle cx="170" cy="30" r="18" fill="url(#arm)" stroke="#3a2510" strokeWidth="1.5" />
+              <circle cx="170" cy="30" r="9" fill="#1a0a10" />
+              {/* arm */}
+              <rect
+                x="50"
+                y="26"
+                width="120"
+                height="8"
+                rx="3"
+                fill="url(#arm)"
+                stroke="#3a2510"
+                strokeOpacity="0.5"
+                strokeWidth="0.8"
+                transform="rotate(35 170 30)"
+              />
+              {/* headshell */}
+              <g transform="rotate(35 170 30) translate(50 22)">
+                <rect x="-12" y="-2" width="20" height="16" rx="2" fill="#1a0a10" stroke="#C9A84C" strokeWidth="0.8" />
+                <rect x="-9" y="10" width="14" height="6" rx="1" fill="#3a1a22" />
+              </g>
+            </svg>
+          </motion.div>
+        </button>
+      </div>
     </div>
   );
 }
 
-/* ─────────────────────── Radio (top panel) ─────────────────────── */
+/* ─────────────────────── Now playing display ─────────────────────── */
 
-function Radio({
-  inserted,
-  playing,
+function NowPlaying({
   current,
   idx,
   total,
   progress,
   duration,
   pct,
+  playing,
   onSeek,
 }: {
-  inserted: boolean;
-  playing: boolean;
   current?: Track;
   idx: number;
   total: number;
   progress: number;
   duration: number;
   pct: number;
+  playing: boolean;
   onSeek: (pct: number) => void;
 }) {
-  // deterministic VU bars driven by progress (no per-frame Math.random churn)
-  const vu = useMemo(() => {
-    const seed = Math.floor(progress * 4);
-    return Array.from({ length: 32 }).map((_, i) => {
-      const v = (Math.sin(seed * 0.6 + i * 0.7) + Math.sin(seed * 0.21 + i * 1.3)) * 0.5 + 0.5;
-      return v;
-    });
-  }, [progress]);
-
   const trackRef = useRef<HTMLDivElement | null>(null);
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     const el = trackRef.current;
@@ -685,307 +658,79 @@ function Radio({
     const p = (e.clientX - r.left) / r.width;
     onSeek(p);
   };
-
   return (
-    <div className="relative mx-3 mt-0">
-      <div className="relative rounded-2xl bg-gradient-to-b from-[#2a1808] via-[#1a1006] to-[#0a0503] p-4 shadow-[inset_0_2px_8px_rgba(255,200,140,0.18),inset_0_-3px_8px_rgba(0,0,0,0.7)] sm:p-5">
-        {/* Top: speakers + display */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <SpeakerGrill animate={playing} />
-          <div className="flex-1">
-            <div className="rounded-lg bg-gradient-to-b from-[#0a0604] to-[#1a0f08] p-3 shadow-[inset_0_2px_6px_rgba(0,0,0,0.9),inset_0_-1px_2px_rgba(255,180,100,0.1)] ring-1 ring-amber-100/5">
-              <div className="flex items-center justify-between text-[10px] uppercase tracking-widest text-amber-200/70">
-                <span className="font-mono">FM · 98.7</span>
-                <span className="flex items-center gap-1">
-                  <span
-                    className={`h-1.5 w-1.5 rounded-full ${inserted ? "bg-red-500" : "bg-red-900"} ${
-                      playing ? "shadow-[0_0_6px_2px_rgba(239,68,68,0.7)] animate-pulse" : ""
-                    }`}
-                  />
-                  REC
-                </span>
-              </div>
-
-              {/* Now playing — animated swap */}
-              <div className="relative mt-1 h-9 overflow-hidden">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={inserted ? idx : "rest"}
-                    initial={{ y: 18, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -18, opacity: 0 }}
-                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <p className="truncate font-mono text-sm text-amber-100">
-                      {inserted ? current?.title || `Faixa ${idx + 1}` : "—  insira a fita  —"}
-                    </p>
-                    <p className="truncate text-[11px] text-amber-200/60">
-                      {inserted ? current?.artist || "" : "aguardando…"}
-                    </p>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-
-              {/* tuner / VU */}
-              <div className="mt-2 flex h-3 items-end gap-0.5">
-                {vu.map((v, i) => {
-                  const lit = playing && v > 0.35;
-                  const tall = playing ? 4 + v * 8 : 3;
-                  return (
-                    <span
-                      key={i}
-                      className={`w-0.5 rounded-sm transition-all duration-150 ${
-                        lit
-                          ? i > 26
-                            ? "bg-red-400"
-                            : i > 20
-                            ? "bg-amber-300"
-                            : "bg-amber-400"
-                          : i % 4 === 0
-                          ? "bg-amber-300/30"
-                          : "bg-amber-300/10"
-                      }`}
-                      style={{ height: `${tall}px` }}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-          <SpeakerGrill animate={playing} />
-        </div>
-
-        {/* Bottom: knobs + seek bar */}
-        <div className="mt-4 flex items-center gap-3 rounded-xl bg-[#0a0604]/60 p-3 ring-1 ring-amber-100/5 sm:mt-5 sm:gap-4">
-          <Knob label="VOL" rotate={playing ? 80 : 30} />
-          <div className="flex-1">
-            <div
-              ref={trackRef}
-              onClick={handleSeek}
-              role="slider"
-              aria-label="Posição da faixa"
-              aria-valuenow={Math.round(pct * 100)}
-              tabIndex={0}
-              className="group relative h-2 cursor-pointer overflow-visible rounded-full bg-amber-100/10 shadow-inner"
-            >
-              <div
-                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-coral via-amber-300 to-amber-200 shadow-[0_0_8px_rgba(255,180,100,0.5)] transition-[width] duration-150"
-                style={{ width: `${Math.min(100, pct * 100)}%` }}
-              />
-              <span
-                className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-100 opacity-0 shadow-[0_0_8px_rgba(255,210,140,0.6)] ring-2 ring-amber-700 transition-opacity group-hover:opacity-100"
-                style={{ left: `${Math.min(100, pct * 100)}%` }}
-              />
-            </div>
-            <div className="mt-1.5 flex justify-between font-mono text-[10px] tabular-nums text-amber-200/70">
-              <span>{formatTime(progress)}</span>
-              <span className="text-amber-200/50">
-                📼 {Math.min(idx + 1, Math.max(total, 1))} / {Math.max(total, 1)}
-              </span>
-              <span>{formatTime(duration)}</span>
-            </div>
-          </div>
-          <Knob label="BASS" rotate={playing ? -45 : 0} />
-        </div>
+    <div className="relative mx-auto w-full max-w-md rounded-2xl border border-[#C9A84C]/25 bg-[#1a0a10]/70 p-5 shadow-[inset_0_1px_0_rgba(255,220,170,0.08),0_20px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur">
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.35em] text-[#C9A84C]/70">
+        <span>Faixa {Math.min(idx + 1, Math.max(total, 1)).toString().padStart(2, "0")} / {Math.max(total, 1).toString().padStart(2, "0")}</span>
+        <span className="flex items-center gap-2">
+          {playing && <EqBars />}
+          {playing ? "Tocando" : "Pausado"}
+        </span>
       </div>
-    </div>
-  );
-}
 
-function SpeakerGrill({ animate }: { animate: boolean }) {
-  return (
-    <div className="relative grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-[#1a0f08] to-[#0a0503] shadow-[inset_0_2px_4px_rgba(0,0,0,0.8),0_2px_4px_rgba(255,180,100,0.15)] sm:h-20 sm:w-20">
-      <motion.div
-        animate={animate ? { scale: [1, 1.04, 1] } : { scale: 1 }}
-        transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut" }}
-        className="grid h-12 w-12 grid-cols-4 gap-0.5 rounded-full bg-[#1a0f08] p-1 ring-1 ring-amber-100/5 sm:h-16 sm:w-16"
-      >
-        {Array.from({ length: 16 }).map((_, i) => (
-          <span
-            key={i}
-            className="rounded-full bg-gradient-to-br from-amber-950 to-black shadow-[inset_0_1px_1px_rgba(0,0,0,0.8)]"
-          />
-        ))}
-      </motion.div>
-    </div>
-  );
-}
-
-function Knob({ label, rotate }: { label: string; rotate: number }) {
-  return (
-    <div className="flex shrink-0 flex-col items-center gap-1">
-      <div className="relative h-10 w-10 rounded-full bg-[#0a0604] p-[2px] shadow-[inset_0_2px_3px_rgba(0,0,0,0.7)]">
-        <div
-          className="relative h-full w-full rounded-full bg-gradient-to-br from-[#e8c187] via-[#a87440] to-[#5a3a1a] shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
-          style={{ transform: `rotate(${rotate}deg)`, transition: "transform 0.6s ease-out" }}
-        >
-          <span className="absolute left-1/2 top-1 h-2.5 w-0.5 -translate-x-1/2 rounded-full bg-amber-50 shadow" />
-          <span className="absolute inset-1 rounded-full bg-gradient-to-br from-white/30 to-transparent" />
-        </div>
-      </div>
-      <span className="font-mono text-[9px] uppercase tracking-widest text-amber-200/70">{label}</span>
-    </div>
-  );
-}
-
-function EqBars() {
-  return (
-    <span className="ml-1 flex h-4 items-end gap-[2px]">
-      {[0, 1, 2].map((b) => (
-        <motion.span
-          key={b}
-          className="w-[2px] rounded-sm bg-amber-300"
-          animate={{ height: ["5px", "13px", "4px", "11px"] }}
-          transition={{ duration: 0.7 + b * 0.15, repeat: Infinity, ease: "easeInOut" }}
-        />
-      ))}
-    </span>
-  );
-}
-
-/* ─────────────────────── Cassette ─────────────────────── */
-
-function Cassette({
-  spinning,
-  pct,
-  label,
-  couple,
-  date,
-  coverUrl,
-  reduceMotion,
-}: {
-  spinning: boolean;
-  pct: number; // 0..1 — tape progress (drives reel sizes)
-  label: string;
-  couple: string;
-  date: string;
-  coverUrl?: string;
-  reduceMotion: boolean;
-}) {
-  // Reel tape diameters: left shrinks as tape unwinds onto right.
-  const leftR = 11 - pct * 5; // 11 → 6
-  const rightR = 6 + pct * 5; // 6 → 11
-
-  return (
-    <div
-      className="relative h-full w-full overflow-hidden rounded-2xl p-3 sm:p-4"
-      style={{
-        background:
-          "linear-gradient(180deg,#f4c8a6 0%,#e0a47c 45%,#c98762 100%)",
-        boxShadow:
-          "inset 0 2px 4px rgba(255,255,255,0.45), inset 0 -3px 8px rgba(0,0,0,0.25), 0 18px 35px -18px rgba(0,0,0,0.7)",
-      }}
-    >
-      {/* plastic sheen */}
-      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/30 via-transparent to-black/20" />
-      {/* corner screws */}
-      {["left-1.5 top-1.5", "right-1.5 top-1.5", "left-1.5 bottom-1.5", "right-1.5 bottom-1.5"].map(
-        (pos, i) => (
-          <span
-            key={i}
-            className={`absolute ${pos} h-1.5 w-1.5 rounded-full bg-gradient-to-br from-amber-100 to-amber-700 ring-1 ring-black/30`}
-          />
-        ),
-      )}
-
-      {/* Label */}
-      <div className="relative h-full overflow-hidden rounded-md bg-cream p-3 text-plum shadow-[inset_0_1px_2px_rgba(0,0,0,0.15)]">
-        {coverUrl && (
-          <img
-            src={coverUrl}
-            alt=""
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover opacity-25"
-          />
-        )}
-        {/* paper texture */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-30"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(180deg,rgba(122,68,32,0.06) 0 1px,transparent 1px 4px)",
-          }}
-        />
-        <div className="relative flex h-full flex-col justify-between">
-          <div>
-            <p className="text-[9px] uppercase tracking-[0.3em] text-violet/80">
-              Chronelo · Side A
+      <div className="relative mt-2 h-12 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={idx}
+            initial={{ y: 14, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -14, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <p className="truncate font-display text-2xl italic text-[#FDFBF7]">
+              {current?.title || `Faixa ${idx + 1}`}
             </p>
-            <p className="mt-1 line-clamp-1 font-display text-lg leading-tight sm:text-xl">
-              {label}
-            </p>
-          </div>
-
-          {/* Reels with simulated tape between them */}
-          <div className="relative flex items-center justify-between">
-            <Reel spinning={spinning} radius={leftR} reduceMotion={reduceMotion} />
-
-            {/* Tape strand between reels */}
-            <div className="pointer-events-none absolute inset-x-0 top-1/2 -z-0 mx-9 h-[2px] -translate-y-1/2 rounded-full bg-gradient-to-r from-[#3a2510] via-[#1a0f08] to-[#3a2510] opacity-80" />
-            <div className="pointer-events-none absolute inset-x-0 top-1/2 -z-0 mx-9 h-px translate-y-[2px] bg-amber-50/30" />
-
-            <div className="relative z-10 px-2 text-center text-[10px] leading-tight">
-              <span className="block font-display text-sm text-plum sm:text-base">{couple}</span>
-              <span className="text-violet">{date}</span>
-            </div>
-
-            <Reel spinning={spinning} radius={rightR} reduceMotion={reduceMotion} />
-          </div>
-        </div>
+            <p className="truncate text-xs text-[#FDFBF7]/55">{current?.artist || "—"}</p>
+          </motion.div>
+        </AnimatePresence>
       </div>
-    </div>
-  );
-}
 
-function Reel({
-  spinning,
-  radius,
-  reduceMotion,
-}: {
-  spinning: boolean;
-  radius: number; // visual tape radius in arbitrary units (6..11)
-  reduceMotion: boolean;
-}) {
-  // Faster spin when reel is smaller (just like real tape)
-  const duration = 1.3 + (radius - 6) * 0.18;
-  // Tape pad size — visible darker ring around the hub
-  const tapeSize = 16 + (radius - 6) * 2.2; // 16..27
-  return (
-    <div className="relative grid h-11 w-11 place-items-center sm:h-12 sm:w-12">
-      {/* Tape pad (the wound tape) */}
       <div
-        className="absolute rounded-full bg-gradient-to-br from-[#2a1808] to-[#0a0503] shadow-[inset_0_0_4px_rgba(0,0,0,0.7),inset_0_0_0_1px_rgba(255,255,255,0.05)] transition-[width,height] duration-700 ease-out"
-        style={{ width: `${tapeSize}px`, height: `${tapeSize}px` }}
-      />
-      {/* Hub */}
-      <motion.div
-        animate={spinning && !reduceMotion ? { rotate: 360 } : { rotate: 0 }}
-        transition={{ duration, repeat: spinning && !reduceMotion ? Infinity : 0, ease: "linear" }}
-        className="relative z-10 grid h-7 w-7 place-items-center rounded-full border border-plum/30 bg-cream shadow-[0_1px_2px_rgba(0,0,0,0.3)] sm:h-8 sm:w-8"
+        ref={trackRef}
+        onClick={handleSeek}
+        role="slider"
+        aria-label="Posição da faixa"
+        aria-valuenow={Math.round(pct * 100)}
+        tabIndex={0}
+        className="group relative mt-3 h-1.5 cursor-pointer overflow-visible rounded-full bg-[#FDFBF7]/10"
       >
-        {/* 6-tooth hub */}
-        <svg viewBox="0 0 24 24" className="h-5 w-5 fill-plum/80 sm:h-6 sm:w-6">
-          <circle cx="12" cy="12" r="3" />
-          {Array.from({ length: 6 }).map((_, i) => {
-            const a = (i / 6) * Math.PI * 2;
-            const x = 12 + Math.cos(a) * 8;
-            const y = 12 + Math.sin(a) * 8;
-            return <circle key={i} cx={x} cy={y} r="1.5" />;
-          })}
-        </svg>
-      </motion.div>
+        <div
+          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#C4714A] via-[#C9A84C] to-[#F0D78C] shadow-[0_0_8px_rgba(201,168,76,0.55)] transition-[width] duration-150"
+          style={{ width: `${Math.min(100, pct * 100)}%` }}
+        />
+        <span
+          className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#FDFBF7] opacity-0 shadow-[0_0_8px_rgba(201,168,76,0.7)] ring-2 ring-[#C9A84C] transition-opacity group-hover:opacity-100"
+          style={{ left: `${Math.min(100, pct * 100)}%` }}
+        />
+      </div>
+      <div className="mt-1.5 flex justify-between font-mono text-[10px] tabular-nums text-[#FDFBF7]/55">
+        <span>{formatTime(progress)}</span>
+        <span>{formatTime(duration)}</span>
+      </div>
     </div>
   );
 }
 
 /* ─────────────────────── Controls ─────────────────────── */
 
-function PlayerControls(props: {
+function PlayerControls({
+  playing,
+  onPrev,
+  onNext,
+  onTogglePlay,
+  onLike,
+  liked,
+  volume,
+  muted,
+  onVolume,
+  onToggleMute,
+  repeat,
+  onToggleRepeat,
+}: {
   playing: boolean;
   onPrev: () => void;
   onNext: () => void;
   onTogglePlay: () => void;
-  onEject: () => void;
   onLike: () => void;
   liked: boolean;
   volume: number;
@@ -996,64 +741,59 @@ function PlayerControls(props: {
   onToggleRepeat: () => void;
 }) {
   return (
-    <div className="mx-auto w-full max-w-md space-y-4">
+    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4">
       <div className="flex items-center justify-center gap-4">
-        <CtrlBtn onClick={props.onPrev} label="Anterior">
-          <SkipBack className="h-5 w-5" />
-        </CtrlBtn>
+        <IconBtn onClick={onToggleRepeat} label="Repetir" active={repeat}>
+          <Repeat className="h-4 w-4" />
+        </IconBtn>
+        <IconBtn onClick={onPrev} label="Anterior">
+          <SkipBack className="h-5 w-5 fill-current" />
+        </IconBtn>
+
         <motion.button
-          onClick={props.onTogglePlay}
-          whileHover={{ scale: 1.06 }}
-          whileTap={{ scale: 0.94 }}
-          aria-label={props.playing ? "Pausar" : "Tocar"}
-          className="relative grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-coral to-[#ff9472] text-white shadow-[0_12px_30px_-8px_rgba(244,121,117,0.7),inset_0_2px_2px_rgba(255,255,255,0.4)]"
+          onClick={onTogglePlay}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative grid h-16 w-16 place-items-center rounded-full border border-[#C9A84C]/60 bg-gradient-to-br from-[#C9A84C] to-[#9C7E2C] text-[#1a0a10] shadow-[0_20px_40px_-12px_rgba(201,168,76,0.55),inset_0_1px_0_rgba(255,235,200,0.4)]"
+          aria-label={playing ? "Pausar" : "Tocar"}
         >
-          <span className="absolute inset-1 rounded-full bg-gradient-to-br from-white/30 to-transparent" />
-          {props.playing ? (
-            <Pause className="relative h-7 w-7 fill-white" />
-          ) : (
-            <Play className="relative h-7 w-7 fill-white" />
-          )}
+          {playing ? <Pause className="h-6 w-6 fill-current" /> : <Play className="ml-0.5 h-6 w-6 fill-current" />}
         </motion.button>
-        <CtrlBtn onClick={props.onNext} label="Próxima">
-          <SkipForward className="h-5 w-5" />
-        </CtrlBtn>
+
+        <IconBtn onClick={onNext} label="Próxima">
+          <SkipForward className="h-5 w-5 fill-current" />
+        </IconBtn>
+        <IconBtn onClick={onLike} label="Favoritar" active={liked}>
+          <Heart className={`h-4 w-4 ${liked ? "fill-current" : ""}`} />
+        </IconBtn>
       </div>
 
-      <div className="flex items-center justify-between gap-3 rounded-2xl border border-cream/10 bg-cream/[0.04] px-4 py-3 shadow-inner backdrop-blur">
-        <CtrlBtn onClick={props.onToggleMute} label="Volume">
-          {props.muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-        </CtrlBtn>
+      <div className="flex w-full items-center gap-3 px-4">
+        <button
+          onClick={onToggleMute}
+          aria-label={muted ? "Desmutar" : "Mutar"}
+          className="text-[#C9A84C] transition hover:text-[#F0D78C]"
+        >
+          {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+        </button>
         <input
           type="range"
           min={0}
           max={100}
-          value={props.muted ? 0 : props.volume}
-          onChange={(e) => props.onVolume(Number(e.target.value))}
-          className="flex-1 accent-coral"
+          value={muted ? 0 : volume}
+          onChange={(e) => onVolume(Number(e.target.value))}
+          className="flex-1 accent-[#C9A84C]"
           aria-label="Volume"
         />
-        <CtrlBtn onClick={props.onToggleRepeat} label="Repetir" active={props.repeat}>
-          <Repeat className="h-4 w-4" />
-        </CtrlBtn>
-        <CtrlBtn onClick={props.onLike} label="Curtir" active={props.liked}>
-          <Heart className={`h-4 w-4 ${props.liked ? "fill-coral text-coral" : ""}`} />
-        </CtrlBtn>
+        <span className="w-8 text-right font-mono text-[10px] tabular-nums text-[#FDFBF7]/55">
+          {muted ? 0 : volume}
+        </span>
       </div>
-
-      <motion.button
-        onClick={props.onEject}
-        whileHover={{ y: -1 }}
-        whileTap={{ scale: 0.96 }}
-        className="mx-auto flex items-center gap-2 rounded-full border border-cream/20 bg-cream/[0.04] px-5 py-2 text-sm text-cream/80 transition hover:border-cream/40 hover:bg-cream/10 hover:text-cream"
-      >
-        <Power className="h-3.5 w-3.5" /> Ejetar Fita
-      </motion.button>
     </div>
   );
 }
 
-function CtrlBtn({
+function IconBtn({
   children,
   onClick,
   label,
@@ -1068,13 +808,90 @@ function CtrlBtn({
     <motion.button
       onClick={onClick}
       aria-label={label}
-      whileHover={{ scale: 1.08 }}
-      whileTap={{ scale: 0.9 }}
-      className={`grid h-10 w-10 place-items-center rounded-full border border-cream/15 bg-cream/[0.03] transition-colors hover:border-cream/30 hover:bg-cream/10 ${
-        active ? "border-coral/40 bg-coral/15 text-coral" : "text-cream"
+      whileHover={{ scale: 1.06 }}
+      whileTap={{ scale: 0.94 }}
+      className={`grid h-10 w-10 place-items-center rounded-full border transition-colors ${
+        active
+          ? "border-[#C9A84C]/70 bg-[#C9A84C]/15 text-[#F0D78C]"
+          : "border-[#FDFBF7]/15 text-[#FDFBF7]/70 hover:border-[#C9A84C]/40 hover:text-[#F0D78C]"
       }`}
     >
       {children}
     </motion.button>
+  );
+}
+
+function EqBars() {
+  return (
+    <span className="ml-1 flex h-3 items-end gap-[2px]">
+      {[0, 1, 2, 3].map((b) => (
+        <motion.span
+          key={b}
+          className="w-[2px] rounded-sm bg-[#C9A84C]"
+          animate={{ height: ["4px", "12px", "5px", "10px"] }}
+          transition={{ duration: 0.7 + b * 0.12, repeat: Infinity, ease: "easeInOut" }}
+        />
+      ))}
+    </span>
+  );
+}
+
+/* ─────────────────────── Tracklist ─────────────────────── */
+
+function Tracklist({
+  tracks,
+  currentIdx,
+  playing,
+  liked,
+  onSelect,
+}: {
+  tracks: Track[];
+  currentIdx: number;
+  playing: boolean;
+  liked: Record<number, boolean>;
+  onSelect: (i: number) => void;
+}) {
+  return (
+    <div className="mx-auto w-full max-w-md rounded-2xl border border-[#C9A84C]/20 bg-[#1a0a10]/60 p-4 backdrop-blur">
+      <div className="mb-3 flex items-center justify-between border-b border-[#C9A84C]/20 pb-2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#C9A84C]/80">
+          Lado A · Tracklist
+        </p>
+        <p className="font-mono text-[10px] text-[#FDFBF7]/40">
+          {tracks.length.toString().padStart(2, "0")} faixas
+        </p>
+      </div>
+      <ol className="space-y-1">
+        {tracks.map((t, i) => {
+          const active = i === currentIdx;
+          return (
+            <li key={i}>
+              <motion.button
+                onClick={() => onSelect(i)}
+                whileHover={{ x: 2 }}
+                whileTap={{ scale: 0.985 }}
+                className={`group flex w-full items-center gap-3 rounded-md border px-3 py-2 text-left text-sm transition-colors ${
+                  active
+                    ? "border-[#C9A84C]/55 bg-[#C9A84C]/10 text-[#FDFBF7] shadow-[inset_0_0_0_1px_rgba(201,168,76,0.18)]"
+                    : "border-transparent text-[#FDFBF7]/70 hover:border-[#C9A84C]/30 hover:bg-[#C9A84C]/5 hover:text-[#FDFBF7]"
+                }`}
+              >
+                <span className="font-mono text-[10px] tabular-nums text-[#C9A84C]/80">
+                  {(i + 1).toString().padStart(2, "0")}
+                </span>
+                <span className="min-w-0 flex-1 truncate">
+                  <span className="font-display italic">{t.title || `Faixa ${i + 1}`}</span>
+                  {t.artist && (
+                    <span className="ml-2 text-xs text-[#FDFBF7]/45">· {t.artist}</span>
+                  )}
+                </span>
+                {liked[i] && <Heart className="h-3.5 w-3.5 fill-[#C4714A] text-[#C4714A]" />}
+                {active && playing && <EqBars />}
+              </motion.button>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
