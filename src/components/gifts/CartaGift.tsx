@@ -159,7 +159,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                   scale: [0.4, 1.15, 0.7],
                   rotate: 360,
                 }}
-                transition={{ duration: 1.8, delay: p.delay, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 2.2, delay: p.delay, ease: [0.16, 1, 0.3, 1] }}
                 style={{ marginLeft: -p.size / 2, marginTop: -p.size / 2 }}
               >
                 <Rose
@@ -171,6 +171,35 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
           </div>
         )}
       </AnimatePresence>
+
+      {/* Gentle ambient petals around closed envelope */}
+      {!open && (
+        <div className="pointer-events-none absolute inset-0 z-20">
+          {ambientPetals.map((p) => (
+            <motion.div
+              key={`a-${p.id}`}
+              className="absolute"
+              style={{ left: `${p.left}%`, top: "-10%", width: p.size, height: p.size }}
+              initial={{ y: -60, x: 0, rotate: 0, opacity: 0 }}
+              animate={{
+                y: "120vh",
+                x: [0, p.sway, -p.sway, 0],
+                rotate: p.rotate,
+                opacity: [0, 0.7, 0.7, 0.5, 0],
+              }}
+              transition={{
+                duration: p.duration,
+                delay: p.delay,
+                repeat: Infinity,
+                ease: "easeInOut",
+                times: [0, 0.12, 0.5, 0.85, 1],
+              }}
+            >
+              <Rose className="h-full w-full drop-shadow-[0_3px_6px_rgba(107,39,55,0.25)]" />
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       {/* Falling rose rain */}
       {open && (
