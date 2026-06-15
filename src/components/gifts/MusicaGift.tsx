@@ -4,13 +4,13 @@ import {
   Heart,
   Pause,
   Play,
-  Power,
   Repeat,
   SkipBack,
   SkipForward,
   Volume2,
   VolumeX,
 } from "lucide-react";
+
 
 export type Track = { url: string; title?: string; artist?: string };
 
