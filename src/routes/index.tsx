@@ -171,6 +171,104 @@ function Landing() {
         </div>
       </section>
 
+      {/* EXAMPLES — discreet previews of each gift */}
+      <section className="relative border-t border-border/40 bg-background">
+        <div className="mx-auto max-w-6xl px-6 py-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">Anteprime</p>
+            <h2 className="mt-4 font-display text-4xl text-plum lg:text-5xl">
+              Veja como cada presente <em className="text-coral">ganha vida</em>
+            </h2>
+            <div className="mx-auto mt-5 flex items-center justify-center gap-3">
+              <span className="h-px w-10 bg-coral/40" />
+              <Heart className="h-3 w-3 fill-coral text-coral" />
+              <span className="h-px w-10 bg-coral/40" />
+            </div>
+          </div>
+
+          <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                title: "La Lettera",
+                desc: "Envelope selado em lacre, pétalas e palavras que abrem devagar.",
+                preview: (
+                  <div className="relative grid h-full place-items-center">
+                    <div className="relative h-16 w-24 rounded-sm bg-gradient-to-br from-[#FDFBF7] to-[#E8D8C4] shadow-[0_8px_14px_-6px_rgba(107,39,55,0.35)]">
+                      <div className="absolute inset-1 rounded-sm border border-[#C9A84C]/50" />
+                      <svg viewBox="0 0 96 64" className="absolute inset-0">
+                        <path d="M0 0 H96 V12 L48 56 L0 12 Z" fill="#FDFBF7" stroke="#C9A84C" strokeOpacity="0.5" />
+                      </svg>
+                      <span className="absolute left-1/2 top-[58%] h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-[#9B3344] to-[#3F1620] shadow-[inset_0_-1px_2px_rgba(0,0,0,0.4)] ring-1 ring-[#C9A84C]/40" />
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                title: "La Mixtape",
+                desc: "Toca-discos com vinil que gira e trilha escolhida a dois.",
+                preview: (
+                  <div className="relative grid h-full place-items-center">
+                    <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-[#1a0a10] via-[#0d0508] to-black shadow-[0_8px_14px_-6px_rgba(0,0,0,0.6)]">
+                      <div className="absolute inset-1 rounded-full border border-white/5" />
+                      <div className="absolute inset-3 rounded-full border border-white/5" />
+                      <div className="absolute inset-5 rounded-full border border-white/5" />
+                      <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-[#9B3344] to-[#6B2737] ring-1 ring-[#C9A84C]/60" />
+                      <span className="absolute left-1/2 top-1/2 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#C9A84C]" />
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                title: "I Momenti",
+                desc: "Polaroids inclinadas sobre a mesa, álbum de memórias revelado.",
+                preview: (
+                  <div className="relative grid h-full place-items-center">
+                    <div className="relative h-20 w-20">
+                      <div className="absolute left-1 top-2 h-16 w-14 -rotate-6 rounded-sm bg-[#FDFBF7] p-1 pb-3 shadow-[0_6px_12px_-4px_rgba(46,37,32,0.4)]">
+                        <div className="h-full w-full bg-gradient-to-br from-[#C4714A]/40 to-[#6B2737]/30" />
+                      </div>
+                      <div className="absolute right-1 top-1 h-16 w-14 rotate-6 rounded-sm bg-[#FDFBF7] p-1 pb-3 shadow-[0_6px_12px_-4px_rgba(46,37,32,0.4)]">
+                        <div className="h-full w-full bg-gradient-to-br from-[#E8B49A]/50 to-[#C4714A]/30" />
+                      </div>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                title: "La Mappa",
+                desc: "Mapa do amor com a distância em batimentos e quilômetros.",
+                preview: (
+                  <div className="relative grid h-full place-items-center">
+                    <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-[#F5EFE4] to-[#E8D8C4] shadow-[inset_0_2px_6px_rgba(107,39,55,0.15)]">
+                      <svg viewBox="0 0 80 80" className="absolute inset-0">
+                        <path d="M40 12 C 28 24, 28 38, 40 48 C 52 38, 52 24, 40 12 Z" fill="#6B2737" opacity="0.18" />
+                        <circle cx="40" cy="32" r="3" fill="#C4714A" />
+                        <circle cx="40" cy="32" r="6" fill="none" stroke="#C9A84C" strokeOpacity="0.6" />
+                      </svg>
+                    </div>
+                  </div>
+                ),
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.08, duration: 0.6 }}
+                className="group rounded-sm border border-[#C9A84C]/25 bg-cream/40 p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-[#C9A84C]/50 hover:shadow-[0_18px_30px_-15px_rgba(107,39,55,0.25)]"
+              >
+                <div className="h-28">{card.preview}</div>
+                <h3 className="mt-4 font-display text-xl italic text-plum">{card.title}</h3>
+                <p className="mt-2 text-[13px] leading-relaxed tracking-wide text-muted-foreground">
+                  {card.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* GIFTS — magazine editorial */}
       <section id="presentes" className="relative border-t border-border/40 bg-cream/40">
         <div className="mx-auto max-w-6xl px-6 py-24">
