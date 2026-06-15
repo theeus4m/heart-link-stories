@@ -10,30 +10,91 @@ export type CartaData = {
   song?: string;
 };
 
-// Rose SVG — soft, elegant, romantic
-function Rose({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
+// Romantic rose petal — curled silhouette with depth, highlight and vein
+function Petal({
+  className = "",
+  style,
+  variant = 0,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  variant?: number;
+}) {
+  const palettes = [
+    { hi: "#FBE3DA", mid: "#E89A8E", low: "#B14A55", edge: "#6B2737" },
+    { hi: "#F8D2C4", mid: "#D98472", low: "#A23E48", edge: "#5A1E2C" },
+    { hi: "#F5C9B8", mid: "#C4714A", low: "#8B3A36", edge: "#4F1820" },
+    { hi: "#F2BFB0", mid: "#B85D55", low: "#7A2530", edge: "#3F1218" },
+  ];
+  const p = palettes[((variant % palettes.length) + palettes.length) % palettes.length];
+  const uid = `pt-${variant}-${Math.round((style?.width as number) || 0)}`;
   return (
-    <svg viewBox="0 0 32 32" className={className} style={style} aria-hidden="true">
+    <svg viewBox="0 0 64 72" className={className} style={style} aria-hidden="true">
       <defs>
-        <radialGradient id="rg" cx="50%" cy="45%" r="55%">
-          <stop offset="0%" stopColor="#F4B6B0" />
-          <stop offset="55%" stopColor="#C4714A" />
-          <stop offset="100%" stopColor="#6B2737" />
+        <radialGradient id={`${uid}-fill`} cx="50%" cy="35%" r="70%">
+          <stop offset="0%" stopColor={p.hi} />
+          <stop offset="42%" stopColor={p.mid} />
+          <stop offset="85%" stopColor={p.low} />
+          <stop offset="100%" stopColor={p.edge} />
         </radialGradient>
+        <radialGradient id={`${uid}-glow`} cx="50%" cy="28%" r="38%">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id={`${uid}-vein`} x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor={p.edge} stopOpacity="0" />
+          <stop offset="55%" stopColor={p.edge} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={p.edge} stopOpacity="0" />
+        </linearGradient>
       </defs>
-      <g>
-        <path
-          d="M16 6c4 0 7 3 7 6.5 0 2-1 3.5-2.6 4.4 2.2.6 3.6 2.4 3.6 4.6 0 3-2.7 5-6 5-1.6 0-3-.5-4-1.3-1 .8-2.4 1.3-4 1.3-3.3 0-6-2-6-5 0-2.2 1.4-4 3.6-4.6C6 16 5 14.5 5 12.5 5 9 8 6 12 6c.7 0 1.4.1 2 .3.6-.2 1.3-.3 2-.3z"
-          fill="url(#rg)"
-        />
-        <path
-          d="M16 11c2 0 3.5 1.4 3.5 3.2 0 1.6-1.2 2.8-2.8 3 1.3.3 2.3 1.3 2.3 2.6 0 1.6-1.4 2.7-3 2.7s-3-1.1-3-2.7c0-1.3 1-2.3 2.3-2.6-1.6-.2-2.8-1.4-2.8-3C12.5 12.4 14 11 16 11z"
-          fill="#6B2737"
-          opacity="0.55"
-        />
-      </g>
+      {/* Soft drop */}
+      <ellipse cx="32" cy="66" rx="14" ry="2.2" fill={p.edge} opacity="0.18" />
+      {/* Petal silhouette: pointed base, curled rounded tip */}
+      <path
+        d="M32 4
+           C 50 10, 60 24, 58 40
+           C 56 54, 44 64, 32 64
+           C 20 64, 8 54, 6 40
+           C 4 24, 14 10, 32 4 Z"
+        fill={`url(#${uid}-fill)`}
+      />
+      {/* Inner curled fold */}
+      <path
+        d="M32 14
+           C 44 18, 50 28, 48 40
+           C 46 50, 38 56, 32 56
+           C 26 56, 18 50, 16 40
+           C 14 28, 20 18, 32 14 Z"
+        fill={p.edge}
+        opacity="0.16"
+      />
+      {/* Curl crease near the tip */}
+      <path
+        d="M14 36 C 22 46, 42 46, 50 36"
+        stroke={p.edge}
+        strokeWidth="0.6"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.35"
+      />
+      {/* Central vein */}
+      <path d="M32 8 C 30 28, 30 46, 32 60" stroke={`url(#${uid}-vein)`} strokeWidth="0.8" fill="none" />
+      {/* Specular highlight */}
+      <ellipse cx="26" cy="22" rx="10" ry="6" fill={`url(#${uid}-glow)`} />
     </svg>
   );
+}
+
+function Rose({
+  className = "",
+  style,
+  variant,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  variant?: number;
+}) {
+  return <Petal className={className} style={style} variant={variant ?? 0} />;
 }
 
 // Ornate gold flourish divider
