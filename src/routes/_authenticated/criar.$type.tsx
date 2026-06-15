@@ -62,7 +62,7 @@ const MAPA_DEFAULT: MapaData = {
   personB: { name: "João", city: "Lisboa, Portugal" },
   photo: "",
   message: "Mesmo separados por {km} km, meu coração está sempre ao seu lado.",
-  themeColor: "#f47975",
+  themeColor: "#C4714A",
   finalMessage: "Eu te amo — em qualquer lugar do mundo.",
 };
 

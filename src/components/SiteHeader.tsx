@@ -3,7 +3,14 @@ import { LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import logoAsset from "@/assets/chronelo-logo.png.asset.json";
+
+function LogoTipo({ className = "" }: { className?: string }) {
+  return (
+    <span className={`font-display tracking-[0.04em] ${className}`}>
+      Chr<em className="text-gold">o</em>nelo
+    </span>
+  );
+}
 
 export function SiteHeader() {
   const [authed, setAuthed] = useState(false);
@@ -19,8 +26,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 backdrop-blur-md bg-cream/85 border-b border-gold/30">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link to="/" className="flex items-center gap-2.5 group" aria-label="Chronelo">
-          <img src={logoAsset.url} alt="" className="h-9 w-auto md:h-10 transition-transform duration-500 group-hover:scale-[1.04]" />
-          <span className="font-display text-2xl tracking-[0.22em] uppercase text-plum">Chronelo</span>
+          <LogoTipo className="text-2xl text-plum group-hover:text-vinho transition-colors duration-500" />
         </Link>
         <nav className="flex items-center gap-1">
           {authed ? (
@@ -45,7 +51,7 @@ export function SiteHeader() {
               <Button asChild variant="ghost" size="sm" className="text-plum hover:text-gold transition-colors duration-300">
                 <Link to="/auth">Entrar</Link>
               </Button>
-              <Button asChild size="sm" className="rounded-none bg-plum text-cream hover:bg-nero hover:text-gold border border-plum hover:border-gold transition-all duration-500 px-6 tracking-wider uppercase text-xs">
+              <Button asChild size="sm" className="rounded-none bg-plum text-cream hover:bg-vinho-escuro hover:text-gold border border-plum hover:border-gold transition-all duration-500 px-6 tracking-wider uppercase text-xs">
                 <Link to="/auth">Criar presente</Link>
               </Button>
             </>

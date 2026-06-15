@@ -108,12 +108,12 @@ function Landing() {
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,color-mix(in_oklab,var(--blush)_70%,transparent),transparent_60%)]" />
         <div className="mx-auto max-w-5xl px-6 pt-20 pb-24 text-center lg:pt-28 lg:pb-32">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <p className="eyebrow">Atelier digitale d'amore · Est. 2026</p>
+            <p className="eyebrow">Atelier de memórias · Est. 2026</p>
             <Ornament className="mt-4" />
             <h1 className="mt-6 font-display text-[3.25rem] leading-[0.95] text-plum sm:text-7xl lg:text-[6rem]">
-              Un piccolo gesto,
+              Cada momento
               <br />
-              <span className="italic text-coral">una grande</span> emoção.
+              merece ser <em className="text-coral">eterno.</em>
             </h1>
             <p className="mx-auto mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
               Quatro presentes feitos à mão, costurados em um único link. Carta, Mixtape,

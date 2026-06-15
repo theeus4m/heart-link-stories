@@ -77,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=Karla:wght@300;400;500;600;700&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -93,7 +93,17 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        {/* Fio do tempo — signature golden line */}
+        <div
+          className="fixed left-1/2 top-0 z-0 hidden h-full w-px md:block"
+          style={{
+            background: "linear-gradient(to bottom, transparent, var(--gold) 15%, var(--gold) 85%, transparent)",
+            opacity: 0.35,
+            pointerEvents: "none",
+          }}
+          aria-hidden="true"
+        />
+        <div className="relative z-[1]">{children}</div>
         <Scripts />
       </body>
     </html>
