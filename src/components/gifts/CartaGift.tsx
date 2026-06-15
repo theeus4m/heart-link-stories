@@ -13,7 +13,7 @@ export type CartaData = {
 // Rose SVG — soft, elegant, romantic
 function Rose({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
+    <svg viewBox="0 0 32 32" className={className} style={style} aria-hidden="true">
       <defs>
         <radialGradient id="rg" cx="50%" cy="45%" r="55%">
           <stop offset="0%" stopColor="#F4B6B0" />
