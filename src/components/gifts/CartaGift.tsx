@@ -57,33 +57,48 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
 
   const petals = useMemo(
     () =>
-      [...Array(34)].map((_, i) => ({
+      [...Array(56)].map((_, i) => ({
         id: i,
         left: Math.random() * 100,
-        delay: Math.random() * 5,
-        duration: 8 + Math.random() * 7,
-        size: 16 + Math.random() * 30,
+        delay: Math.random() * 6,
+        duration: 7 + Math.random() * 8,
+        size: 14 + Math.random() * 32,
         rotate: (Math.random() > 0.5 ? 1 : -1) * (180 + Math.random() * 360),
-        sway: 30 + Math.random() * 90,
+        sway: 30 + Math.random() * 110,
       })),
     [],
   );
 
   const burst = useMemo(
     () =>
-      [...Array(18)].map((_, i) => ({
+      [...Array(32)].map((_, i) => ({
         id: i,
-        angle: (i / 18) * Math.PI * 2 + Math.random() * 0.3,
-        distance: 200 + Math.random() * 160,
-        size: 22 + Math.random() * 22,
-        delay: Math.random() * 0.2,
+        angle: (i / 32) * Math.PI * 2 + Math.random() * 0.4,
+        distance: 180 + Math.random() * 220,
+        size: 18 + Math.random() * 30,
+        delay: Math.random() * 0.35,
+      })),
+    [],
+  );
+
+  // Gentle ambient petals around the closed envelope
+  const ambientPetals = useMemo(
+    () =>
+      [...Array(14)].map((_, i) => ({
+        id: i,
+        left: 10 + Math.random() * 80,
+        delay: Math.random() * 4,
+        duration: 10 + Math.random() * 8,
+        size: 12 + Math.random() * 18,
+        rotate: (Math.random() > 0.5 ? 1 : -1) * (90 + Math.random() * 180),
+        sway: 20 + Math.random() * 50,
       })),
     [],
   );
 
   const sparkles = useMemo(
     () =>
-      [...Array(28)].map((_, i) => ({
+      [...Array(36)].map((_, i) => ({
         id: i,
         left: Math.random() * 100,
         top: Math.random() * 100,
