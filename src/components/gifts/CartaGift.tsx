@@ -118,26 +118,29 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
 
   const petals = useMemo(
     () =>
-      [...Array(34)].map((_, i) => ({
+      [...Array(38)].map((_, i) => ({
         id: i,
         left: Math.random() * 100,
         delay: Math.random() * 5,
         duration: 8 + Math.random() * 7,
-        size: 16 + Math.random() * 30,
+        size: 18 + Math.random() * 32,
         rotate: (Math.random() > 0.5 ? 1 : -1) * (180 + Math.random() * 360),
         sway: 30 + Math.random() * 90,
+        tilt: -25 + Math.random() * 50,
+        variant: Math.floor(Math.random() * 4),
       })),
     [],
   );
 
   const burst = useMemo(
     () =>
-      [...Array(18)].map((_, i) => ({
+      [...Array(20)].map((_, i) => ({
         id: i,
-        angle: (i / 18) * Math.PI * 2 + Math.random() * 0.3,
-        distance: 200 + Math.random() * 160,
-        size: 22 + Math.random() * 22,
+        angle: (i / 20) * Math.PI * 2 + Math.random() * 0.3,
+        distance: 200 + Math.random() * 180,
+        size: 24 + Math.random() * 26,
         delay: Math.random() * 0.2,
+        variant: Math.floor(Math.random() * 4),
       })),
     [],
   );
