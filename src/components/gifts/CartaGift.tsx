@@ -11,7 +11,7 @@ export type CartaData = {
 };
 
 // Rose SVG — soft, elegant, romantic
-function Rose({ className = "" }: { className?: string }) {
+function Rose({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
       <defs>
