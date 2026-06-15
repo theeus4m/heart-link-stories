@@ -4,15 +4,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Chronelo — Italian Luxury Editorial
-   Palette: #FDFBF7 marfim · #2B0C14 vinho nero · #D4AF37 champagne · #111111 nero · #4A4A4A grafite
-   Fonts: Cormorant Garamond (display) · Karla (sans)
-   Rule 60-30-10 : marfim · vinho nero · champagne
+/* Chronelo — Brand Book Palette
+   Vinho Profundo #6B2737 · Terracota #C4714A · Dourado Relicário #C9A84C
+   Creme de Papel #F5F0E8 · Vinho Escuro #4A1A26 · Tinta #2E2520
+   Fonts: Cormorant Garamond (display) · DM Sans (sans)
 */
 
 @theme inline {
-  --font-display: "Cormorant Garamond", "Cormorant", ui-serif, Georgia, serif;
-  --font-sans: "Karla", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", ui-serif, Georgia, serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -47,6 +47,8 @@
   --color-gold: var(--gold);
   --color-nero: var(--nero);
   --color-grafite: var(--grafite);
+  --color-terracota: var(--terracota);
+  --color-vinho: var(--vinho);
 
   --shadow-glow: 0 30px 80px -30px color-mix(in oklab, var(--gold) 35%, transparent);
   --shadow-soft: 0 10px 40px -20px color-mix(in oklab, var(--plum) 25%, transparent);
@@ -55,62 +57,71 @@
 :root {
   --radius: 0.25rem;
 
-  /* Chronelo palette — exact hex */
-  --cream: #FDFBF7;     /* Marfim Real — 60% */
-  --plum: #2B0C14;      /* Vinho Nero — 30% (titles, primary) */
-  --coral: #2B0C14;     /* alias — primary CTAs */
-  --gold: #D4AF37;      /* Dourado Champagne — 10% accents */
-  --nero: #111111;      /* Preto Absoluto — footer/overlays */
-  --grafite: #4A4A4A;   /* Texto secundário */
-  --blush: #F5EFE5;     /* champagne soft — surfaces */
-  --violet: #111111;    /* alias */
+  /* Chronelo Brand Book palette — exact hex */
+  --vinho: #6B2737;       /* Vinho Profundo — âncora da marca */
+  --vinho-escuro: #4A1A26; /* Vinho Escuro */
+  --terracota: #C4714A;   /* Terracota — calor humano, destaques */
+  --dourado: #C9A84C;     /* Dourado Relicário — fio do tempo */
+  --creme: #F5F0E8;       /* Creme de Papel — fundo */
+  --creme-escuro: #EDE5D8; /* Creme Escuro */
+  --tinta: #2E2520;       /* Tinta — texto */
 
-  --background: #FDFBF7;
-  --foreground: #2B0C14;
+  /* Aliases for backward compatibility with Tailwind classes */
+  --plum: #6B2737;        /* maps to vinho profundo */
+  --coral: #C4714A;       /* maps to terracota */
+  --gold: #C9A84C;        /* maps to dourado relicário */
+  --cream: #F5F0E8;       /* maps to creme de papel */
+  --blush: #EDE5D8;       /* maps to creme escuro */
+  --nero: #2E2520;        /* maps to tinta */
+  --grafite: #5a4f47;     /* texto secundário quente */
+  --violet: #2E2520;      /* alias */
+
+  /* Semantic tokens */
+  --background: #F5F0E8;
+  --foreground: #2E2520;
   --card: #FFFFFF;
-  --card-foreground: #2B0C14;
+  --card-foreground: #2E2520;
   --popover: #FFFFFF;
-  --popover-foreground: #2B0C14;
-  --primary: #2B0C14;
-  --primary-foreground: #FDFBF7;
-  --secondary: #F5EFE5;
-  --secondary-foreground: #2B0C14;
-  --muted: #F2EDE4;
-  --muted-foreground: #4A4A4A;
-  --accent: #D4AF37;
-  --accent-foreground: #2B0C14;
+  --popover-foreground: #2E2520;
+  --primary: #6B2737;
+  --primary-foreground: #F5F0E8;
+  --secondary: #EDE5D8;
+  --secondary-foreground: #2E2520;
+  --muted: #EDE5D8;
+  --muted-foreground: #5a4f47;
+  --accent: #C9A84C;
+  --accent-foreground: #2E2520;
   --destructive: oklch(0.55 0.20 25);
-  --destructive-foreground: #FDFBF7;
+  --destructive-foreground: #F5F0E8;
   --border: #E8E1D3;
   --input: #EDE6D8;
-  --ring: #D4AF37;
+  --ring: #C9A84C;
 
-  --gradient-romance: linear-gradient(135deg, #2B0C14 0%, #111111 100%);
-  --gradient-soft: linear-gradient(180deg, #FDFBF7 0%, #F5EFE5 100%);
-  --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #B8902A 100%);
+  --gradient-romance: linear-gradient(135deg, #6B2737 0%, #4A1A26 100%);
+  --gradient-soft: linear-gradient(180deg, #F5F0E8 0%, #EDE5D8 100%);
+  --gradient-gold: linear-gradient(135deg, #C9A84C 0%, #B8902A 100%);
 }
 
-
 .dark {
-  --background: oklch(0.18 0.03 320);
-  --foreground: oklch(0.97 0.012 60);
-  --card: oklch(0.23 0.04 320);
-  --card-foreground: oklch(0.97 0.012 60);
-  --popover: oklch(0.23 0.04 320);
-  --popover-foreground: oklch(0.97 0.012 60);
-  --primary: var(--coral);
-  --primary-foreground: oklch(0.985 0.005 60);
-  --secondary: oklch(0.30 0.05 320);
-  --secondary-foreground: oklch(0.97 0.012 60);
-  --muted: oklch(0.27 0.04 320);
-  --muted-foreground: oklch(0.75 0.03 30);
-  --accent: var(--violet);
-  --accent-foreground: oklch(0.99 0.005 60);
+  --background: #2E2520;
+  --foreground: #F5F0E8;
+  --card: #4A1A26;
+  --card-foreground: #F5F0E8;
+  --popover: #4A1A26;
+  --popover-foreground: #F5F0E8;
+  --primary: #C9A84C;
+  --primary-foreground: #2E2520;
+  --secondary: #4A1A26;
+  --secondary-foreground: #F5F0E8;
+  --muted: #4A1A26;
+  --muted-foreground: #C9A84C;
+  --accent: #C4714A;
+  --accent-foreground: #F5F0E8;
   --destructive: oklch(0.6 0.22 25);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.34 0.04 320);
-  --input: oklch(0.32 0.04 320);
-  --ring: var(--coral);
+  --destructive-foreground: #F5F0E8;
+  --border: #5a4f47;
+  --input: #5a4f47;
+  --ring: #C9A84C;
 }
 
 @layer base {
@@ -119,6 +130,8 @@
     background: var(--gradient-soft);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-weight: 300;
+    line-height: 1.7;
     font-feature-settings: "ss01", "ss02", "liga", "kern";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -134,7 +147,7 @@
 
 @utility gradient-romance { background-image: var(--gradient-romance); }
 @utility text-gradient-romance {
-  background-image: linear-gradient(135deg, var(--coral), var(--plum) 90%);
+  background-image: linear-gradient(135deg, var(--plum), var(--vinho-escuro) 90%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
@@ -145,16 +158,16 @@
 @utility eyebrow {
   font-family: var(--font-sans);
   font-size: 0.7rem;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0.32em;
   text-transform: uppercase;
-  color: var(--coral);
+  color: var(--terracota);
 }
 @utility rule-ornate {
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--coral);
+  color: var(--terracota);
   &::before, &::after {
     content: "";
     display: inline-block;
@@ -163,6 +176,19 @@
     background: currentColor;
     opacity: 0.5;
   }
+}
+
+/* Fio do tempo — signature golden line */
+@utility fio-do-tempo {
+  position: fixed;
+  left: 50%;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--gold) 15%, var(--gold) 85%, transparent);
+  opacity: 0.35;
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* Romantic animations */
@@ -184,10 +210,14 @@
   0% { transform: rotateX(0deg); }
   100% { transform: rotateX(-180deg); }
 }
+@keyframes respira {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.06); opacity: 0.6; }
+}
 
 .animate-heartbeat { animation: heartbeat 1.6s ease-in-out infinite; }
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--coral) 30%, transparent), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--terracota) 30%, transparent), transparent);
   background-size: 200% 100%;
   animation: shimmer 2.5s linear infinite;
 }
