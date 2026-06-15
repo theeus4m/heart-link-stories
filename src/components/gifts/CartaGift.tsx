@@ -324,7 +324,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
       )}
 
 
-      <div className="relative z-10 mx-auto grid min-h-screen max-w-3xl place-items-center px-5 py-12">
+      <div className="relative z-[30] mx-auto grid min-h-screen max-w-3xl place-items-center px-5 py-12">
         <AnimatePresence mode="wait">
           {!open ? (
             <motion.button
