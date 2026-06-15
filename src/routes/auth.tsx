@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Heart } from "lucide-react";
-import logoAsset from "@/assets/chronelo-logo.png.asset.json";
 import { motion } from "motion/react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -19,6 +18,14 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
+function LogoTipo({ className = "" }: { className?: string }) {
+  return (
+    <span className={`font-display tracking-[0.04em] ${className}`}>
+      Chr<em className="text-gold">o</em>nelo
+    </span>
+  );
+}
 
 function AuthPage() {
   const navigate = useNavigate();
@@ -90,8 +97,7 @@ function AuthPage() {
       <div className="flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           <Link to="/" className="mb-8 inline-flex items-center gap-3" aria-label="Chronelo">
-            <img src={logoAsset.url} alt="" className="h-10 w-auto" />
-            <span className="font-display text-xl tracking-[0.22em] uppercase text-plum">Chronelo</span>
+            <LogoTipo className="text-2xl text-plum" />
           </Link>
           <h1 className="font-display text-4xl text-plum">
             {mode === "signin" ? "Bem-vindo de volta" : "Crie sua conta"}
