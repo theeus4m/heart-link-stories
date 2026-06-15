@@ -93,7 +93,17 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        {/* Fio do tempo — signature golden line */}
+        <div
+          className="fixed left-1/2 top-0 z-0 hidden h-full w-px md:block"
+          style={{
+            background: "linear-gradient(to bottom, transparent, var(--gold) 15%, var(--gold) 85%, transparent)",
+            opacity: 0.35,
+            pointerEvents: "none",
+          }}
+          aria-hidden="true"
+        />
+        <div className="relative z-[1]">{children}</div>
         <Scripts />
       </body>
     </html>
