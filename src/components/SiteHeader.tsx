@@ -3,6 +3,8 @@ import { LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useI18n } from "@/lib/i18n";
 
 function LogoTipo({ className = "" }: { className?: string }) {
   return (
@@ -15,6 +17,7 @@ function LogoTipo({ className = "" }: { className?: string }) {
 export function SiteHeader() {
   const [authed, setAuthed] = useState(false);
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
@@ -28,11 +31,11 @@ export function SiteHeader() {
         <Link to="/" className="flex items-center gap-2.5 group" aria-label="Chronelo">
           <LogoTipo className="text-2xl text-plum group-hover:text-vinho transition-colors duration-500" />
         </Link>
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-2">
           {authed ? (
             <>
               <Button asChild variant="ghost" size="sm" className="text-plum hover:text-gold transition-colors duration-300">
-                <Link to="/dashboard">Meus presentes</Link>
+                <Link to="/dashboard">{t("nav.gifts")}</Link>
               </Button>
               <Button
                 size="sm"
@@ -43,19 +46,21 @@ export function SiteHeader() {
                   navigate({ to: "/" });
                 }}
               >
-                <LogOut className="h-4 w-4" /> Sair
+                <LogOut className="h-4 w-4" /> {t("nav.signout")}
               </Button>
             </>
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="text-plum hover:text-gold transition-colors duration-300">
-                <Link to="/auth">Entrar</Link>
+                <Link to="/auth">{t("nav.signin")}</Link>
               </Button>
               <Button asChild size="sm" className="rounded-none bg-plum text-cream hover:bg-vinho-escuro hover:text-gold border border-plum hover:border-gold transition-all duration-500 px-6 tracking-wider uppercase text-xs">
-                <Link to="/auth">Criar presente</Link>
+                <Link to="/auth">{t("nav.create")}</Link>
               </Button>
             </>
           )}
+          <div className="ml-1 h-5 w-px bg-gold/30" aria-hidden="true" />
+          <LanguageSwitcher />
         </nav>
       </div>
     </header>
