@@ -518,15 +518,35 @@ function Turntable({
 
       {/* Vinyl platter */}
       <div className="relative grid h-full w-full place-items-center">
-        <button
+        <motion.button
           type="button"
           onClick={!started ? onStart : undefined}
           aria-label={started ? "Vinil" : "Tocar disco"}
-          className="relative aspect-square w-[88%] cursor-pointer"
+          className="group relative aspect-square w-[88%]"
           style={{ cursor: started ? "default" : "pointer" }}
+          whileHover={!started ? { scale: 1.03 } : undefined}
+          whileTap={!started ? { scale: 0.97 } : undefined}
+          animate={
+            !started && !reduceMotion
+              ? { rotate: [-1.5, 1.5, -1.5] }
+              : { rotate: 0 }
+          }
+          transition={
+            !started && !reduceMotion
+              ? { duration: 4, repeat: Infinity, ease: "easeInOut" }
+              : { duration: 0.4 }
+          }
         >
-          {/* outer halo */}
-          <div className="absolute -inset-3 rounded-full bg-[radial-gradient(circle,rgba(201,168,76,0.18),transparent_70%)] blur-xl" />
+          {/* outer halo — brighter & pulsing when waiting for interaction */}
+          <motion.div
+            className="absolute -inset-4 rounded-full bg-[radial-gradient(circle,rgba(201,168,76,0.35),transparent_70%)] blur-xl"
+            animate={
+              !started
+                ? { opacity: [0.4, 0.9, 0.4], scale: [0.95, 1.05, 0.95] }
+                : { opacity: 0.5, scale: 1 }
+            }
+            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+          />
 
           <motion.div
             className="relative h-full w-full rounded-full"
@@ -543,6 +563,7 @@ function Turntable({
                 : { duration: 0.6 }
             }
           >
+
             {/* vinyl grooves — concentric rings */}
             {Array.from({ length: 22 }).map((_, i) => {
               const inset = 6 + i * 1.6;
