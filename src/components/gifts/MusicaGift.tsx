@@ -647,7 +647,8 @@ function Turntable({
               </g>
             </svg>
           </motion.div>
-        </button>
+        </motion.button>
+
       </div>
     </div>
   );
