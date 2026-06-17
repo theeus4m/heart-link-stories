@@ -342,11 +342,15 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 1.95, duration: 1.4 }}
+                  transition={{ delay: 1.95, duration: 1 }}
                   className="relative whitespace-pre-wrap text-center font-display text-xl italic leading-relaxed text-[#2E2520] md:text-2xl"
                 >
-                  {data.message}
+                  {typed}
+                  {typed.length < (data.message?.length ?? 0) && (
+                    <span className="ml-0.5 inline-block h-[1em] w-[2px] -mb-1 animate-pulse bg-[#6B2737]/60" />
+                  )}
                 </motion.p>
+
 
                 {data.signature && (
                   <motion.p
