@@ -371,21 +371,23 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
             Nenhuma música foi adicionada nesta mixtape.
           </p>
         ) : !started ? (
-          <div className="text-center">
-            <motion.button
-              onClick={start}
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.96 }}
-              className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full border border-[#C9A84C]/60 bg-gradient-to-br from-[#C9A84C] to-[#9C7E2C] px-8 py-3 font-display text-lg italic text-[#1a0a10] shadow-[0_18px_40px_-12px_rgba(201,168,76,0.6)]"
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.3 }}
+            className="text-center"
+          >
+            <motion.p
+              animate={{ opacity: [0.45, 1, 0.45] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+              className="font-mono text-[10px] uppercase tracking-[0.5em] text-[#C9A84C]"
             >
-              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-              <Play className="h-5 w-5 fill-[#1a0a10]" />
-              Tocar o disco
-            </motion.button>
-            <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.4em] text-[#FDFBF7]/40">
-              pouse a agulha
+              ↑ toque no disco para tocar ↑
+            </motion.p>
+            <p className="mt-3 font-display text-base italic text-[#FDFBF7]/55">
+              gire a lembrança e deixe a música acontecer
             </p>
-          </div>
+          </motion.div>
         ) : (
           <PlayerControls
             playing={playing}
@@ -402,6 +404,7 @@ export function MusicaGift({ data, title }: { data: MusicaData; title: string })
             onToggleRepeat={() => setRepeat((r) => !r)}
           />
         )}
+
 
         {/* Tracklist */}
         {tracks.length > 0 && (
@@ -515,15 +518,35 @@ function Turntable({
 
       {/* Vinyl platter */}
       <div className="relative grid h-full w-full place-items-center">
-        <button
+        <motion.button
           type="button"
           onClick={!started ? onStart : undefined}
           aria-label={started ? "Vinil" : "Tocar disco"}
-          className="relative aspect-square w-[88%] cursor-pointer"
+          className="group relative aspect-square w-[88%]"
           style={{ cursor: started ? "default" : "pointer" }}
+          whileHover={!started ? { scale: 1.03 } : undefined}
+          whileTap={!started ? { scale: 0.97 } : undefined}
+          animate={
+            !started && !reduceMotion
+              ? { rotate: [-1.5, 1.5, -1.5] }
+              : { rotate: 0 }
+          }
+          transition={
+            !started && !reduceMotion
+              ? { duration: 4, repeat: Infinity, ease: "easeInOut" }
+              : { duration: 0.4 }
+          }
         >
-          {/* outer halo */}
-          <div className="absolute -inset-3 rounded-full bg-[radial-gradient(circle,rgba(201,168,76,0.18),transparent_70%)] blur-xl" />
+          {/* outer halo — brighter & pulsing when waiting for interaction */}
+          <motion.div
+            className="absolute -inset-4 rounded-full bg-[radial-gradient(circle,rgba(201,168,76,0.35),transparent_70%)] blur-xl"
+            animate={
+              !started
+                ? { opacity: [0.4, 0.9, 0.4], scale: [0.95, 1.05, 0.95] }
+                : { opacity: 0.5, scale: 1 }
+            }
+            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+          />
 
           <motion.div
             className="relative h-full w-full rounded-full"
@@ -540,6 +563,7 @@ function Turntable({
                 : { duration: 0.6 }
             }
           >
+
             {/* vinyl grooves — concentric rings */}
             {Array.from({ length: 22 }).map((_, i) => {
               const inset = 6 + i * 1.6;
@@ -623,7 +647,8 @@ function Turntable({
               </g>
             </svg>
           </motion.div>
-        </button>
+        </motion.button>
+
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Heart } from "lucide-react";
 
 export type CartaData = {
@@ -115,58 +115,11 @@ function Flourish({ className = "" }: { className?: string }) {
 
 export function CartaGift({ data, title: _title }: { data: CartaData; title: string }) {
   const [open, setOpen] = useState(false);
-
-  // Background petals (behind letter) — smaller, softer, slightly blurred for depth
-  const petalsBack = useMemo(
-    () =>
-      [...Array(24)].map((_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        delay: Math.random() * 6,
-        duration: 12 + Math.random() * 6,
-        size: 14 + Math.random() * 18,
-        rotate: (Math.random() > 0.5 ? 1 : -1) * (180 + Math.random() * 360),
-        sway: 20 + Math.random() * 60,
-        tilt: -25 + Math.random() * 50,
-        variant: Math.floor(Math.random() * 4),
-      })),
-    [],
-  );
-
-  // Foreground petals (in front of letter) — larger, sharper, slower for parallax
-  const petalsFront = useMemo(
-    () =>
-      [...Array(14)].map((_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        delay: Math.random() * 5,
-        duration: 9 + Math.random() * 5,
-        size: 28 + Math.random() * 30,
-        rotate: (Math.random() > 0.5 ? 1 : -1) * (180 + Math.random() * 360),
-        sway: 40 + Math.random() * 80,
-        tilt: -25 + Math.random() * 50,
-        variant: Math.floor(Math.random() * 4),
-      })),
-    [],
-  );
-
-  const burst = useMemo(
-    () =>
-      [...Array(28)].map((_, i) => ({
-        id: i,
-        angle: (i / 28) * Math.PI * 2 + Math.random() * 0.35,
-        distance: 180 + Math.random() * 240,
-        size: 22 + Math.random() * 32,
-        delay: Math.random() * 0.25,
-        variant: Math.floor(Math.random() * 4),
-        tilt: -30 + Math.random() * 60,
-      })),
-    [],
-  );
+  const [typed, setTyped] = useState("");
 
   const sparkles = useMemo(
     () =>
-      [...Array(22)].map((_, i) => ({
+      [...Array(18)].map((_, i) => ({
         id: i,
         left: Math.random() * 100,
         top: Math.random() * 100,
@@ -177,13 +130,35 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
     [],
   );
 
+  // Typewriter effect for the message after the letter opens
+  useEffect(() => {
+    if (!open || !data.message) return;
+    const text = data.message;
+    setTyped("");
+    let i = 0;
+    const start = window.setTimeout(() => {
+      const id = window.setInterval(() => {
+        i += 1;
+        setTyped(text.slice(0, i));
+        if (i >= text.length) window.clearInterval(id);
+      }, 28);
+      // store id on the window timeout via closure cleanup
+      (start as any).__id = id;
+    }, 2100);
+    return () => {
+      window.clearTimeout(start);
+      const id = (start as any).__id;
+      if (id) window.clearInterval(id);
+    };
+  }, [open, data.message]);
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#F5EFE4]">
       {/* Layered ambient glow — warm romantic vignette */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.18),transparent_55%),radial-gradient(ellipse_at_center,rgba(196,113,74,0.14),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(107,39,55,0.28),transparent_60%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(46,37,32,0.35)_100%)]" />
 
-      {/* Ambient golden dust — refined, fewer & sharper */}
+      {/* Ambient golden dust — subtle, no petals */}
       <div className="pointer-events-none absolute inset-0 z-10">
         {sparkles.map((s) => (
           <motion.div
@@ -212,116 +187,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
         ))}
       </div>
 
-      {/* Background petals — behind letter, blurred for parallax depth */}
-      {open && (
-        <div className="pointer-events-none absolute inset-0 z-[15]">
-          {petalsBack.map((p) => (
-            <motion.div
-              key={`pb-${p.id}`}
-              className="absolute"
-              style={{
-                left: `${p.left}%`,
-                top: "-12%",
-                width: p.size,
-                height: p.size * 1.125,
-                transformStyle: "preserve-3d",
-                filter: "blur(0.6px)",
-                opacity: 0.85,
-              }}
-              initial={{ y: -80, x: 0, rotate: 0, rotateY: p.tilt, opacity: 0 }}
-              animate={{
-                y: "115vh",
-                x: [0, p.sway, -p.sway, 0],
-                rotate: p.rotate,
-                rotateY: [p.tilt, -p.tilt, p.tilt],
-                opacity: [0, 0.85, 0.85, 0.7, 0],
-              }}
-              transition={{
-                duration: p.duration,
-                delay: p.delay,
-                repeat: Infinity,
-                ease: "easeIn",
-                times: [0, 0.1, 0.5, 0.85, 1],
-              }}
-            >
-              <Rose
-                variant={p.variant}
-                className="h-full w-full drop-shadow-[0_5px_8px_rgba(107,39,55,0.3)]"
-              />
-            </motion.div>
-          ))}
-        </div>
-      )}
 
-      {/* Initial burst from envelope */}
-      <AnimatePresence>
-        {open && (
-          <div className="pointer-events-none absolute left-1/2 top-1/2 z-40 h-0 w-0">
-            {burst.map((p) => (
-              <motion.div
-                key={`b-${p.id}`}
-                className="absolute"
-                initial={{ x: 0, y: 0, opacity: 0, scale: 0.2, rotate: 0, rotateY: 0 }}
-                animate={{
-                  x: Math.cos(p.angle) * p.distance,
-                  y: Math.sin(p.angle) * p.distance,
-                  opacity: [0, 1, 0],
-                  scale: [0.4, 1.2, 0.6],
-                  rotate: 380,
-                  rotateY: [0, p.tilt, -p.tilt, 0],
-                }}
-                transition={{ duration: 2, delay: p.delay, ease: [0.16, 1, 0.3, 1] }}
-                style={{ marginLeft: -p.size / 2, marginTop: -p.size / 2, transformStyle: "preserve-3d" }}
-              >
-                <Rose
-                  variant={p.variant}
-                  className="drop-shadow-[0_10px_16px_rgba(107,39,55,0.55)]"
-                  style={{ width: p.size, height: p.size * 1.125 }}
-                />
-              </motion.div>
-            ))}
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Foreground petals — in front of letter for depth */}
-      {open && (
-        <div className="pointer-events-none absolute inset-0 z-[45]">
-          {petalsFront.map((p) => (
-            <motion.div
-              key={`pf-${p.id}`}
-              className="absolute"
-              style={{
-                left: `${p.left}%`,
-                top: "-15%",
-                width: p.size,
-                height: p.size * 1.125,
-                transformStyle: "preserve-3d",
-              }}
-              initial={{ y: -80, x: 0, rotate: 0, rotateY: p.tilt, opacity: 0 }}
-              animate={{
-                y: "118vh",
-                x: [0, p.sway, -p.sway, 0],
-                rotate: p.rotate,
-                rotateY: [p.tilt, -p.tilt, p.tilt],
-                opacity: [0, 1, 1, 0.95, 0],
-              }}
-              transition={{
-                duration: p.duration,
-                delay: p.delay + 0.5,
-                repeat: Infinity,
-                ease: "easeIn",
-                times: [0, 0.08, 0.5, 0.88, 1],
-              }}
-            >
-              <Rose
-                variant={p.variant}
-                className="h-full w-full drop-shadow-[0_10px_16px_rgba(107,39,55,0.5)]"
-              />
-            </motion.div>
-          ))}
-        </div>
-      )}
 
 
       <div className="relative z-[30] mx-auto grid min-h-screen max-w-3xl place-items-center px-5 py-12">
@@ -476,11 +342,15 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 1.95, duration: 1.4 }}
+                  transition={{ delay: 1.95, duration: 1 }}
                   className="relative whitespace-pre-wrap text-center font-display text-xl italic leading-relaxed text-[#2E2520] md:text-2xl"
                 >
-                  {data.message}
+                  {typed}
+                  {typed.length < (data.message?.length ?? 0) && (
+                    <span className="ml-0.5 inline-block h-[1em] w-[2px] -mb-1 animate-pulse bg-[#6B2737]/60" />
+                  )}
                 </motion.p>
+
 
                 {data.signature && (
                   <motion.p
