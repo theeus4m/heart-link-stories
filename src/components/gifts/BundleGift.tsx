@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeft, Mail, Music, Sparkles, MapPin, Heart } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useScroll, useTransform, useInView } from "motion/react";
+import { Heart, ChevronDown } from "lucide-react";
 import { CartaGift, type CartaData } from "./CartaGift";
 import { MusicaGift, type MusicaData } from "./MusicaGift";
 import { MomentosGift, type MomentosData } from "./MomentosGift";
@@ -15,164 +15,232 @@ export type BundleData = {
   mapa: MapaData;
 };
 
-type GiftKey = "carta" | "musica" | "momentos" | "mapa";
+const CHAPTERS = [
+  { idx: "I", key: "carta", eyebrow: "Capítulo I", title: "Carta de Amor", subtitle: "Onde tudo começa — em palavras." },
+  { idx: "II", key: "momentos", eyebrow: "Capítulo II", title: "Nossos Momentos", subtitle: "As lembranças que guardamos no peito." },
+  { idx: "III", key: "mapa", eyebrow: "Capítulo III", title: "Mapa do Amor", subtitle: "O lugar onde o tempo parou por nós." },
+  { idx: "IV", key: "musica", eyebrow: "Capítulo IV", title: "Nossa Mixtape", subtitle: "A trilha sonora desta história." },
+] as const;
 
-const ITEMS: Array<{
-  key: GiftKey;
-  label: string;
-  tagline: string;
-  icon: typeof Mail;
-  accent: string;
-}> = [
-  { key: "carta", label: "Carta Romântica", tagline: "Abra e leia minhas palavras", icon: Mail, accent: "from-coral to-violet" },
-  { key: "musica", label: "Nossa Mixtape", tagline: "Aperte play e lembre de nós", icon: Music, accent: "from-violet to-plum" },
-  { key: "momentos", label: "Nossos Momentos", tagline: "Reviva nossa história", icon: Sparkles, accent: "from-coral to-plum" },
-  { key: "mapa", label: "Mapa do Amor", tagline: "Conte os km entre nós", icon: MapPin, accent: "from-plum to-violet" },
-];
-
-export function BundleGift({ data, title }: { data: BundleData; title: string }) {
-  const [opened, setOpened] = useState(false);
-  const [active, setActive] = useState<GiftKey | null>(null);
-  const [visited, setVisited] = useState<Set<GiftKey>>(new Set());
-
-  function open(key: GiftKey) {
-    setActive(key);
-    setVisited((prev) => new Set(prev).add(key));
-  }
-
-  if (active) {
-    return (
-      <div className="relative">
-        <button
-          onClick={() => setActive(null)}
-          className="fixed left-4 top-4 z-[60] inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-medium text-plum shadow-romance backdrop-blur transition hover:scale-105 hover:bg-white"
-        >
-          <ArrowLeft className="h-4 w-4" /> Voltar ao menu
-        </button>
-        {active === "carta" && <CartaGift title={data.carta?.recipient ? `Para ${data.carta.recipient}` : title} data={data.carta} />}
-        {active === "musica" && <MusicaGift title={data.musica?.mixtapeName || title} data={data.musica} />}
-        {active === "momentos" && <MomentosGift title={title} data={data.momentos} />}
-        {active === "mapa" && <MapaGift title={data.mapa?.coupleNames || title} data={data.mapa} />}
-      </div>
-    );
-  }
+function Chapter({
+  idx,
+  eyebrow,
+  title,
+  subtitle,
+  children,
+  isLast,
+}: {
+  idx: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+  isLast?: boolean;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const inView = useInView(ref, { once: true, amount: 0.18 });
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* background */}
-      <div className="absolute inset-0 gradient-romance opacity-95" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.25),transparent_60%)]" />
-      {/* floating hearts */}
-      <div className="pointer-events-none absolute inset-0">
-        {Array.from({ length: 14 }).map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute"
-            style={{ left: `${(i * 73) % 100}%`, top: `${(i * 41) % 100}%` }}
-            animate={{ y: [-8, 8, -8], opacity: [0.25, 0.7, 0.25] }}
-            transition={{ duration: 4 + (i % 4), repeat: Infinity, delay: i * 0.2 }}
-          >
-            <Heart className="h-4 w-4 fill-white/40 text-white/40" />
-          </motion.div>
-        ))}
+    <section ref={ref} className="relative">
+      {/* fio do tempo */}
+      {!isLast && (
+        <div className="pointer-events-none absolute left-1/2 bottom-0 z-0 h-32 w-px -translate-x-1/2 translate-y-1/2 bg-gradient-to-b from-gold/60 via-gold/30 to-transparent" />
+      )}
+
+      {/* chapter intro */}
+      <div className="relative z-10 mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center px-6 text-center">
+        <motion.span
+          initial={{ opacity: 0, y: 18 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          className="font-display text-7xl italic text-gold/70 md:text-8xl"
+        >
+          {idx}
+        </motion.span>
+        <motion.p
+          initial={{ opacity: 0, letterSpacing: "0.2em" }}
+          animate={inView ? { opacity: 1, letterSpacing: "0.5em" } : {}}
+          transition={{ duration: 1.1, delay: 0.15 }}
+          className="mt-4 text-[10px] uppercase tracking-[0.5em] text-gold"
+        >
+          {eyebrow}
+        </motion.p>
+        <motion.h2
+          initial={{ opacity: 0, y: 24 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 1, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-3 font-display text-4xl text-cream md:text-6xl"
+        >
+          {title}
+        </motion.h2>
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={inView ? { scaleX: 1 } : {}}
+          transition={{ duration: 1, delay: 0.55 }}
+          className="mt-6 h-px w-24 origin-center bg-gold/60"
+        />
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : {}}
+          transition={{ duration: 1, delay: 0.7 }}
+          className="mt-6 max-w-xl font-display text-lg italic text-cream/80 md:text-xl"
+        >
+          {subtitle}
+        </motion.p>
       </div>
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-5 py-16">
-        <AnimatePresence mode="wait">
-          {!opened ? (
+      {/* chapter content */}
+      <motion.div
+        initial={{ opacity: 0, y: 60 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 1.1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10"
+      >
+        {children}
+      </motion.div>
+    </section>
+  );
+}
+
+export function BundleGift({ data, title }: { data: BundleData; title: string }) {
+  const [started, setStarted] = useState(false);
+  const journeyRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: journeyRef, offset: ["start start", "end end"] });
+  const progressWidth = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
+  useEffect(() => {
+    if (started) {
+      // Smooth scroll into the journey
+      requestAnimationFrame(() => {
+        journeyRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [started]);
+
+  return (
+    <div className="relative min-h-screen bg-[#1a0f14] text-cream">
+      {/* ambient backdrop */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.15),transparent_55%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(107,39,55,0.5),transparent_60%)]" />
+        <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(circle_at_1px_1px,rgba(245,240,232,0.6)_1px,transparent_0)] [background-size:28px_28px]" />
+      </div>
+
+      {/* progress bar */}
+      <AnimatePresence>
+        {started && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed top-0 left-0 right-0 z-50 h-[2px] bg-cream/10"
+          >
+            <motion.div style={{ width: progressWidth }} className="h-full bg-gradient-to-r from-gold via-gold to-coral" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Cover */}
+      <section className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          className="flex flex-col items-center"
+        >
+          <motion.div
+            animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="grid h-20 w-20 place-items-center rounded-full border border-gold/40 bg-gold/10 backdrop-blur"
+          >
+            <Heart className="h-8 w-8 fill-gold text-gold" />
+          </motion.div>
+          <p className="mt-8 text-[10px] uppercase tracking-[0.6em] text-gold">Uma história em quatro capítulos</p>
+          <h1 className="mt-4 font-display text-5xl text-cream md:text-7xl">{title}</h1>
+          {data.recipient && (
+            <p className="mt-4 font-display text-2xl italic text-cream/80">para {data.recipient}</p>
+          )}
+          {data.intro && (
+            <p className="mx-auto mt-8 max-w-xl font-display text-lg italic text-cream/70 md:text-xl">"{data.intro}"</p>
+          )}
+
+          {!started ? (
             <motion.button
-              key="closed"
-              onClick={() => setOpened(true)}
-              initial={{ scale: 0.7, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
               whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.98 }}
-              className="group relative aspect-[4/3] w-full max-w-md rounded-3xl bg-cream p-10 text-center shadow-2xl"
+              whileTap={{ scale: 0.97 }}
+              onClick={() => setStarted(true)}
+              className="mt-12 inline-flex items-center gap-3 rounded-full border border-gold/60 bg-gold/10 px-8 py-3 text-sm uppercase tracking-[0.35em] text-gold backdrop-blur transition hover:bg-gold/20"
             >
-              <motion.div
-                animate={{ scale: [1, 1.12, 1] }}
-                transition={{ duration: 1.8, repeat: Infinity }}
-                className="mx-auto grid h-24 w-24 place-items-center rounded-full gradient-romance shadow-romance"
-              >
-                <Heart className="h-12 w-12 fill-white text-white" />
-              </motion.div>
-              <p className="mt-6 text-xs uppercase tracking-[0.3em] text-violet">Você recebeu um presente</p>
-              <h1 className="mt-2 font-display text-4xl text-plum">{title}</h1>
-              {data.recipient && (
-                <p className="mt-2 font-display text-xl italic text-coral">para {data.recipient}</p>
-              )}
-              <p className="mt-6 text-sm text-muted-foreground">Toque para abrir 💌</p>
+              Começar a jornada
             </motion.button>
           ) : (
             <motion.div
-              key="hub"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="w-full"
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="mt-12 flex flex-col items-center gap-2 text-gold/70"
             >
-              <div className="text-center text-cream">
-                <p className="text-xs uppercase tracking-[0.4em] opacity-80">Para você</p>
-                <h1 className="mt-3 font-display text-5xl drop-shadow-md md:text-6xl">{title}</h1>
-                {data.intro && (
-                  <p className="mx-auto mt-4 max-w-xl font-display text-xl italic opacity-90">
-                    "{data.intro}"
-                  </p>
-                )}
-                <p className="mt-6 text-sm opacity-75">
-                  Eu preparei <strong>4 surpresas</strong> para você. Abra na ordem que quiser.
-                </p>
-              </div>
-
-              <div className="mt-10 grid gap-5 sm:grid-cols-2">
-                {ITEMS.map((it, i) => {
-                  const Icon = it.icon;
-                  const seen = visited.has(it.key);
-                  return (
-                    <motion.button
-                      key={it.key}
-                      initial={{ opacity: 0, y: 24 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.15 + i * 0.1 }}
-                      whileHover={{ y: -4, scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => open(it.key)}
-                      className="group relative overflow-hidden rounded-3xl bg-white/95 p-7 text-left shadow-2xl backdrop-blur transition"
-                    >
-                      <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${it.accent}`} />
-                      <div className="flex items-start gap-4">
-                        <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${it.accent} text-white shadow-romance transition group-hover:scale-110`}>
-                          <Icon className="h-6 w-6" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-display text-2xl text-plum">{it.label}</h3>
-                            {seen && (
-                              <span className="rounded-full bg-coral/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-coral">
-                                Visto
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-1 text-sm text-muted-foreground">{it.tagline}</p>
-                          <p className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-coral">
-                            {seen ? "Abrir de novo" : "Abrir agora"}
-                            <motion.span animate={{ x: [0, 4, 0] }} transition={{ duration: 1.4, repeat: Infinity }}>→</motion.span>
-                          </p>
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              <p className="mt-10 text-center text-xs text-cream/70">
-                Feito com <Heart className="inline h-3 w-3 fill-current" /> no Chronelo
-              </p>
+              <span className="text-[10px] uppercase tracking-[0.4em]">role para descobrir</span>
+              <ChevronDown className="h-5 w-5" />
             </motion.div>
           )}
-        </AnimatePresence>
-      </div>
+        </motion.div>
+      </section>
+
+      {/* Journey */}
+      <AnimatePresence>
+        {started && (
+          <motion.div
+            ref={journeyRef}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            className="relative z-10"
+          >
+            <Chapter idx="I" eyebrow={CHAPTERS[0].eyebrow} title={CHAPTERS[0].title} subtitle={CHAPTERS[0].subtitle}>
+              <div className="mx-auto overflow-hidden">
+                <CartaGift title={data.carta?.recipient ? `Para ${data.carta.recipient}` : title} data={data.carta} />
+              </div>
+            </Chapter>
+
+            <Chapter idx="II" eyebrow={CHAPTERS[1].eyebrow} title={CHAPTERS[1].title} subtitle={CHAPTERS[1].subtitle}>
+              <div className="mx-auto overflow-hidden">
+                <MomentosGift title={title} data={data.momentos} />
+              </div>
+            </Chapter>
+
+            <Chapter idx="III" eyebrow={CHAPTERS[2].eyebrow} title={CHAPTERS[2].title} subtitle={CHAPTERS[2].subtitle}>
+              <div className="mx-auto overflow-hidden">
+                <MapaGift title={data.mapa?.coupleNames || title} data={data.mapa} />
+              </div>
+            </Chapter>
+
+            <Chapter idx="IV" eyebrow={CHAPTERS[3].eyebrow} title={CHAPTERS[3].title} subtitle={CHAPTERS[3].subtitle} isLast>
+              <div className="mx-auto overflow-hidden">
+                <MusicaGift title={data.musica?.mixtapeName || title} data={data.musica} />
+              </div>
+            </Chapter>
+
+            {/* Closing */}
+            <section className="relative z-10 mx-auto flex min-h-[80vh] max-w-2xl flex-col items-center justify-center px-6 py-24 text-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 1.2 }}
+                className="flex flex-col items-center"
+              >
+                <Heart className="h-10 w-10 fill-gold text-gold" />
+                <p className="mt-8 text-[10px] uppercase tracking-[0.6em] text-gold">Fim do capítulo, não da história</p>
+                <h3 className="mt-4 font-display text-4xl italic text-cream md:text-5xl">
+                  O tempo passa.<br />O elo fica.
+                </h3>
+                <div className="mt-8 h-px w-16 bg-gold/50" />
+                <p className="mt-8 text-xs text-cream/60">Feito com amor no Chronelo</p>
+              </motion.div>
+            </section>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
