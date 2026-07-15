@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/i18n";
+import { HeaderInfoDialogs } from "@/components/HeaderInfoDialogs";
 
 function LogoTipo({ className = "" }: { className?: string }) {
   return (
@@ -32,6 +33,10 @@ export function SiteHeader() {
           <LogoTipo className="text-2xl text-plum group-hover:text-vinho transition-colors duration-500" />
         </Link>
         <nav className="flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-1 mr-1">
+            <HeaderInfoDialogs />
+          </div>
+
           {authed ? (
             <>
               <Button asChild variant="ghost" size="sm" className="text-plum hover:text-gold transition-colors duration-300">
