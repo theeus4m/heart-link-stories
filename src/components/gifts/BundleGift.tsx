@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, type PanInfo } from "motion/react";
-import { Heart, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
+import { Heart, ChevronRight, ChevronLeft, Sparkles, Play, Pause, Music } from "lucide-react";
 import { CartaGift, type CartaData } from "./CartaGift";
 import { MusicaGift, type MusicaData } from "./MusicaGift";
 import { MomentosGift, type MomentosData } from "./MomentosGift";
 import { MapaGift, type MapaData } from "./MapaGift";
+import { MusicPlayerProvider, useMusicPlayer } from "./MusicPlayerContext";
 
 export type BundleData = {
   recipient?: string;
