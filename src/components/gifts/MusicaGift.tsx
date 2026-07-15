@@ -396,8 +396,8 @@ function Sleeve({
       }}
       aria-label={phase === "sleeve" ? "Abrir capa" : "Capa"}
     >
-      {/* Vinyl peeking out during 'opening' or 'draggable' (still visible until fully removed by drag phase—hidden then) */}
-      {(showPeek || phase === "opening") && (
+      {/* Vinyl peeking out during 'opening' */}
+      {showPeek && (
         <motion.div
           initial={{ x: 0, opacity: 0.9 }}
           animate={{ x: "45%", opacity: 1 }}
