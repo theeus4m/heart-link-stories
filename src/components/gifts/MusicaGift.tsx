@@ -8,7 +8,7 @@ import {
   type PanInfo,
 } from "motion/react";
 import { Heart, Pause, Play, Repeat, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
-import { useMusicPlayer, type Track } from "./MusicPlayerContext";
+import { useMusicPlayer, useMusicPlayerOptional, MusicPlayerProvider, type Track } from "./MusicPlayerContext";
 
 export type { Track } from "./MusicPlayerContext";
 
