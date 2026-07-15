@@ -12,14 +12,11 @@ import {
   Clock,
   Lock,
   Smartphone,
-  Quote,
-  Plus,
-  Minus,
 } from "lucide-react";
-import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -392,46 +389,6 @@ function Landing() {
         </div>
       </section>
 
-      {/* SOBRE NÓS */}
-      <section id="sobre" className="relative border-t border-border/40 bg-background py-24">
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="eyebrow">Sobre Nós</p>
-            <h2 className="mt-4 font-display text-5xl text-plum lg:text-6xl">
-              Um atelier <em className="text-coral">para memórias</em>
-            </h2>
-            <Ornament className="mt-6" />
-          </div>
-
-          <div className="mx-auto mt-12 max-w-2xl space-y-6 text-center font-display text-lg italic leading-relaxed text-muted-foreground lg:text-xl">
-            <p>
-              Chronelo nasceu de uma convicção simples: o tempo passa, mas o elo entre duas pessoas
-              merece um lugar onde permaneça — inteiro, íntimo, eterno.
-            </p>
-            <p>
-              Cada presente é desenhado à mão, com a delicadeza de uma carta italiana e a
-              precisão de um relicário. Não vendemos templates. Entregamos memórias.
-            </p>
-          </div>
-
-          <div className="mx-auto mt-14 grid max-w-3xl gap-8 sm:grid-cols-3">
-            {[
-              { n: "I", t: "Feito à mão", d: "Cada detalhe pensado com carinho editorial." },
-              { n: "II", t: "Sem pressa", d: "Para durar mais que uma notificação." },
-              { n: "III", t: "Sob medida", d: "Nenhuma história se repete. A sua também não." },
-            ].map((v) => (
-              <div key={v.n} className="text-center">
-                <span className="font-display text-4xl italic text-coral/60">{v.n}</span>
-                <h3 className="mt-3 font-display text-2xl text-plum">{v.t}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{v.d}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <FaqSection />
 
       {/* PRICING */}
       <section id="precos" className="relative border-t border-border/40 bg-cream/40 py-24">
@@ -507,81 +464,3 @@ function Landing() {
   );
 }
 
-const FAQS = [
-  {
-    q: "Como funciona o presente?",
-    a: "Você personaliza cada uma das quatro experiências — Carta, Mixtape, Mapa e Momentos — e recebe um link único para compartilhar. Quem recebe abre no celular ou desktop, sem instalação.",
-  },
-  {
-    q: "Quanto tempo o link fica ativo?",
-    a: "Para sempre. Uma vez criado, o presente permanece disponível sem prazo de validade.",
-  },
-  {
-    q: "Posso editar depois de publicar?",
-    a: "Sim. Você pode voltar ao seu painel e ajustar textos, fotos e músicas a qualquer momento.",
-  },
-  {
-    q: "É seguro? Quem pode ver?",
-    a: "Apenas quem tem o link. Nada é indexado ou compartilhado publicamente. Sua história fica entre vocês dois.",
-  },
-  {
-    q: "Preciso baixar algum aplicativo?",
-    a: "Não. Chronelo funciona direto no navegador, otimizado para qualquer celular ou computador.",
-  },
-  {
-    q: "Como recebo o presente após a compra?",
-    a: "Assim que finaliza, você entra no painel, personaliza e o link fica disponível na hora para enviar.",
-  },
-];
-
-function FaqSection() {
-  const [open, setOpen] = useState<number | null>(0);
-  return (
-    <section id="faq" className="relative border-t border-border/40 bg-cream/40 py-24">
-      <div className="mx-auto max-w-3xl px-6">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="eyebrow">Perguntas Frequentes</p>
-          <h2 className="mt-4 font-display text-5xl text-plum lg:text-6xl">
-            Dúvidas <em className="text-coral">comuns</em>
-          </h2>
-          <div className="mx-auto mt-5 flex items-center justify-center gap-3">
-            <span className="h-px w-10 bg-coral/40" />
-            <Heart className="h-3 w-3 fill-coral text-coral" />
-            <span className="h-px w-10 bg-coral/40" />
-          </div>
-        </div>
-
-        <div className="mt-14 divide-y divide-border/60 border-y border-border/60">
-          {FAQS.map((item, i) => {
-            const isOpen = open === i;
-            return (
-              <div key={item.q}>
-                <button
-                  type="button"
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  className="flex w-full items-center justify-between gap-6 py-6 text-left transition-colors hover:text-vinho"
-                  aria-expanded={isOpen}
-                >
-                  <span className="font-display text-xl text-plum lg:text-2xl">{item.q}</span>
-                  <span className="shrink-0 text-coral">
-                    {isOpen ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                  </span>
-                </button>
-                <motion.div
-                  initial={false}
-                  animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
-                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden"
-                >
-                  <p className="pb-6 pr-10 text-base leading-relaxed text-muted-foreground">
-                    {item.a}
-                  </p>
-                </motion.div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
