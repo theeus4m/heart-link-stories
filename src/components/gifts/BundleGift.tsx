@@ -166,6 +166,15 @@ function ChapterIntro({
 }
 
 export function BundleGift({ data, title }: { data: BundleData; title: string }) {
+  return (
+    <MusicPlayerProvider tracks={data.musica?.tracks ?? []}>
+      <BundleGiftInner data={data} title={title} />
+      <PersistentMiniPlayer />
+    </MusicPlayerProvider>
+  );
+}
+
+function BundleGiftInner({ data, title }: { data: BundleData; title: string }) {
   const [stage, setStage] = useState<Stage>(-1);
   const [showIntro, setShowIntro] = useState(true);
   const [direction, setDirection] = useState<1 | -1>(1);
