@@ -21,10 +21,23 @@ export type BundleData = {
 const CHAPTERS = [
   {
     idx: "I",
-    key: "carta",
+    key: "musica",
     eyebrow: "Capitolo I",
+    title: "La Mixtape",
+    subtitle: "A trilha sonora desta história começa aqui.",
+    ambient: {
+      base: "#141014",
+      top: "rgba(201,168,76,0.22)",
+      bottom: "rgba(74,26,38,0.65)",
+      accent: "rgba(196,113,74,0.14)",
+    },
+  },
+  {
+    idx: "II",
+    key: "carta",
+    eyebrow: "Capitolo II",
     title: "La Lettera",
-    subtitle: "Onde tudo começa — em palavras.",
+    subtitle: "Onde tudo se traduz em palavras.",
     ambient: {
       base: "#1a0f14",
       top: "rgba(201,168,76,0.18)",
@@ -33,9 +46,9 @@ const CHAPTERS = [
     },
   },
   {
-    idx: "II",
+    idx: "III",
     key: "momentos",
-    eyebrow: "Capitolo II",
+    eyebrow: "Capitolo III",
     title: "I Momenti",
     subtitle: "As lembranças que guardamos no peito.",
     ambient: {
@@ -46,9 +59,9 @@ const CHAPTERS = [
     },
   },
   {
-    idx: "III",
+    idx: "IV",
     key: "mapa",
-    eyebrow: "Capitolo III",
+    eyebrow: "Capitolo IV",
     title: "La Mappa",
     subtitle: "O lugar onde o tempo parou por nós.",
     ambient: {
@@ -56,19 +69,6 @@ const CHAPTERS = [
       top: "rgba(88,120,168,0.20)",
       bottom: "rgba(30,20,32,0.75)",
       accent: "rgba(201,168,76,0.10)",
-    },
-  },
-  {
-    idx: "IV",
-    key: "musica",
-    eyebrow: "Capitolo IV",
-    title: "La Mixtape",
-    subtitle: "A trilha sonora desta história.",
-    ambient: {
-      base: "#141014",
-      top: "rgba(201,168,76,0.22)",
-      bottom: "rgba(74,26,38,0.65)",
-      accent: "rgba(196,113,74,0.14)",
     },
   },
 ] as const;
