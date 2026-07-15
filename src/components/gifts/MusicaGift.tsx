@@ -38,7 +38,17 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 /* ─────────────────────── Main ─────────────────────── */
 
-export function MusicaGift({ data, title }: { data: MusicaData; title: string }) {
+export function MusicaGift(props: { data: MusicaData; title: string }) {
+  const ctx = useMusicPlayerOptional();
+  if (ctx) return <MusicaGiftInner {...props} />;
+  return (
+    <MusicPlayerProvider tracks={props.data.tracks ?? []}>
+      <MusicaGiftInner {...props} />
+    </MusicPlayerProvider>
+  );
+}
+
+function MusicaGiftInner({ data, title }: { data: MusicaData; title: string }) {
   const reduceMotion = useReducedMotion();
   const player = useMusicPlayer();
 
