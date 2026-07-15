@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, type PanInfo } from "motion/react";
-import { Heart, ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
+import { Heart, ChevronRight, ChevronLeft, Sparkles, Play, Pause, Music } from "lucide-react";
 import { CartaGift, type CartaData } from "./CartaGift";
 import { MusicaGift, type MusicaData } from "./MusicaGift";
 import { MomentosGift, type MomentosData } from "./MomentosGift";
 import { MapaGift, type MapaData } from "./MapaGift";
+import { MusicPlayerProvider, useMusicPlayer } from "./MusicPlayerContext";
 
 export type BundleData = {
   recipient?: string;
@@ -20,10 +21,23 @@ export type BundleData = {
 const CHAPTERS = [
   {
     idx: "I",
-    key: "carta",
+    key: "musica",
     eyebrow: "Capitolo I",
+    title: "La Mixtape",
+    subtitle: "A trilha sonora desta história começa aqui.",
+    ambient: {
+      base: "#141014",
+      top: "rgba(201,168,76,0.22)",
+      bottom: "rgba(74,26,38,0.65)",
+      accent: "rgba(196,113,74,0.14)",
+    },
+  },
+  {
+    idx: "II",
+    key: "carta",
+    eyebrow: "Capitolo II",
     title: "La Lettera",
-    subtitle: "Onde tudo começa — em palavras.",
+    subtitle: "Onde tudo se traduz em palavras.",
     ambient: {
       base: "#1a0f14",
       top: "rgba(201,168,76,0.18)",
@@ -32,9 +46,9 @@ const CHAPTERS = [
     },
   },
   {
-    idx: "II",
+    idx: "III",
     key: "momentos",
-    eyebrow: "Capitolo II",
+    eyebrow: "Capitolo III",
     title: "I Momenti",
     subtitle: "As lembranças que guardamos no peito.",
     ambient: {
@@ -45,9 +59,9 @@ const CHAPTERS = [
     },
   },
   {
-    idx: "III",
+    idx: "IV",
     key: "mapa",
-    eyebrow: "Capitolo III",
+    eyebrow: "Capitolo IV",
     title: "La Mappa",
     subtitle: "O lugar onde o tempo parou por nós.",
     ambient: {
@@ -55,19 +69,6 @@ const CHAPTERS = [
       top: "rgba(88,120,168,0.20)",
       bottom: "rgba(30,20,32,0.75)",
       accent: "rgba(201,168,76,0.10)",
-    },
-  },
-  {
-    idx: "IV",
-    key: "musica",
-    eyebrow: "Capitolo IV",
-    title: "La Mixtape",
-    subtitle: "A trilha sonora desta história.",
-    ambient: {
-      base: "#141014",
-      top: "rgba(201,168,76,0.22)",
-      bottom: "rgba(74,26,38,0.65)",
-      accent: "rgba(196,113,74,0.14)",
     },
   },
 ] as const;
@@ -165,6 +166,15 @@ function ChapterIntro({
 }
 
 export function BundleGift({ data, title }: { data: BundleData; title: string }) {
+  return (
+    <MusicPlayerProvider tracks={data.musica?.tracks ?? []}>
+      <BundleGiftInner data={data} title={title} />
+      <PersistentMiniPlayer />
+    </MusicPlayerProvider>
+  );
+}
+
+function BundleGiftInner({ data, title }: { data: BundleData; title: string }) {
   const [stage, setStage] = useState<Stage>(-1);
   const [showIntro, setShowIntro] = useState(true);
   const [direction, setDirection] = useState<1 | -1>(1);
@@ -526,16 +536,16 @@ export function BundleGift({ data, title }: { data: BundleData; title: string })
           >
             <div className="mx-auto overflow-hidden">
               {stage === 0 && (
+                <MusicaGift title={data.musica?.mixtapeName || title} data={data.musica} />
+              )}
+              {stage === 1 && (
                 <CartaGift
                   title={data.carta?.recipient ? `Para ${data.carta.recipient}` : title}
                   data={data.carta}
                 />
               )}
-              {stage === 1 && <MomentosGift title={title} data={data.momentos} />}
-              {stage === 2 && <MapaGift title={data.mapa?.coupleNames || title} data={data.mapa} />}
-              {stage === 3 && (
-                <MusicaGift title={data.musica?.mixtapeName || title} data={data.musica} />
-              )}
+              {stage === 2 && <MomentosGift title={title} data={data.momentos} />}
+              {stage === 3 && <MapaGift title={data.mapa?.coupleNames || title} data={data.mapa} />}
             </div>
 
             {/* Chapter navigation footer */}
@@ -643,3 +653,46 @@ export function BundleGift({ data, title }: { data: BundleData; title: string })
     </div>
   );
 }
+
+/* ─── Persistent floating mini-player — visible across chapters while music plays ─── */
+function PersistentMiniPlayer() {
+  const { started, playing, togglePlay, next, current, idx, tracks } = useMusicPlayer();
+  if (!started) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: EASE }}
+      className="fixed bottom-4 right-4 z-[60] flex items-center gap-3 rounded-full border border-gold/40 bg-black/60 py-2 pl-2 pr-4 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] backdrop-blur-md"
+    >
+      <motion.button
+        onClick={togglePlay}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        aria-label={playing ? "Pausar" : "Tocar"}
+        className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-gold to-[#9C7E2C] text-[#1a0a10] shadow-[inset_0_1px_0_rgba(255,235,200,0.4)]"
+      >
+        {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
+      </motion.button>
+      <div className="flex min-w-0 max-w-[180px] flex-col leading-tight">
+        <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.35em] text-gold/70">
+          <Music className="h-2.5 w-2.5" />
+          {(idx + 1).toString().padStart(2, "0")}/{Math.max(tracks.length, 1).toString().padStart(2, "0")}
+        </span>
+        <span className="truncate font-display text-sm italic text-cream">
+          {current?.title || `Faixa ${idx + 1}`}
+        </span>
+      </div>
+      <motion.button
+        onClick={next}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        aria-label="Próxima"
+        className="grid h-7 w-7 place-items-center rounded-full text-cream/70 transition hover:text-gold"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </motion.button>
+    </motion.div>
+  );
+}
+
