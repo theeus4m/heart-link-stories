@@ -74,6 +74,10 @@ export function useMusicPlayer() {
   return ctx;
 }
 
+export function useMusicPlayerOptional() {
+  return useContext(MusicPlayerCtx);
+}
+
 export function MusicPlayerProvider({
   tracks: rawTracks,
   children,
