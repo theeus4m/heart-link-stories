@@ -527,16 +527,16 @@ export function BundleGift({ data, title }: { data: BundleData; title: string })
           >
             <div className="mx-auto overflow-hidden">
               {stage === 0 && (
+                <MusicaGift title={data.musica?.mixtapeName || title} data={data.musica} />
+              )}
+              {stage === 1 && (
                 <CartaGift
                   title={data.carta?.recipient ? `Para ${data.carta.recipient}` : title}
                   data={data.carta}
                 />
               )}
-              {stage === 1 && <MomentosGift title={title} data={data.momentos} />}
-              {stage === 2 && <MapaGift title={data.mapa?.coupleNames || title} data={data.mapa} />}
-              {stage === 3 && (
-                <MusicaGift title={data.musica?.mixtapeName || title} data={data.musica} />
-              )}
+              {stage === 2 && <MomentosGift title={title} data={data.momentos} />}
+              {stage === 3 && <MapaGift title={data.mapa?.coupleNames || title} data={data.mapa} />}
             </div>
 
             {/* Chapter navigation footer */}
