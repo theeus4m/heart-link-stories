@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/i18n";
+import { HeaderInfoDialogs } from "@/components/HeaderInfoDialogs";
 
 function LogoTipo({ className = "" }: { className?: string }) {
   return (
