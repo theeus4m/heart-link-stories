@@ -392,46 +392,6 @@ function Landing() {
         </div>
       </section>
 
-      {/* SOBRE NÓS */}
-      <section id="sobre" className="relative border-t border-border/40 bg-background py-24">
-        <div className="mx-auto max-w-4xl px-6">
-          <div className="mx-auto max-w-2xl text-center">
-            <p className="eyebrow">Sobre Nós</p>
-            <h2 className="mt-4 font-display text-5xl text-plum lg:text-6xl">
-              Um atelier <em className="text-coral">para memórias</em>
-            </h2>
-            <Ornament className="mt-6" />
-          </div>
-
-          <div className="mx-auto mt-12 max-w-2xl space-y-6 text-center font-display text-lg italic leading-relaxed text-muted-foreground lg:text-xl">
-            <p>
-              Chronelo nasceu de uma convicção simples: o tempo passa, mas o elo entre duas pessoas
-              merece um lugar onde permaneça — inteiro, íntimo, eterno.
-            </p>
-            <p>
-              Cada presente é desenhado à mão, com a delicadeza de uma carta italiana e a
-              precisão de um relicário. Não vendemos templates. Entregamos memórias.
-            </p>
-          </div>
-
-          <div className="mx-auto mt-14 grid max-w-3xl gap-8 sm:grid-cols-3">
-            {[
-              { n: "I", t: "Feito à mão", d: "Cada detalhe pensado com carinho editorial." },
-              { n: "II", t: "Sem pressa", d: "Para durar mais que uma notificação." },
-              { n: "III", t: "Sob medida", d: "Nenhuma história se repete. A sua também não." },
-            ].map((v) => (
-              <div key={v.n} className="text-center">
-                <span className="font-display text-4xl italic text-coral/60">{v.n}</span>
-                <h3 className="mt-3 font-display text-2xl text-plum">{v.t}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{v.d}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <FaqSection />
 
       {/* PRICING */}
       <section id="precos" className="relative border-t border-border/40 bg-cream/40 py-24">
