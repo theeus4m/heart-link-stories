@@ -12,14 +12,11 @@ import {
   Clock,
   Lock,
   Smartphone,
-  Quote,
-  Plus,
-  Minus,
 } from "lucide-react";
-import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
