@@ -653,3 +653,46 @@ function BundleGiftInner({ data, title }: { data: BundleData; title: string }) {
     </div>
   );
 }
+
+/* ─── Persistent floating mini-player — visible across chapters while music plays ─── */
+function PersistentMiniPlayer() {
+  const { started, playing, togglePlay, next, current, idx, tracks } = useMusicPlayer();
+  if (!started) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: EASE }}
+      className="fixed bottom-4 right-4 z-[60] flex items-center gap-3 rounded-full border border-gold/40 bg-black/60 py-2 pl-2 pr-4 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] backdrop-blur-md"
+    >
+      <motion.button
+        onClick={togglePlay}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        aria-label={playing ? "Pausar" : "Tocar"}
+        className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-gold to-[#9C7E2C] text-[#1a0a10] shadow-[inset_0_1px_0_rgba(255,235,200,0.4)]"
+      >
+        {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
+      </motion.button>
+      <div className="flex min-w-0 max-w-[180px] flex-col leading-tight">
+        <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.35em] text-gold/70">
+          <Music className="h-2.5 w-2.5" />
+          {(idx + 1).toString().padStart(2, "0")}/{Math.max(tracks.length, 1).toString().padStart(2, "0")}
+        </span>
+        <span className="truncate font-display text-sm italic text-cream">
+          {current?.title || `Faixa ${idx + 1}`}
+        </span>
+      </div>
+      <motion.button
+        onClick={next}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.94 }}
+        aria-label="Próxima"
+        className="grid h-7 w-7 place-items-center rounded-full text-cream/70 transition hover:text-gold"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </motion.button>
+    </motion.div>
+  );
+}
+
