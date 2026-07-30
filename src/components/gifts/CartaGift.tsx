@@ -340,16 +340,17 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                   initial={{ opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 1.7, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative mx-auto my-8 flex justify-center"
+                  className="relative mx-auto my-6 flex justify-center sm:my-8"
                 >
-                  <Flourish className="h-5 w-56" />
+                  <Flourish className="h-4 w-40 sm:h-5 sm:w-56" />
                 </motion.div>
 
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1.95, duration: 1 }}
-                  className="relative whitespace-pre-wrap text-center font-display text-xl italic leading-relaxed text-[#2E2520] md:text-2xl"
+                  className="relative whitespace-pre-wrap text-center font-display text-lg italic leading-relaxed text-[#2E2520] sm:text-xl md:text-2xl"
+
                 >
                   {typed}
                   {typed.length < (data.message?.length ?? 0) && (
