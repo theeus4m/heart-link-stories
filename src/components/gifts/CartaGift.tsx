@@ -299,21 +299,25 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
               <div className="absolute -inset-8 rounded-[12px] bg-[radial-gradient(ellipse_at_center,rgba(201,168,76,0.3),transparent_70%)] blur-2xl" />
 
               {/* Paper */}
-              <div className="relative overflow-hidden rounded-[6px] bg-[#FDFBF7] p-8 shadow-[0_50px_100px_-20px_rgba(107,39,55,0.55),0_20px_40px_-15px_rgba(46,37,32,0.4)] md:p-16">
+              <div
+                onClick={() => data.message && setTyped(data.message)}
+                className="relative max-h-[82dvh] overflow-y-auto overscroll-contain rounded-[6px] bg-[#FDFBF7] p-5 shadow-[0_50px_100px_-20px_rgba(107,39,55,0.55),0_20px_40px_-15px_rgba(46,37,32,0.4)] sm:p-8 md:max-h-none md:p-16"
+              >
                 {/* Paper grain & vignette */}
                 <div className="pointer-events-none absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_30%_20%,#2E2520,transparent_60%),radial-gradient(circle_at_70%_80%,#6B2737,transparent_60%)]" />
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(107,39,55,0.08)_100%)]" />
 
                 {/* Gold corner flourishes */}
-                <div className="pointer-events-none absolute left-4 top-4 h-12 w-12 border-l border-t border-[#C9A84C]/60" />
-                <div className="pointer-events-none absolute right-4 top-4 h-12 w-12 border-r border-t border-[#C9A84C]/60" />
-                <div className="pointer-events-none absolute bottom-4 left-4 h-12 w-12 border-b border-l border-[#C9A84C]/60" />
-                <div className="pointer-events-none absolute bottom-4 right-4 h-12 w-12 border-b border-r border-[#C9A84C]/60" />
+                <div className="pointer-events-none absolute left-3 top-3 h-9 w-9 border-l border-t border-[#C9A84C]/60 sm:left-4 sm:top-4 sm:h-12 sm:w-12" />
+                <div className="pointer-events-none absolute right-3 top-3 h-9 w-9 border-r border-t border-[#C9A84C]/60 sm:right-4 sm:top-4 sm:h-12 sm:w-12" />
+                <div className="pointer-events-none absolute bottom-3 left-3 h-9 w-9 border-b border-l border-[#C9A84C]/60 sm:bottom-4 sm:left-4 sm:h-12 sm:w-12" />
+                <div className="pointer-events-none absolute bottom-3 right-3 h-9 w-9 border-b border-r border-[#C9A84C]/60 sm:bottom-4 sm:right-4 sm:h-12 sm:w-12" />
 
                 {/* Monogram watermark */}
                 <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                  <Heart className="h-72 w-72 fill-[#6B2737] text-[#6B2737] opacity-[0.025]" />
+                  <Heart className="h-48 w-48 fill-[#6B2737] text-[#6B2737] opacity-[0.025] sm:h-72 sm:w-72" />
                 </div>
+
 
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
