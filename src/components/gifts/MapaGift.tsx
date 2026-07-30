@@ -396,9 +396,10 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3"
+            className="-mx-4 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0"
           >
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+            <div className="min-w-[78%] shrink-0 snap-center rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl sm:min-w-0">
+
               <p className="text-[10px] uppercase tracking-[0.3em] text-cream/60">
                 Distância entre nós
               </p>
