@@ -267,13 +267,14 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="relative mx-auto mt-20 max-w-2xl rounded-[6px] border border-[#C9A84C]/40 bg-[#FDFBF7] p-10 text-center shadow-[0_30px_60px_-20px_rgba(107,39,55,0.4)]"
+              className="relative mx-auto mt-16 max-w-2xl rounded-[6px] border border-[#C9A84C]/40 bg-[#FDFBF7] p-6 text-center shadow-[0_30px_60px_-20px_rgba(107,39,55,0.4)] sm:mt-20 sm:p-10"
             >
               <div className="pointer-events-none absolute inset-3 rounded-[4px] border border-[#C9A84C]/25" />
               <Heart className="mx-auto h-6 w-6 fill-[#C4714A] text-[#C4714A]" />
-              <p className="relative mt-4 font-display text-2xl italic text-[#6B2737]">
+              <p className="relative mt-4 font-display text-xl italic text-[#6B2737] sm:text-2xl">
                 {data.outro}
               </p>
+
             </motion.div>
           )}
         </div>
