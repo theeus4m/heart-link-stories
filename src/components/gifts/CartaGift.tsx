@@ -331,7 +331,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                   initial={{ opacity: 0, y: 14, letterSpacing: "0.1em" }}
                   animate={{ opacity: 1, y: 0, letterSpacing: "0em" }}
                   transition={{ delay: 1.45, duration: 1 }}
-                  className="relative mt-3 text-center font-display text-4xl italic text-[#6B2737] md:text-6xl"
+                  className="relative mt-3 text-center font-display text-3xl italic text-[#6B2737] sm:text-5xl md:text-6xl"
                 >
                   {data.recipient || "Meu amor"}
                 </motion.h1>
