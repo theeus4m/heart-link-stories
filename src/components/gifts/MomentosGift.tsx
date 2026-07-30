@@ -289,20 +289,53 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-50 grid place-items-center bg-[#2E2520]/85 px-4 py-10 backdrop-blur-md"
+            className="fixed inset-0 z-50 grid place-items-center bg-[#2E2520]/85 px-3 py-8 backdrop-blur-md sm:px-4 sm:py-10"
             onClick={() => setActive(null)}
           >
             <button
               onClick={() => setActive(null)}
               aria-label="Fechar"
-              className="absolute right-5 top-5 grid h-10 w-10 place-items-center rounded-full bg-[#FDFBF7]/15 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/25"
+              className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-[#FDFBF7]/15 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/25 sm:right-5 sm:top-5"
             >
               <X className="h-5 w-5" />
             </button>
+
+            {items.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    go(-1);
+                  }}
+                  aria-label="Foto anterior"
+                  className="absolute left-2 top-1/2 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-[#FDFBF7]/10 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/20 sm:grid sm:left-5"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    go(1);
+                  }}
+                  aria-label="Próxima foto"
+                  className="absolute right-2 top-1/2 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-[#FDFBF7]/10 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/20 sm:grid sm:right-5"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              </>
+            )}
+
             <motion.div
               layoutId={`polaroid-${active}`}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-xl rounded-[3px] bg-[#FDFBF7] p-5 pb-16 shadow-[0_50px_80px_-20px_rgba(0,0,0,0.7)]"
+              drag={items.length > 1 ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.18}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -70) go(1);
+                else if (info.offset.x > 70) go(-1);
+              }}
+              className="relative max-h-[88dvh] w-full max-w-xl touch-pan-y overflow-y-auto rounded-[3px] bg-[#FDFBF7] p-3.5 pb-10 shadow-[0_50px_80px_-20px_rgba(0,0,0,0.7)] sm:p-5 sm:pb-16"
             >
               <WashiTape tone="gold" />
               <div className="relative aspect-[4/3] overflow-hidden bg-[#E8D8C4]">
@@ -313,12 +346,12 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#C4714A]/10 via-transparent to-[#6B2737]/15 mix-blend-multiply" />
               </div>
-              <div className="mt-5 text-center">
-                <p className="font-display text-2xl italic text-[#6B2737]">
+              <div className="mt-4 text-center sm:mt-5">
+                <p className="font-display text-xl italic text-[#6B2737] sm:text-2xl">
                   {items[active].title}
                 </p>
                 {items[active].date && (
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.35em] text-[#C4714A]">
+                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.35em] text-[#C4714A] sm:text-[10px]">
                     {items[active].date}
                   </p>
                 )}
@@ -327,8 +360,14 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
                     {items[active].caption}
                   </p>
                 )}
+                {items.length > 1 && (
+                  <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.35em] text-[#2E2520]/40 sm:hidden">
+                    deslize para ver mais · {active + 1}/{items.length}
+                  </p>
+                )}
               </div>
             </motion.div>
+
           </motion.div>
         )}
       </AnimatePresence>
