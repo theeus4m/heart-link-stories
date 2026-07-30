@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, X } from "lucide-react";
+import { Heart, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export type MomentosData = {
   intro: string;
