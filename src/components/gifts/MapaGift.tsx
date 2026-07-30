@@ -428,7 +428,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+            <div className="min-w-[78%] shrink-0 snap-center rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl sm:min-w-0">
               <Heart
                 className="mx-auto h-5 w-5 fill-current animate-heartbeat"
                 style={{ color: theme }}
