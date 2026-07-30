@@ -230,22 +230,36 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             </div>
           )}
 
-          {/* captions for moments without photos */}
+          {/* captions for moments without photos — timeline along the golden thread */}
           {data.moments?.some((m) => !m.photo) && (
-            <div className="mx-auto mt-16 max-w-2xl space-y-6">
-              {data.moments
-                .filter((m) => !m.photo)
-                .map((m, i) => (
-                  <div key={i} className="rounded-sm border border-[#C9A84C]/30 bg-[#FDFBF7]/60 p-5">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#C4714A]">
-                      {m.date}
-                    </p>
-                    <h3 className="mt-2 font-display text-2xl italic text-[#6B2737]">{m.title}</h3>
-                    <p className="mt-2 text-[#2E2520]/70">{m.caption}</p>
-                  </div>
-                ))}
+            <div className="relative mx-auto mt-14 max-w-2xl pl-8 sm:mt-16 sm:pl-12">
+              <span className="pointer-events-none absolute bottom-2 left-3 top-2 w-px bg-gradient-to-b from-transparent via-[#C9A84C]/60 to-transparent sm:left-4" />
+              <div className="space-y-5 sm:space-y-6">
+                {data.moments
+                  .filter((m) => !m.photo)
+                  .map((m, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 16 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, margin: "-40px" }}
+                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative rounded-sm border border-[#C9A84C]/30 bg-[#FDFBF7]/70 p-4 shadow-[0_14px_28px_-18px_rgba(46,37,32,0.5)] sm:p-5"
+                    >
+                      <span className="absolute -left-[1.35rem] top-6 h-2 w-2 rounded-full bg-[#C9A84C] shadow-[0_0_10px_rgba(201,168,76,0.8)] sm:-left-[2.1rem]" />
+                      <p className="font-mono text-[9px] uppercase tracking-[0.35em] text-[#C4714A] sm:text-[10px]">
+                        {m.date}
+                      </p>
+                      <h3 className="mt-2 font-display text-xl italic text-[#6B2737] sm:text-2xl">
+                        {m.title}
+                      </h3>
+                      <p className="mt-2 text-sm text-[#2E2520]/70 sm:text-base">{m.caption}</p>
+                    </motion.div>
+                  ))}
+              </div>
             </div>
           )}
+
 
           {data.outro && (
             <motion.div
