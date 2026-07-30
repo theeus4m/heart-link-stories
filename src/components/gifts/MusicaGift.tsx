@@ -130,7 +130,7 @@ function MusicaGiftInner({ data, title }: { data: MusicaData; title: string }) {
   const hasTracks = player.tracks.length > 0;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0d0608] text-[#FDFBF7]">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-[#0d0608] text-[#FDFBF7]">
       {/* Ambient backdrop — deep wine with warm gold light */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.18),transparent_55%),radial-gradient(ellipse_at_center,rgba(107,39,55,0.35),transparent_70%),radial-gradient(ellipse_at_bottom,rgba(0,0,0,1),transparent_90%)]" />
       <div
@@ -141,7 +141,7 @@ function MusicaGiftInner({ data, title }: { data: MusicaData; title: string }) {
         }}
       />
 
-      <div className="relative mx-auto grid max-w-5xl gap-8 px-5 py-10 sm:py-14">
+      <div className="relative mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:gap-8 sm:px-5 sm:py-14">
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -296,7 +296,7 @@ function InteractiveStage({
   return (
     <div
       ref={constraintsRef}
-      className="relative mx-auto grid w-full max-w-4xl grid-cols-1 items-center gap-8 md:grid-cols-2"
+      className="relative mx-auto grid w-full max-w-4xl grid-cols-1 items-center gap-6 sm:gap-8 md:grid-cols-2"
     >
       {/* Wooden table surface */}
       <div
@@ -341,7 +341,7 @@ function InteractiveStage({
                 ? { duration: 0.15 }
                 : { duration: 4, repeat: Infinity, ease: "easeInOut" }
             }
-            className="absolute z-40 aspect-square w-[68%] max-w-[300px] touch-none select-none"
+            className="absolute z-40 aspect-square w-[70%] max-w-[min(72vw,300px)] touch-none select-none"
           >
             <VinylDisc coverUrl={coverUrl} mixtapeName={mixtapeName} couple={couple} tilt />
           </motion.div>
@@ -399,7 +399,7 @@ function Sleeve({
           ? { duration: 4, repeat: Infinity, ease: "easeInOut" }
           : { duration: 0.9, ease: EASE }
       }
-      className="relative aspect-square w-[80%] max-w-[300px]"
+      className="relative aspect-square w-[82%] max-w-[min(78vw,300px)]"
       style={{
         cursor: phase === "sleeve" ? "pointer" : "default",
         perspective: 1200,
@@ -579,7 +579,7 @@ function Turntable({
 
   return (
     <div
-      className="relative aspect-square w-full max-w-[380px] rounded-[1.8rem] p-5"
+      className="relative aspect-square w-full max-w-[min(88vw,380px)] rounded-[1.8rem] p-4 sm:p-5"
       style={{
         background:
           "linear-gradient(160deg,#111 0%,#0a0a0a 40%,#050505 100%)",
@@ -877,7 +877,7 @@ function PlayerControls() {
           onClick={togglePlay}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="relative grid h-16 w-16 place-items-center rounded-full border border-[#C9A84C]/60 bg-gradient-to-br from-[#C9A84C] to-[#9C7E2C] text-[#1a0a10] shadow-[0_20px_40px_-12px_rgba(201,168,76,0.55),inset_0_1px_0_rgba(255,235,200,0.4)]"
+          className="relative grid h-[4.25rem] w-[4.25rem] place-items-center rounded-full active:scale-95 transition-transform border border-[#C9A84C]/60 bg-gradient-to-br from-[#C9A84C] to-[#9C7E2C] text-[#1a0a10] shadow-[0_20px_40px_-12px_rgba(201,168,76,0.55),inset_0_1px_0_rgba(255,235,200,0.4)]"
           aria-label={playing ? "Pausar" : "Tocar"}
         >
           {playing ? <Pause className="h-6 w-6 fill-current" /> : <Play className="ml-0.5 h-6 w-6 fill-current" />}

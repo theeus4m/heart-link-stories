@@ -234,7 +234,7 @@ function GlobeStage({
   }, [a.lat, a.lng, b.lat, b.lng, theme]);
 
   return (
-    <div className="relative h-[60vh] min-h-[420px] w-full sm:h-[70vh]">
+    <div className="relative h-[46dvh] min-h-[300px] w-full sm:h-[60dvh] sm:min-h-[420px] lg:h-[70dvh]">
       <div ref={containerRef} className="absolute inset-0" />
       {!ready && (
         <div className="absolute inset-0 grid place-items-center text-cream/60">
@@ -278,7 +278,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden text-cream"
+      className="relative min-h-[100dvh] overflow-hidden text-cream"
       style={{
         background: `
           radial-gradient(ellipse at 20% 0%, ${theme}33, transparent 55%),
@@ -396,9 +396,10 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3"
+            className="-mx-4 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0"
           >
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+            <div className="min-w-[78%] shrink-0 snap-center rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl sm:min-w-0">
+
               <p className="text-[10px] uppercase tracking-[0.3em] text-cream/60">
                 Distância entre nós
               </p>
@@ -413,7 +414,8 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+            <div className="min-w-[78%] shrink-0 snap-center rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl sm:min-w-0">
+
               <Plane className="mx-auto h-5 w-5" style={{ color: theme }} />
               <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-cream/60">
                 Em um voo até você
@@ -426,7 +428,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+            <div className="min-w-[78%] shrink-0 snap-center rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl sm:min-w-0">
               <Heart
                 className="mx-auto h-5 w-5 fill-current animate-heartbeat"
                 style={{ color: theme }}

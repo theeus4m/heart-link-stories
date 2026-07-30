@@ -116,6 +116,7 @@ function Flourish({ className = "" }: { className?: string }) {
 export function CartaGift({ data, title: _title }: { data: CartaData; title: string }) {
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
+  const [zoom, setZoom] = useState<string | null>(null);
 
   const sparkles = useMemo(
     () =>
@@ -153,7 +154,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
   }, [open, data.message]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F5EFE4]">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-[#F5EFE4]">
       {/* Layered ambient glow — warm romantic vignette */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.18),transparent_55%),radial-gradient(ellipse_at_center,rgba(196,113,74,0.14),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(107,39,55,0.28),transparent_60%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(46,37,32,0.35)_100%)]" />
@@ -190,7 +191,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
 
 
 
-      <div className="relative z-[30] mx-auto grid min-h-screen max-w-3xl place-items-center px-5 py-12">
+      <div className="relative z-[30] mx-auto grid min-h-[100dvh] max-w-3xl place-items-center px-4 py-10 sm:px-6 sm:py-12">
         <AnimatePresence mode="wait">
           {!open ? (
             <motion.button
@@ -210,7 +211,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
               exit={{ scale: 1.18, opacity: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }}
               whileHover={{ scale: 1.035 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative aspect-[7/5] w-full max-w-md cursor-pointer"
+              className="group relative aspect-[7/5] w-[min(92vw,28rem)] cursor-pointer"
               style={{ perspective: 1600 }}
               aria-label="Abrir carta"
             >
@@ -231,7 +232,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                     <p className="font-display text-[11px] uppercase tracking-[0.5em] text-[#6B2737]/65">
                       Para você
                     </p>
-                    <p className="mt-3 font-display text-3xl italic leading-tight text-[#6B2737] md:text-4xl">
+                    <p className="mt-3 font-display text-2xl italic leading-tight text-[#6B2737] sm:text-3xl md:text-4xl">
                       {data.recipient || "Meu amor"}
                     </p>
                     <Flourish className="mx-auto mt-4 h-4 w-40 opacity-80" />
@@ -267,13 +268,14 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
 
               {/* Wax seal */}
               <motion.div
-                className="absolute left-1/2 top-[58%] z-10 grid h-20 w-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-[#9B3344] via-[#6B2737] to-[#3F1620] shadow-[0_10px_28px_rgba(107,39,55,0.6),inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-4px_8px_rgba(0,0,0,0.45)]"
+                className="absolute left-1/2 top-[58%] z-10 grid h-16 w-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-[#9B3344] via-[#6B2737] to-[#3F1620] shadow-[0_10px_28px_rgba(107,39,55,0.6),inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-4px_8px_rgba(0,0,0,0.45)] sm:h-20 sm:w-20"
                 animate={{ scale: [1, 1.06, 1] }}
                 transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
               >
                 <div className="absolute inset-1 rounded-full border border-[#C9A84C]/40" />
-                <Heart className="h-7 w-7 fill-[#C9A84C] text-[#C9A84C] drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
+                <Heart className="h-6 w-6 fill-[#C9A84C] text-[#C9A84C] drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)] sm:h-7 sm:w-7" />
               </motion.div>
+
 
               {/* Shimmer pass over envelope */}
               <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[14px]">
@@ -297,21 +299,25 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
               <div className="absolute -inset-8 rounded-[12px] bg-[radial-gradient(ellipse_at_center,rgba(201,168,76,0.3),transparent_70%)] blur-2xl" />
 
               {/* Paper */}
-              <div className="relative overflow-hidden rounded-[6px] bg-[#FDFBF7] p-8 shadow-[0_50px_100px_-20px_rgba(107,39,55,0.55),0_20px_40px_-15px_rgba(46,37,32,0.4)] md:p-16">
+              <div
+                onClick={() => data.message && setTyped(data.message)}
+                className="relative max-h-[82dvh] overflow-y-auto overscroll-contain rounded-[6px] bg-[#FDFBF7] p-5 shadow-[0_50px_100px_-20px_rgba(107,39,55,0.55),0_20px_40px_-15px_rgba(46,37,32,0.4)] sm:p-8 md:max-h-none md:p-16"
+              >
                 {/* Paper grain & vignette */}
                 <div className="pointer-events-none absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_30%_20%,#2E2520,transparent_60%),radial-gradient(circle_at_70%_80%,#6B2737,transparent_60%)]" />
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(107,39,55,0.08)_100%)]" />
 
                 {/* Gold corner flourishes */}
-                <div className="pointer-events-none absolute left-4 top-4 h-12 w-12 border-l border-t border-[#C9A84C]/60" />
-                <div className="pointer-events-none absolute right-4 top-4 h-12 w-12 border-r border-t border-[#C9A84C]/60" />
-                <div className="pointer-events-none absolute bottom-4 left-4 h-12 w-12 border-b border-l border-[#C9A84C]/60" />
-                <div className="pointer-events-none absolute bottom-4 right-4 h-12 w-12 border-b border-r border-[#C9A84C]/60" />
+                <div className="pointer-events-none absolute left-3 top-3 h-9 w-9 border-l border-t border-[#C9A84C]/60 sm:left-4 sm:top-4 sm:h-12 sm:w-12" />
+                <div className="pointer-events-none absolute right-3 top-3 h-9 w-9 border-r border-t border-[#C9A84C]/60 sm:right-4 sm:top-4 sm:h-12 sm:w-12" />
+                <div className="pointer-events-none absolute bottom-3 left-3 h-9 w-9 border-b border-l border-[#C9A84C]/60 sm:bottom-4 sm:left-4 sm:h-12 sm:w-12" />
+                <div className="pointer-events-none absolute bottom-3 right-3 h-9 w-9 border-b border-r border-[#C9A84C]/60 sm:bottom-4 sm:right-4 sm:h-12 sm:w-12" />
 
                 {/* Monogram watermark */}
                 <div className="pointer-events-none absolute inset-0 grid place-items-center">
-                  <Heart className="h-72 w-72 fill-[#6B2737] text-[#6B2737] opacity-[0.025]" />
+                  <Heart className="h-48 w-48 fill-[#6B2737] text-[#6B2737] opacity-[0.025] sm:h-72 sm:w-72" />
                 </div>
+
 
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
@@ -325,7 +331,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                   initial={{ opacity: 0, y: 14, letterSpacing: "0.1em" }}
                   animate={{ opacity: 1, y: 0, letterSpacing: "0em" }}
                   transition={{ delay: 1.45, duration: 1 }}
-                  className="relative mt-3 text-center font-display text-4xl italic text-[#6B2737] md:text-6xl"
+                  className="relative mt-3 text-center font-display text-3xl italic text-[#6B2737] sm:text-5xl md:text-6xl"
                 >
                   {data.recipient || "Meu amor"}
                 </motion.h1>
@@ -334,16 +340,17 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                   initial={{ opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 1.7, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative mx-auto my-8 flex justify-center"
+                  className="relative mx-auto my-6 flex justify-center sm:my-8"
                 >
-                  <Flourish className="h-5 w-56" />
+                  <Flourish className="h-4 w-40 sm:h-5 sm:w-56" />
                 </motion.div>
 
                 <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 1.95, duration: 1 }}
-                  className="relative whitespace-pre-wrap text-center font-display text-xl italic leading-relaxed text-[#2E2520] md:text-2xl"
+                  className="relative whitespace-pre-wrap text-center font-display text-lg italic leading-relaxed text-[#2E2520] sm:text-xl md:text-2xl"
+
                 >
                   {typed}
                   {typed.length < (data.message?.length ?? 0) && (
@@ -364,20 +371,26 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 )}
 
                 {data.photos && data.photos.filter(Boolean).length > 0 && (
-                  <div className="relative mt-10 grid grid-cols-2 gap-3 md:grid-cols-3">
+                  <div className="relative mt-8 grid grid-cols-2 gap-2.5 sm:mt-10 sm:grid-cols-3 sm:gap-3">
                     {data.photos.filter(Boolean).map((src, i) => (
                       <motion.img
                         key={i}
                         src={src}
                         alt=""
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setZoom(src);
+                        }}
                         initial={{ opacity: 0, scale: 0.9, y: 14 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
+                        whileTap={{ scale: 0.96 }}
                         transition={{ delay: 2.7 + i * 0.14, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                        className="aspect-square w-full rounded-sm object-cover shadow-[0_12px_24px_-10px_rgba(46,37,32,0.5)] ring-1 ring-[#C9A84C]/40"
+                        className="aspect-square w-full cursor-zoom-in rounded-sm object-cover shadow-[0_12px_24px_-10px_rgba(46,37,32,0.5)] ring-1 ring-[#C9A84C]/40 transition-shadow hover:shadow-[0_20px_34px_-12px_rgba(46,37,32,0.6)]"
                       />
                     ))}
                   </div>
                 )}
+
 
                 {data.song && data.song.includes("spotify.com") && (
                   <motion.div
@@ -409,6 +422,30 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
           )}
         </AnimatePresence>
       </div>
+
+      {/* Photo lightbox */}
+      <AnimatePresence>
+        {zoom && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setZoom(null)}
+            className="fixed inset-0 z-[80] grid place-items-center bg-[#2E2520]/85 p-4 backdrop-blur-md"
+          >
+            <motion.img
+              src={zoom}
+              alt=""
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="max-h-[85dvh] w-auto max-w-[92vw] rounded-sm object-contain shadow-[0_50px_80px_-20px_rgba(0,0,0,0.7)] ring-1 ring-[#C9A84C]/40"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

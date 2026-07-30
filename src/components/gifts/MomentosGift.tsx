@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, X } from "lucide-react";
+import { Heart, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export type MomentosData = {
   intro: string;
@@ -65,15 +65,17 @@ function Polaroid({
     <motion.button
       onClick={onOpen}
       layoutId={`polaroid-${index}`}
-      initial={{ opacity: 0, y: 24, rotate: rot }}
-      whileInView={{ opacity: 1, y: 0, rotate: rot }}
-      whileHover={{ rotate: 0, scale: 1.04, y: -4 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      viewport={{ once: true, margin: "-60px" }}
-      className="group relative block w-full max-w-[260px] cursor-pointer rounded-[2px] bg-[#FDFBF7] p-3 pb-12 text-left shadow-[0_18px_30px_-12px_rgba(46,37,32,0.35),0_4px_10px_-4px_rgba(46,37,32,0.25)] outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]"
+      initial={{ opacity: 0, y: 28, rotate: rot, scale: 0.94 }}
+      whileInView={{ opacity: 1, y: 0, rotate: rot, scale: 1 }}
+      whileHover={{ rotate: 0, scale: 1.04, y: -6 }}
+      whileTap={{ scale: 0.97, rotate: 0, y: -2 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: (index % 4) * 0.06 }}
+      viewport={{ once: true, margin: "-40px" }}
+      className="group relative block w-full max-w-[260px] cursor-pointer rounded-[2px] bg-[#FDFBF7] p-2.5 pb-10 text-left shadow-[0_18px_30px_-12px_rgba(46,37,32,0.35),0_4px_10px_-4px_rgba(46,37,32,0.25)] outline-none transition-shadow hover:shadow-[0_30px_50px_-16px_rgba(46,37,32,0.5)] focus-visible:ring-2 focus-visible:ring-[#C9A84C] sm:p-3 sm:pb-12"
       style={{ willChange: "transform" }}
       aria-label="Ampliar foto"
     >
+
       <WashiTape tone={tone} />
       <PolaroidCorner pos="left-1 top-1" />
       <PolaroidCorner pos="right-1 top-1 rotate-90" />
@@ -85,23 +87,26 @@ function Polaroid({
           src={src}
           alt={caption || ""}
           loading="lazy"
-          className="h-full w-full object-cover [filter:saturate(0.92)_contrast(1.05)_sepia(0.08)]"
+          className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] [filter:saturate(0.92)_contrast(1.05)_sepia(0.08)]"
         />
         {/* vintage warmth overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#C4714A]/10 via-transparent to-[#6B2737]/15 mix-blend-multiply" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(46,37,32,0.25)_100%)]" />
+        {/* gloss sweep on hover */}
+        <div className="pointer-events-none absolute -inset-y-6 -left-1/3 w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-0 transition-all duration-700 group-hover:left-[110%] group-hover:opacity-100" />
       </div>
 
-      <div className="mt-3 px-1 text-center">
-        <p className="font-display text-base italic leading-tight text-[#6B2737]">
+      <div className="mt-2.5 px-1 text-center sm:mt-3">
+        <p className="line-clamp-2 font-display text-sm italic leading-tight text-[#6B2737] sm:text-base">
           {caption || "—"}
         </p>
         {date && (
-          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.3em] text-[#2E2520]/55">
+          <p className="mt-0.5 truncate font-mono text-[9px] uppercase tracking-[0.3em] text-[#2E2520]/55 sm:text-[10px]">
             {date}
           </p>
         )}
       </div>
+
     </motion.button>
   );
 }
@@ -115,19 +120,30 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
     [data.moments],
   );
 
+  const go = useCallback(
+    (dir: 1 | -1) =>
+      setActive((a) => (a === null ? a : (a + dir + items.length) % items.length)),
+    [items.length],
+  );
+
   useEffect(() => {
     if (active === null) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setActive(null);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActive(null);
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "ArrowLeft") go(-1);
+    };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [active]);
+  }, [active, go]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F5EFE4]">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-[#F5EFE4]">
+
       {/* atmospheric backdrop matching Chronelo palette */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.16),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(107,39,55,0.18),transparent_60%)]" />
       <div
@@ -144,32 +160,33 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             key="cover"
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0 z-20 grid place-items-center px-6"
+            className="absolute inset-0 z-20 grid place-items-center px-5 sm:px-6"
           >
             <div className="text-center">
-              <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-[#C4714A]">
+              <p className="font-mono text-[9px] uppercase tracking-[0.5em] text-[#C4714A] sm:text-[10px]">
                 ★ Álbum Chronelo ★
               </p>
-              <h1 className="mt-4 font-display text-5xl italic text-[#6B2737] md:text-6xl">
+              <h1 className="mt-4 font-display text-4xl italic text-[#6B2737] sm:text-5xl md:text-6xl">
                 {title}
               </h1>
-              <p className="mx-auto mt-4 max-w-md font-display text-lg italic text-[#2E2520]/70">
+              <p className="mx-auto mt-4 max-w-md font-display text-base italic text-[#2E2520]/70 sm:text-lg">
                 {data.intro || "Memórias guardadas com a delicadeza de uma página de álbum."}
               </p>
               <button
                 onClick={() => setRevealed(true)}
-                className="mt-10 inline-flex items-center gap-2 rounded-full border border-[#C9A84C] bg-[#FDFBF7] px-7 py-3 font-display text-base italic text-[#6B2737] shadow-[0_10px_30px_-12px_rgba(107,39,55,0.4)] transition hover:bg-[#C9A84C] hover:text-[#FDFBF7]"
+                className="mt-8 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#C9A84C] bg-[#FDFBF7] px-6 py-3 font-display text-base italic text-[#6B2737] shadow-[0_10px_30px_-12px_rgba(107,39,55,0.4)] transition hover:bg-[#C9A84C] hover:text-[#FDFBF7] active:scale-95 sm:mt-10 sm:px-7"
               >
                 Abrir o álbum
                 <Heart className="h-3.5 w-3.5 fill-[#C4714A] text-[#C4714A]" />
               </button>
             </div>
+
           </motion.div>
         )}
       </AnimatePresence>
 
       {revealed && (
-        <div className="relative mx-auto max-w-5xl px-5 py-16 md:py-20">
+        <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 md:py-20">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -179,7 +196,7 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-[#C4714A]">
               Nossa Linha do Tempo
             </p>
-            <h1 className="mt-3 font-display text-5xl italic text-[#6B2737] md:text-6xl">
+            <h1 className="mt-3 font-display text-4xl italic text-[#6B2737] sm:text-5xl md:text-6xl">
               {title}
             </h1>
             <div className="mx-auto mt-5 flex items-center justify-center gap-3 text-[#C9A84C]">
@@ -199,7 +216,7 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
               Ainda não há fotos neste álbum.
             </p>
           ) : (
-            <div className="mt-14 grid grid-cols-2 place-items-center gap-x-6 gap-y-12 md:grid-cols-3 md:gap-x-10 md:gap-y-16">
+            <div className="mt-10 grid grid-cols-1 place-items-center gap-x-5 gap-y-10 min-[420px]:grid-cols-2 sm:mt-14 md:grid-cols-3 md:gap-x-8 md:gap-y-14 lg:grid-cols-4">
               {items.map((m, i) => (
                 <Polaroid
                   key={i}
@@ -213,22 +230,36 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             </div>
           )}
 
-          {/* captions for moments without photos */}
+          {/* captions for moments without photos — timeline along the golden thread */}
           {data.moments?.some((m) => !m.photo) && (
-            <div className="mx-auto mt-16 max-w-2xl space-y-6">
-              {data.moments
-                .filter((m) => !m.photo)
-                .map((m, i) => (
-                  <div key={i} className="rounded-sm border border-[#C9A84C]/30 bg-[#FDFBF7]/60 p-5">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#C4714A]">
-                      {m.date}
-                    </p>
-                    <h3 className="mt-2 font-display text-2xl italic text-[#6B2737]">{m.title}</h3>
-                    <p className="mt-2 text-[#2E2520]/70">{m.caption}</p>
-                  </div>
-                ))}
+            <div className="relative mx-auto mt-14 max-w-2xl pl-8 sm:mt-16 sm:pl-12">
+              <span className="pointer-events-none absolute bottom-2 left-3 top-2 w-px bg-gradient-to-b from-transparent via-[#C9A84C]/60 to-transparent sm:left-4" />
+              <div className="space-y-5 sm:space-y-6">
+                {data.moments
+                  .filter((m) => !m.photo)
+                  .map((m, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 16 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true, margin: "-40px" }}
+                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative rounded-sm border border-[#C9A84C]/30 bg-[#FDFBF7]/70 p-4 shadow-[0_14px_28px_-18px_rgba(46,37,32,0.5)] sm:p-5"
+                    >
+                      <span className="absolute -left-[1.35rem] top-6 h-2 w-2 rounded-full bg-[#C9A84C] shadow-[0_0_10px_rgba(201,168,76,0.8)] sm:-left-[2.1rem]" />
+                      <p className="font-mono text-[9px] uppercase tracking-[0.35em] text-[#C4714A] sm:text-[10px]">
+                        {m.date}
+                      </p>
+                      <h3 className="mt-2 font-display text-xl italic text-[#6B2737] sm:text-2xl">
+                        {m.title}
+                      </h3>
+                      <p className="mt-2 text-sm text-[#2E2520]/70 sm:text-base">{m.caption}</p>
+                    </motion.div>
+                  ))}
+              </div>
             </div>
           )}
+
 
           {data.outro && (
             <motion.div
@@ -236,13 +267,14 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="relative mx-auto mt-20 max-w-2xl rounded-[6px] border border-[#C9A84C]/40 bg-[#FDFBF7] p-10 text-center shadow-[0_30px_60px_-20px_rgba(107,39,55,0.4)]"
+              className="relative mx-auto mt-16 max-w-2xl rounded-[6px] border border-[#C9A84C]/40 bg-[#FDFBF7] p-6 text-center shadow-[0_30px_60px_-20px_rgba(107,39,55,0.4)] sm:mt-20 sm:p-10"
             >
               <div className="pointer-events-none absolute inset-3 rounded-[4px] border border-[#C9A84C]/25" />
               <Heart className="mx-auto h-6 w-6 fill-[#C4714A] text-[#C4714A]" />
-              <p className="relative mt-4 font-display text-2xl italic text-[#6B2737]">
+              <p className="relative mt-4 font-display text-xl italic text-[#6B2737] sm:text-2xl">
                 {data.outro}
               </p>
+
             </motion.div>
           )}
         </div>
@@ -257,20 +289,53 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-50 grid place-items-center bg-[#2E2520]/85 px-4 py-10 backdrop-blur-md"
+            className="fixed inset-0 z-50 grid place-items-center bg-[#2E2520]/85 px-3 py-8 backdrop-blur-md sm:px-4 sm:py-10"
             onClick={() => setActive(null)}
           >
             <button
               onClick={() => setActive(null)}
               aria-label="Fechar"
-              className="absolute right-5 top-5 grid h-10 w-10 place-items-center rounded-full bg-[#FDFBF7]/15 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/25"
+              className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-[#FDFBF7]/15 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/25 sm:right-5 sm:top-5"
             >
               <X className="h-5 w-5" />
             </button>
+
+            {items.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    go(-1);
+                  }}
+                  aria-label="Foto anterior"
+                  className="absolute left-2 top-1/2 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-[#FDFBF7]/10 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/20 sm:grid sm:left-5"
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    go(1);
+                  }}
+                  aria-label="Próxima foto"
+                  className="absolute right-2 top-1/2 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-[#FDFBF7]/10 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/20 sm:grid sm:right-5"
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </button>
+              </>
+            )}
+
             <motion.div
               layoutId={`polaroid-${active}`}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-xl rounded-[3px] bg-[#FDFBF7] p-5 pb-16 shadow-[0_50px_80px_-20px_rgba(0,0,0,0.7)]"
+              drag={items.length > 1 ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.18}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -70) go(1);
+                else if (info.offset.x > 70) go(-1);
+              }}
+              className="relative max-h-[88dvh] w-full max-w-xl touch-pan-y overflow-y-auto rounded-[3px] bg-[#FDFBF7] p-3.5 pb-10 shadow-[0_50px_80px_-20px_rgba(0,0,0,0.7)] sm:p-5 sm:pb-16"
             >
               <WashiTape tone="gold" />
               <div className="relative aspect-[4/3] overflow-hidden bg-[#E8D8C4]">
@@ -281,12 +346,12 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
                 />
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#C4714A]/10 via-transparent to-[#6B2737]/15 mix-blend-multiply" />
               </div>
-              <div className="mt-5 text-center">
-                <p className="font-display text-2xl italic text-[#6B2737]">
+              <div className="mt-4 text-center sm:mt-5">
+                <p className="font-display text-xl italic text-[#6B2737] sm:text-2xl">
                   {items[active].title}
                 </p>
                 {items[active].date && (
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.35em] text-[#C4714A]">
+                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.35em] text-[#C4714A] sm:text-[10px]">
                     {items[active].date}
                   </p>
                 )}
@@ -295,8 +360,14 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
                     {items[active].caption}
                   </p>
                 )}
+                {items.length > 1 && (
+                  <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.35em] text-[#2E2520]/40 sm:hidden">
+                    deslize para ver mais · {active + 1}/{items.length}
+                  </p>
+                )}
               </div>
             </motion.div>
+
           </motion.div>
         )}
       </AnimatePresence>
