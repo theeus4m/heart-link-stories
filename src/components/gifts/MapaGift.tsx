@@ -278,7 +278,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
 
   return (
     <div
-      className="relative min-h-screen overflow-hidden text-cream"
+      className="relative min-h-[100dvh] overflow-hidden text-cream"
       style={{
         background: `
           radial-gradient(ellipse at 20% 0%, ${theme}33, transparent 55%),
