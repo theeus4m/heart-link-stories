@@ -120,19 +120,30 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
     [data.moments],
   );
 
+  const go = useCallback(
+    (dir: 1 | -1) =>
+      setActive((a) => (a === null ? a : (a + dir + items.length) % items.length)),
+    [items.length],
+  );
+
   useEffect(() => {
     if (active === null) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setActive(null);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setActive(null);
+      if (e.key === "ArrowRight") go(1);
+      if (e.key === "ArrowLeft") go(-1);
+    };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [active]);
+  }, [active, go]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F5EFE4]">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-[#F5EFE4]">
+
       {/* atmospheric backdrop matching Chronelo palette */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.16),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(107,39,55,0.18),transparent_60%)]" />
       <div
