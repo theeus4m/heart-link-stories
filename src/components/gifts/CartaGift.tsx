@@ -232,7 +232,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                     <p className="font-display text-[11px] uppercase tracking-[0.5em] text-[#6B2737]/65">
                       Para você
                     </p>
-                    <p className="mt-3 font-display text-3xl italic leading-tight text-[#6B2737] md:text-4xl">
+                    <p className="mt-3 font-display text-2xl italic leading-tight text-[#6B2737] sm:text-3xl md:text-4xl">
                       {data.recipient || "Meu amor"}
                     </p>
                     <Flourish className="mx-auto mt-4 h-4 w-40 opacity-80" />
