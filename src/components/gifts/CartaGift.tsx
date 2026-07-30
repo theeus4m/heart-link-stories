@@ -116,6 +116,7 @@ function Flourish({ className = "" }: { className?: string }) {
 export function CartaGift({ data, title: _title }: { data: CartaData; title: string }) {
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
+  const [zoom, setZoom] = useState<string | null>(null);
 
   const sparkles = useMemo(
     () =>
