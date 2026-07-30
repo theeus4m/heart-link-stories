@@ -414,7 +414,8 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl">
+            <div className="min-w-[78%] shrink-0 snap-center rounded-2xl border border-white/10 bg-white/5 p-5 text-center backdrop-blur-xl sm:min-w-0">
+
               <Plane className="mx-auto h-5 w-5" style={{ color: theme }} />
               <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-cream/60">
                 Em um voo até você
