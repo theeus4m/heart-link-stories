@@ -65,15 +65,17 @@ function Polaroid({
     <motion.button
       onClick={onOpen}
       layoutId={`polaroid-${index}`}
-      initial={{ opacity: 0, y: 24, rotate: rot }}
-      whileInView={{ opacity: 1, y: 0, rotate: rot }}
-      whileHover={{ rotate: 0, scale: 1.04, y: -4 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      viewport={{ once: true, margin: "-60px" }}
-      className="group relative block w-full max-w-[260px] cursor-pointer rounded-[2px] bg-[#FDFBF7] p-3 pb-12 text-left shadow-[0_18px_30px_-12px_rgba(46,37,32,0.35),0_4px_10px_-4px_rgba(46,37,32,0.25)] outline-none focus-visible:ring-2 focus-visible:ring-[#C9A84C]"
+      initial={{ opacity: 0, y: 28, rotate: rot, scale: 0.94 }}
+      whileInView={{ opacity: 1, y: 0, rotate: rot, scale: 1 }}
+      whileHover={{ rotate: 0, scale: 1.04, y: -6 }}
+      whileTap={{ scale: 0.97, rotate: 0, y: -2 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: (index % 4) * 0.06 }}
+      viewport={{ once: true, margin: "-40px" }}
+      className="group relative block w-full max-w-[260px] cursor-pointer rounded-[2px] bg-[#FDFBF7] p-2.5 pb-10 text-left shadow-[0_18px_30px_-12px_rgba(46,37,32,0.35),0_4px_10px_-4px_rgba(46,37,32,0.25)] outline-none transition-shadow hover:shadow-[0_30px_50px_-16px_rgba(46,37,32,0.5)] focus-visible:ring-2 focus-visible:ring-[#C9A84C] sm:p-3 sm:pb-12"
       style={{ willChange: "transform" }}
       aria-label="Ampliar foto"
     >
+
       <WashiTape tone={tone} />
       <PolaroidCorner pos="left-1 top-1" />
       <PolaroidCorner pos="right-1 top-1 rotate-90" />
