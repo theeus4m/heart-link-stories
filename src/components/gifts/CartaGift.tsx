@@ -268,13 +268,14 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
 
               {/* Wax seal */}
               <motion.div
-                className="absolute left-1/2 top-[58%] z-10 grid h-20 w-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-[#9B3344] via-[#6B2737] to-[#3F1620] shadow-[0_10px_28px_rgba(107,39,55,0.6),inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-4px_8px_rgba(0,0,0,0.45)]"
+                className="absolute left-1/2 top-[58%] z-10 grid h-16 w-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-[#9B3344] via-[#6B2737] to-[#3F1620] shadow-[0_10px_28px_rgba(107,39,55,0.6),inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-4px_8px_rgba(0,0,0,0.45)] sm:h-20 sm:w-20"
                 animate={{ scale: [1, 1.06, 1] }}
                 transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
               >
                 <div className="absolute inset-1 rounded-full border border-[#C9A84C]/40" />
-                <Heart className="h-7 w-7 fill-[#C9A84C] text-[#C9A84C] drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]" />
+                <Heart className="h-6 w-6 fill-[#C9A84C] text-[#C9A84C] drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)] sm:h-7 sm:w-7" />
               </motion.div>
+
 
               {/* Shimmer pass over envelope */}
               <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[14px]">
