@@ -216,7 +216,7 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
               Ainda não há fotos neste álbum.
             </p>
           ) : (
-            <div className="mt-14 grid grid-cols-2 place-items-center gap-x-6 gap-y-12 md:grid-cols-3 md:gap-x-10 md:gap-y-16">
+            <div className="mt-10 grid grid-cols-1 place-items-center gap-x-5 gap-y-10 min-[420px]:grid-cols-2 sm:mt-14 md:grid-cols-3 md:gap-x-8 md:gap-y-14 lg:grid-cols-4">
               {items.map((m, i) => (
                 <Polaroid
                   key={i}
