@@ -154,7 +154,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
   }, [open, data.message]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#F5EFE4]">
+    <div className="relative min-h-[100dvh] overflow-hidden bg-[#F5EFE4]">
       {/* Layered ambient glow — warm romantic vignette */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.18),transparent_55%),radial-gradient(ellipse_at_center,rgba(196,113,74,0.14),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(107,39,55,0.28),transparent_60%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(46,37,32,0.35)_100%)]" />
