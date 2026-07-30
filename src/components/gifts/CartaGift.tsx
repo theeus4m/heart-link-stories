@@ -371,20 +371,26 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 )}
 
                 {data.photos && data.photos.filter(Boolean).length > 0 && (
-                  <div className="relative mt-10 grid grid-cols-2 gap-3 md:grid-cols-3">
+                  <div className="relative mt-8 grid grid-cols-2 gap-2.5 sm:mt-10 sm:grid-cols-3 sm:gap-3">
                     {data.photos.filter(Boolean).map((src, i) => (
                       <motion.img
                         key={i}
                         src={src}
                         alt=""
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setZoom(src);
+                        }}
                         initial={{ opacity: 0, scale: 0.9, y: 14 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
+                        whileTap={{ scale: 0.96 }}
                         transition={{ delay: 2.7 + i * 0.14, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                        className="aspect-square w-full rounded-sm object-cover shadow-[0_12px_24px_-10px_rgba(46,37,32,0.5)] ring-1 ring-[#C9A84C]/40"
+                        className="aspect-square w-full cursor-zoom-in rounded-sm object-cover shadow-[0_12px_24px_-10px_rgba(46,37,32,0.5)] ring-1 ring-[#C9A84C]/40 transition-shadow hover:shadow-[0_20px_34px_-12px_rgba(46,37,32,0.6)]"
                       />
                     ))}
                   </div>
                 )}
+
 
                 {data.song && data.song.includes("spotify.com") && (
                   <motion.div
