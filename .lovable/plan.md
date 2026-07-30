@@ -1,57 +1,52 @@
-# Plano de Redesign — Chronelo
+## Objetivo
 
-Mantendo a paleta oficial (Marfim #FDFBF7, Vinho #6B2737, Terracota #C4714A, Ouro #C9A84C, Ink #2E2520) e tipografia Cormorant Garamond + DM Sans.
+Tornar os quatro presentes (La Mixtape, Carta, Nossos Momentos, Mapa do Amor) mais interativos, com layout que funcione bem em celular e tablet, e com acabamento visual mais refinado — mantendo a identidade Chronelo (vinho, terracota, dourado, creme).
 
-## 1. Nossa Linha do Tempo — `src/components/gifts/MomentosGift.tsx`
+## 1. Base responsiva (aplicada a todos)
 
-Transformar a galeria em um álbum de memórias com molduras Polaroid premium.
+- Trocar `min-h-screen` por `min-h-[100dvh]` (evita corte pela barra do navegador no iOS).
+- Escala fluida de tipografia: títulos passam a `text-3xl sm:text-5xl md:text-6xl`; blocos `p-10` viram `p-5 sm:p-8 md:p-10`; `px-5` vira `px-4 sm:px-6`.
+- Alvos de toque com no mínimo 44px; áreas arrastáveis com `touch-none`.
+- Linhas com texto + ícone usam `grid-cols-[minmax(0,1fr)_auto]` no mobile, `flex` a partir de `sm:`, com `min-w-0` e `truncate`.
+- Respeitar `prefers-reduced-motion`: partículas e rotações reduzidas.
+- Breakpoint de tablet (`md:`) tratado explicitamente: colunas duplas onde hoje só há mobile ou desktop.
 
-- **Moldura Polaroid**: fundo marfim, borda larga inferior (estilo revelação analógica), sombra dupla suave (`drop-shadow` + sombra projetada), cantos com leve textura, fita adesiva washi no topo (SVG diagonal translúcido em tons de ouro/rosé), pequena legenda manuscrita (data ou índice) em Cormorant italic.
-- **Disposição**: grid responsivo (`grid-cols-2 md:grid-cols-3`) com cada item recebendo rotação determinística entre -6° e +6° derivada do índice; hover eleva (`scale 1.04`, rotate→0, sombra mais intensa) com `transition-transform`.
-- **Foto interna**: leve filtro vintage (`saturate-[0.92] contrast-[1.05]`) e um overlay sutil cor sépia/rosé com `mix-blend-multiply` em opacidade baixa.
-- **Zoom ao clicar**: lightbox com `framer-motion` + `AnimatePresence` usando `layoutId` para transição contínua da polaroid pequena para a versão ampliada centrada; fundo `bg-ink/80` com blur, ESC e clique-fora fecham.
-- **Detalhes vintage**: pequenas marcas (cantinho de álbum em SVG dourado nas quatro pontas opcionais), divisor "Fio do Tempo" entre seções de datas se houver agrupamento.
+## 2. La Mixtape (`MusicaGift.tsx`)
 
-## 2. Home — Exemplos discretos dos presentes — `src/routes/index.tsx`
+- Cena capa + toca-discos empilha em coluna no celular e vira duas colunas a partir do tablet; disco e prato dimensionados por `min(80vw, 320px)` em vez de largura fixa.
+- Arrastar o vinil: aumentar a zona de acerto no mobile, adicionar snap magnético quando o disco chega perto do prato, vibração leve (`navigator.vibrate`) ao encaixar e ao pousar a agulha.
+- Novas microinterações: brilho que percorre o vinil ao girar, agulha com deriva lenta acompanhando o progresso, capa com leve tilt seguindo o cursor no desktop.
+- Playlist: item ativo com barra de progresso embutida; tocar em qualquer faixa pula para ela; swipe horizontal nos controles para faixa anterior/próxima.
+- Player compacto no mobile (controles em uma linha, título truncado).
 
-Nova seção logo após o hero, antes do CTA principal.
+## 3. Carta (`CartaGift.tsx`)
 
-- **Layout**: 4 cards em `grid md:grid-cols-4` com bastante respiro (`gap-8`, `py-24`), título editorial discreto ("Presentes Chronelo") em Cormorant + linha-fio dourada curta.
-- **Card**: fundo marfim, borda hairline ouro a 20%, preview minimalista de cada tipo (ícone/ilustração SVG sutil — envelope para Carta, mapa para Mapa, disco para Mixtape, polaroid para Momentos), título em Cormorant, descrição curta em DM Sans 13px tracking amplo.
-- **Interação**: hover apenas eleva 2px e revela link "Ver exemplo →" em terracota; sem cores fortes, sem badges.
+- Envelope com largura fluida (`w-[min(92vw,28rem)]`) e selo/coração escalando junto.
+- Interação nova: arrastar o selo para baixo (ou tocar) para romper a cera, com pétalas reagindo ao gesto.
+- Carta aberta rola dentro de um painel com altura limitada (`max-h-[80dvh]`) em vez de estourar a tela no celular.
+- Galeria de fotos: grade 2 colunas no celular, 3 no tablet, com toque para ampliar.
+- Botão "reler" e indicador de rolagem discreto.
 
-## 3. Mixtape — `src/components/gifts/MusicaGift.tsx`
+## 4. Nossos Momentos (`MomentosGift.tsx`)
 
-Reformular como um toca-discos vintage de luxo.
+- Grade polaroid: 1 coluna em telas muito estreitas, 2 no celular maior, 3 no tablet, 4 no desktop.
+- Lightbox responsivo (`max-h-[85dvh]`), com swipe para próxima/anterior foto e setas no desktop.
+- Interação nova: leve efeito de "levantar a foto" ao pressionar, e as polaroids entram em cascata conforme o scroll.
+- Momentos sem foto viram cartões de linha do tempo alinhados ao fio dourado.
 
-- **Cena**: fundo gradiente vinho profundo → ink com vinheta, plataforma de madeira (gradiente terracota→sombra) e marca d'água "Chronelo" em ouro.
-- **Disco de vinil**: SVG circular com sulcos concêntricos finos, label central com a capa do álbum (ou monograma Ch dourado), reflexo radial; girando lentamente (`animate-spin` 8s) somente durante reprodução.
-- **Braço/agulha**: SVG do braço do toca-discos pousando sobre o disco quando o play é acionado (rotação suave via motion).
-- **Controles**: botão Play/Pause grande em ouro escovado, info da música (título/artista em Cormorant), barra de progresso fina em ouro.
-- **Equalizador**: 5 barras verticais em ouro com altura animada (keyframes) enquanto toca, posicionadas elegantemente abaixo do disco.
-- **Partículas**: pequenas faíscas douradas (motion divs) flutuando ao redor do disco quando ativo.
-- **Embed**: o iframe do Spotify continua disponível mas com altura mínima abaixo da arte do toca-discos, ou usado apenas para áudio (mantemos visual + iframe estilizado em ring ouro).
+## 5. Mapa do Amor (`MapaGift.tsx`)
 
-## 4. Carta — refino de pétalas — `src/components/gifts/CartaGift.tsx`
+- Altura do globo passa a ser proporcional à viewport (`h-[60dvh] md:h-[70dvh]`) com redimensionamento no `resize`/rotação de tela.
+- Cards de distância/tempo viram carrossel horizontal no celular e grade no tablet.
+- Interação nova: tocar num marcador abre um cartão com a cidade e a mensagem; botão para reiniciar a animação cinematográfica.
+- Controles de toque (girar/zoom) habilitados com dica visual na primeira interação.
 
-O componente já usa pétalas SVG realistas (peônia/rosa) com 4 variações de tom; ajustes finos:
+## 6. Casca do bundle (`BundleGift.tsx`)
 
-- Garantir que **nenhuma** pétala se pareça com balão/círculo — revisar formas e remover qualquer círculo decorativo remanescente que pareça confete (manter apenas as partículas douradas como pontos brilhantes minúsculos — `1.5–3px` com `blur-[0.5px]` e box-shadow ouro).
-- **Profundidade**: dividir as pétalas em duas camadas — `z-20` atrás da carta e `z-40` à frente, com tamanhos maiores na camada da frente e desfoque leve (`blur-[0.5px]`) na de trás.
-- **Burst inicial mais cinematográfico**: aumentar para 26 pétalas, easing `[0.16, 1, 0.3, 1]`, escalas finais variando, rotação 3D (`rotateY`) durante o voo.
-- **Chuva contínua**: já existente — refinar duração (10–16s), adicionar 6 pétalas extra "de frente" maiores e mais lentas para parallax.
-- **Faíscas douradas**: aumentar contraste e reduzir quantidade (20) para não competir; misturadas no mesmo plano da chuva.
+- Setas laterais somem no celular (só swipe + rodapé), pontos de capítulo maiores e com rótulo.
+- Mini-player fixo respeita `safe-area-inset-bottom` e encolhe para ícone tocável no celular.
+- Capa e telas de capítulo com espaçamento fluido e sem rolagem forçada.
 
 ## Detalhes técnicos
 
-- Reutilizar utilidades existentes em `src/styles.css` (`font-display`, cores tokens). Não introduzir cores hard-coded fora da paleta oficial.
-- `framer-motion` já está instalado e em uso; usar `AnimatePresence` + `layoutId` para lightbox da Polaroid.
-- Nenhuma alteração de schema ou backend. Apenas UI.
-- Sem novas dependências.
-
-## Arquivos a editar
-
-- `src/components/gifts/MomentosGift.tsx` (Polaroid + lightbox)
-- `src/routes/index.tsx` (seção de exemplos)
-- `src/components/gifts/MusicaGift.tsx` (toca-discos vintage)
-- `src/components/gifts/CartaGift.tsx` (refino pétalas + camadas)
+Somente componentes de apresentação em `src/components/gifts/*` e tokens já existentes em `src/styles.css`. Sem mudança de schema, de dados ou do editor. Animações continuam com `motion/react`; nada de bibliotecas novas. Verificação final: build + captura de telas em 390px, 820px e 1280px via Playwright.
