@@ -186,7 +186,7 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
       </AnimatePresence>
 
       {revealed && (
-        <div className="relative mx-auto max-w-5xl px-5 py-16 md:py-20">
+        <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 md:py-20">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
