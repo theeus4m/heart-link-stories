@@ -87,23 +87,26 @@ function Polaroid({
           src={src}
           alt={caption || ""}
           loading="lazy"
-          className="h-full w-full object-cover [filter:saturate(0.92)_contrast(1.05)_sepia(0.08)]"
+          className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] [filter:saturate(0.92)_contrast(1.05)_sepia(0.08)]"
         />
         {/* vintage warmth overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#C4714A]/10 via-transparent to-[#6B2737]/15 mix-blend-multiply" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(46,37,32,0.25)_100%)]" />
+        {/* gloss sweep on hover */}
+        <div className="pointer-events-none absolute -inset-y-6 -left-1/3 w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-0 transition-all duration-700 group-hover:left-[110%] group-hover:opacity-100" />
       </div>
 
-      <div className="mt-3 px-1 text-center">
-        <p className="font-display text-base italic leading-tight text-[#6B2737]">
+      <div className="mt-2.5 px-1 text-center sm:mt-3">
+        <p className="line-clamp-2 font-display text-sm italic leading-tight text-[#6B2737] sm:text-base">
           {caption || "—"}
         </p>
         {date && (
-          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.3em] text-[#2E2520]/55">
+          <p className="mt-0.5 truncate font-mono text-[9px] uppercase tracking-[0.3em] text-[#2E2520]/55 sm:text-[10px]">
             {date}
           </p>
         )}
       </div>
+
     </motion.button>
   );
 }
