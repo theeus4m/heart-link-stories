@@ -211,7 +211,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
               exit={{ scale: 1.18, opacity: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }}
               whileHover={{ scale: 1.035 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative aspect-[7/5] w-full max-w-md cursor-pointer"
+              className="group relative aspect-[7/5] w-[min(92vw,28rem)] cursor-pointer"
               style={{ perspective: 1600 }}
               aria-label="Abrir carta"
             >
