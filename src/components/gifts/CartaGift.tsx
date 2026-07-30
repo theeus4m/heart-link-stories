@@ -422,6 +422,30 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
           )}
         </AnimatePresence>
       </div>
+
+      {/* Photo lightbox */}
+      <AnimatePresence>
+        {zoom && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setZoom(null)}
+            className="fixed inset-0 z-[80] grid place-items-center bg-[#2E2520]/85 p-4 backdrop-blur-md"
+          >
+            <motion.img
+              src={zoom}
+              alt=""
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="max-h-[85dvh] w-auto max-w-[92vw] rounded-sm object-contain shadow-[0_50px_80px_-20px_rgba(0,0,0,0.7)] ring-1 ring-[#C9A84C]/40"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }
