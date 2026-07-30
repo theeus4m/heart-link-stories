@@ -160,26 +160,27 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             key="cover"
             exit={{ opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-0 z-20 grid place-items-center px-6"
+            className="absolute inset-0 z-20 grid place-items-center px-5 sm:px-6"
           >
             <div className="text-center">
-              <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-[#C4714A]">
+              <p className="font-mono text-[9px] uppercase tracking-[0.5em] text-[#C4714A] sm:text-[10px]">
                 ★ Álbum Chronelo ★
               </p>
-              <h1 className="mt-4 font-display text-5xl italic text-[#6B2737] md:text-6xl">
+              <h1 className="mt-4 font-display text-4xl italic text-[#6B2737] sm:text-5xl md:text-6xl">
                 {title}
               </h1>
-              <p className="mx-auto mt-4 max-w-md font-display text-lg italic text-[#2E2520]/70">
+              <p className="mx-auto mt-4 max-w-md font-display text-base italic text-[#2E2520]/70 sm:text-lg">
                 {data.intro || "Memórias guardadas com a delicadeza de uma página de álbum."}
               </p>
               <button
                 onClick={() => setRevealed(true)}
-                className="mt-10 inline-flex items-center gap-2 rounded-full border border-[#C9A84C] bg-[#FDFBF7] px-7 py-3 font-display text-base italic text-[#6B2737] shadow-[0_10px_30px_-12px_rgba(107,39,55,0.4)] transition hover:bg-[#C9A84C] hover:text-[#FDFBF7]"
+                className="mt-8 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#C9A84C] bg-[#FDFBF7] px-6 py-3 font-display text-base italic text-[#6B2737] shadow-[0_10px_30px_-12px_rgba(107,39,55,0.4)] transition hover:bg-[#C9A84C] hover:text-[#FDFBF7] active:scale-95 sm:mt-10 sm:px-7"
               >
                 Abrir o álbum
                 <Heart className="h-3.5 w-3.5 fill-[#C4714A] text-[#C4714A]" />
               </button>
             </div>
+
           </motion.div>
         )}
       </AnimatePresence>
