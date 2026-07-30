@@ -196,7 +196,7 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             <p className="font-mono text-[10px] uppercase tracking-[0.5em] text-[#C4714A]">
               Nossa Linha do Tempo
             </p>
-            <h1 className="mt-3 font-display text-5xl italic text-[#6B2737] md:text-6xl">
+            <h1 className="mt-3 font-display text-4xl italic text-[#6B2737] sm:text-5xl md:text-6xl">
               {title}
             </h1>
             <div className="mx-auto mt-5 flex items-center justify-center gap-3 text-[#C9A84C]">
