@@ -372,21 +372,21 @@ function BundleGiftInner({ data, title }: { data: BundleData; title: string }) {
             exit={{ opacity: 0 }}
             className="fixed left-1/2 top-5 z-40 -translate-x-1/2"
           >
-            <div className="flex items-center gap-3 rounded-full border border-gold/30 bg-black/30 px-4 py-2 backdrop-blur-md">
+            <div className="flex items-center gap-1 rounded-full border border-gold/30 bg-black/30 px-2 py-1 backdrop-blur-md sm:gap-2 sm:px-3">
               {CHAPTERS.map((c, i) => (
                 <button
                   key={c.key}
                   onClick={() => goToChapter(i, i > stage ? 1 : -1)}
-                  className="group flex items-center gap-2"
+                  className="group flex min-h-[36px] min-w-[28px] items-center justify-center gap-2 px-1"
                   aria-label={`Ir para ${c.title}`}
                 >
                   <span
-                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                    className={`h-2 rounded-full transition-all duration-500 ${
                       i === stage
-                        ? "w-6 bg-gold"
+                        ? "w-7 bg-gold shadow-[0_0_10px_rgba(201,168,76,0.7)]"
                         : i < stage
-                          ? "w-1.5 bg-gold/60"
-                          : "w-1.5 bg-cream/25 group-hover:bg-cream/45"
+                          ? "w-2 bg-gold/60"
+                          : "w-2 bg-cream/25 group-hover:bg-cream/45"
                     }`}
                   />
                 </button>
@@ -437,7 +437,7 @@ function BundleGiftInner({ data, title }: { data: BundleData; title: string }) {
       />
       <motion.div
         style={{ opacity: dragHint }}
-        className="pointer-events-none fixed inset-x-0 bottom-8 z-30 text-center text-[9px] uppercase tracking-[0.5em] text-gold/70 md:hidden"
+        className="pointer-events-none fixed inset-x-0 bottom-20 z-30 text-center text-[9px] uppercase tracking-[0.5em] text-gold/70 md:hidden"
       >
         deslize
       </motion.div>
@@ -663,18 +663,18 @@ function PersistentMiniPlayer() {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: EASE }}
-      className="fixed bottom-4 right-4 z-[60] flex items-center gap-3 rounded-full border border-gold/40 bg-black/60 py-2 pl-2 pr-4 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] backdrop-blur-md"
+      className="fixed bottom-3 left-3 right-3 z-[60] flex items-center gap-3 rounded-full border border-gold/40 bg-black/70 py-2 pl-2 pr-3 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.7)] backdrop-blur-md sm:left-auto sm:bottom-4 sm:right-4 sm:pr-4"
     >
       <motion.button
         onClick={togglePlay}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
         aria-label={playing ? "Pausar" : "Tocar"}
-        className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-gold to-[#9C7E2C] text-[#1a0a10] shadow-[inset_0_1px_0_rgba(255,235,200,0.4)]"
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-gold to-[#9C7E2C] text-[#1a0a10] shadow-[inset_0_1px_0_rgba(255,235,200,0.4)] active:scale-95"
       >
         {playing ? <Pause className="h-4 w-4 fill-current" /> : <Play className="ml-0.5 h-4 w-4 fill-current" />}
       </motion.button>
-      <div className="flex min-w-0 max-w-[180px] flex-col leading-tight">
+      <div className="flex min-w-0 flex-1 flex-col leading-tight sm:max-w-[180px] sm:flex-none">
         <span className="flex items-center gap-1.5 font-mono text-[8px] uppercase tracking-[0.35em] text-gold/70">
           <Music className="h-2.5 w-2.5" />
           {(idx + 1).toString().padStart(2, "0")}/{Math.max(tracks.length, 1).toString().padStart(2, "0")}
@@ -688,7 +688,7 @@ function PersistentMiniPlayer() {
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.94 }}
         aria-label="Próxima"
-        className="grid h-7 w-7 place-items-center rounded-full text-cream/70 transition hover:text-gold"
+        className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-cream/70 transition hover:text-gold active:scale-95"
       >
         <ChevronRight className="h-4 w-4" />
       </motion.button>
