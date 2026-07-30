@@ -234,7 +234,7 @@ function GlobeStage({
   }, [a.lat, a.lng, b.lat, b.lng, theme]);
 
   return (
-    <div className="relative h-[60vh] min-h-[420px] w-full sm:h-[70vh]">
+    <div className="relative h-[46dvh] min-h-[300px] w-full sm:h-[60dvh] sm:min-h-[420px] lg:h-[70dvh]">
       <div ref={containerRef} className="absolute inset-0" />
       {!ready && (
         <div className="absolute inset-0 grid place-items-center text-cream/60">
