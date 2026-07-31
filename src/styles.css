@@ -186,6 +186,86 @@
   }
 }
 
+/* Typographic scale */
+@utility display-1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.75rem, 7vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+@utility h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+}
+@utility h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: -0.014em;
+}
+@utility h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  line-height: 1.2;
+}
+@utility body-lg {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  font-weight: 300;
+  color: var(--muted-foreground);
+}
+@utility caption {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+
+/* Premium surfaces */
+@utility surface-card {
+  background: var(--card);
+  border: 1px solid color-mix(in oklab, var(--gold) 18%, transparent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 400ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 400ms ease;
+}
+@utility surface-card-hover {
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: color-mix(in oklab, var(--gold) 42%, transparent);
+  }
+}
+@utility section-veil {
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in oklab, var(--gold) 8%, transparent), transparent 60%),
+    linear-gradient(180deg, #FDFCFA 0%, var(--cream) 100%);
+}
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+
+
 /* Fio do tempo — signature golden line */
 @utility fio-do-tempo {
   position: fixed;
