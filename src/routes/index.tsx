@@ -127,19 +127,24 @@ function HeroClock({ className = "" }: { className?: string }) {
             const isMajor = i % 3 === 0;
             const r1 = 86;
             const r2 = isMajor ? 78 : 82;
+            const x1 = +(100 + Math.sin(angle) * r1).toFixed(4);
+            const y1 = +(100 - Math.cos(angle) * r1).toFixed(4);
+            const x2 = +(100 + Math.sin(angle) * r2).toFixed(4);
+            const y2 = +(100 - Math.cos(angle) * r2).toFixed(4);
             return (
               <line
                 key={i}
-                x1={100 + Math.sin(angle) * r1}
-                y1={100 - Math.cos(angle) * r1}
-                x2={100 + Math.sin(angle) * r2}
-                y2={100 - Math.cos(angle) * r2}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
                 stroke="var(--gold)"
                 strokeOpacity={isMajor ? 0.55 : 0.28}
                 strokeWidth={isMajor ? 0.9 : 0.5}
                 strokeLinecap="round"
               />
             );
+
           })}
         </svg>
 
