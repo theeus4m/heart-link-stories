@@ -53,7 +53,7 @@ export function SiteHeader() {
 
   const anchors = [
     { href: "#como-funciona", label: t("nav.how") },
-    { href: "#presentes", label: t("nav.gifts.section") === "nav.gifts.section" ? "Presentes" : t("nav.gifts.section") },
+    { href: "#presentes", label: t("nav.presents") },
     { href: "#precos", label: t("nav.pricing") },
   ];
 
