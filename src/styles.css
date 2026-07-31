@@ -14,11 +14,12 @@
   --font-display: "Cormorant Garamond", ui-serif, Georgia, serif;
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: 0.25rem;
+  --radius-md: 0.75rem;
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 6px);
-  --radius-2xl: calc(var(--radius) + 14px);
+  --radius-xl: calc(var(--radius) + 0.5rem);
+  --radius-2xl: calc(var(--radius) + 1rem);
+
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -52,10 +53,16 @@
 
   --shadow-glow: 0 30px 80px -30px color-mix(in oklab, var(--gold) 35%, transparent);
   --shadow-soft: 0 10px 40px -20px color-mix(in oklab, var(--plum) 25%, transparent);
+  --shadow-xs: 0 1px 2px color-mix(in oklab, var(--plum) 6%, transparent);
+  --shadow-sm: 0 2px 8px -2px color-mix(in oklab, var(--plum) 10%, transparent);
+  --shadow-md: 0 12px 28px -12px color-mix(in oklab, var(--plum) 16%, transparent);
+  --shadow-lg: 0 28px 60px -24px color-mix(in oklab, var(--plum) 22%, transparent);
+  --shadow-xl: 0 44px 90px -32px color-mix(in oklab, var(--plum) 26%, transparent);
 }
 
 :root {
-  --radius: 0.25rem;
+  --radius: 1.25rem;
+
 
   /* Chronelo Brand Book palette — exact hex */
   --vinho: #6B2737;       /* Vinho Profundo — âncora da marca */
@@ -77,29 +84,30 @@
   --violet: #2E2520;      /* alias */
 
   /* Semantic tokens */
-  --background: #F5F0E8;
+  --background: #FBF9F5;
   --foreground: #2E2520;
   --card: #FFFFFF;
   --card-foreground: #2E2520;
   --popover: #FFFFFF;
   --popover-foreground: #2E2520;
   --primary: #6B2737;
-  --primary-foreground: #F5F0E8;
-  --secondary: #EDE5D8;
+  --primary-foreground: #FBF9F5;
+  --secondary: #F2ECE1;
   --secondary-foreground: #2E2520;
-  --muted: #EDE5D8;
-  --muted-foreground: #5a4f47;
+  --muted: #F2ECE1;
+  --muted-foreground: #6a5f56;
   --accent: #C9A84C;
   --accent-foreground: #2E2520;
   --destructive: oklch(0.55 0.20 25);
-  --destructive-foreground: #F5F0E8;
-  --border: #E8E1D3;
-  --input: #EDE6D8;
+  --destructive-foreground: #FBF9F5;
+  --border: #EBE4D7;
+  --input: #EFE9DC;
   --ring: #C9A84C;
 
   --gradient-romance: linear-gradient(135deg, #6B2737 0%, #4A1A26 100%);
-  --gradient-soft: linear-gradient(180deg, #F5F0E8 0%, #EDE5D8 100%);
+  --gradient-soft: linear-gradient(180deg, #FDFCFA 0%, #F5F0E8 100%);
   --gradient-gold: linear-gradient(135deg, #C9A84C 0%, #B8902A 100%);
+
 }
 
 .dark {
@@ -177,6 +185,86 @@
     opacity: 0.5;
   }
 }
+
+/* Typographic scale */
+@utility display-1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.75rem, 7vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+}
+@utility h1 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.06;
+  letter-spacing: -0.018em;
+}
+@utility h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+  line-height: 1.12;
+  letter-spacing: -0.014em;
+}
+@utility h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  line-height: 1.2;
+}
+@utility body-lg {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  font-weight: 300;
+  color: var(--muted-foreground);
+}
+@utility caption {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  color: var(--muted-foreground);
+}
+
+/* Premium surfaces */
+@utility surface-card {
+  background: var(--card);
+  border: 1px solid color-mix(in oklab, var(--gold) 18%, transparent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 400ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 400ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 400ms ease;
+}
+@utility surface-card-hover {
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: color-mix(in oklab, var(--gold) 42%, transparent);
+  }
+}
+@utility section-veil {
+  background:
+    radial-gradient(ellipse at 50% 0%, color-mix(in oklab, var(--gold) 8%, transparent), transparent 60%),
+    linear-gradient(180deg, #FDFCFA 0%, var(--cream) 100%);
+}
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+
 
 /* Fio do tempo — signature golden line */
 @utility fio-do-tempo {

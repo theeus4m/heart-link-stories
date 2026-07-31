@@ -1,52 +1,62 @@
 ## Objetivo
 
-Tornar os quatro presentes (La Mixtape, Carta, Nossos Momentos, Mapa do Amor) mais interativos, com layout que funcione bem em celular e tablet, e com acabamento visual mais refinado — mantendo a identidade Chronelo (vinho, terracota, dourado, creme).
+Elevar o Chronelo ao acabamento de Apple/Stripe/Linear, mantendo a identidade (vinho, terracota, dourado, creme) mas com fundo mais claro, cantos suaves de 20px, sombras discretas e hierarquia tipográfica profissional. Nenhuma lógica de negócio, integração ou componente é removido — só a camada visual e de experiência.
 
-## 1. Base responsiva (aplicada a todos)
+Depoimentos, número de países e volume de presentes ficam com estrutura pronta e texto neutro até você enviar os dados reais.
 
-- Trocar `min-h-screen` por `min-h-[100dvh]` (evita corte pela barra do navegador no iOS).
-- Escala fluida de tipografia: títulos passam a `text-3xl sm:text-5xl md:text-6xl`; blocos `p-10` viram `p-5 sm:p-8 md:p-10`; `px-5` vira `px-4 sm:px-6`.
-- Alvos de toque com no mínimo 44px; áreas arrastáveis com `touch-none`.
-- Linhas com texto + ícone usam `grid-cols-[minmax(0,1fr)_auto]` no mobile, `flex` a partir de `sm:`, com `min-w-0` e `truncate`.
-- Respeitar `prefers-reduced-motion`: partículas e rotações reduzidas.
-- Breakpoint de tablet (`md:`) tratado explicitamente: colunas duplas onde hoje só há mobile ou desktop.
+---
 
-## 2. La Mixtape (`MusicaGift.tsx`)
+## Fase 1 — Design system + Landing + Navegação
 
-- Cena capa + toca-discos empilha em coluna no celular e vira duas colunas a partir do tablet; disco e prato dimensionados por `min(80vw, 320px)` em vez de largura fixa.
-- Arrastar o vinil: aumentar a zona de acerto no mobile, adicionar snap magnético quando o disco chega perto do prato, vibração leve (`navigator.vibrate`) ao encaixar e ao pousar a agulha.
-- Novas microinterações: brilho que percorre o vinil ao girar, agulha com deriva lenta acompanhando o progresso, capa com leve tilt seguindo o cursor no desktop.
-- Playlist: item ativo com barra de progresso embutida; tocar em qualquer faixa pula para ela; swipe horizontal nos controles para faixa anterior/próxima.
-- Player compacto no mobile (controles em uma linha, título truncado).
+**Design system (`src/styles.css`)**
+- `--radius: 1.25rem` (20px), com escala derivada; cantos retos ficam só em detalhes editoriais.
+- Fundo evolui para creme quase-branco (#FBF9F5) com superfícies em branco puro; vinho e dourado passam a acentos, não blocos.
+- Nova escala de sombras: `--shadow-xs/sm/md/lg` suaves e difusas — nada de cards achatados.
+- Escala tipográfica declarada (H1→legenda) com pesos e line-height fixos, aplicada por utilitários (`.h1`, `.h2`, `.body-lg`, `.caption`).
+- Gradientes discretos (creme→branco, dourado 8% de opacidade) para fundos de seção.
 
-## 3. Carta (`CartaGift.tsx`)
+**Landing (`src/routes/index.tsx`)** reconstruída em seções componentizadas dentro de `src/components/landing/`:
+1. Hero — headline grande, subtítulo curto, dois CTAs (criar / ver exemplo), preview do produto, gradiente suave, elementos flutuantes discretos, prova social (★ 4.9 + contadores, texto neutro até você enviar).
+2. Como funciona — Escolha → Personalize → Compartilhe, três passos ilustrados.
+3. Demonstração interativa — mini-preview navegável dos 4 capítulos.
+4. Benefícios — grade de cards premium.
+5. Galeria de exemplos — reaproveita a seção "Anteprime" existente, reformulada.
+6. Depoimentos — carrossel com estrutura neutra.
+7. FAQ — acordeão (mesmo conteúdo dos diálogos do header).
+8. CTA final com o preço atual.
 
-- Envelope com largura fluida (`w-[min(92vw,28rem)]`) e selo/coração escalando junto.
-- Interação nova: arrastar o selo para baixo (ou tocar) para romper a cera, com pétalas reagindo ao gesto.
-- Carta aberta rola dentro de um painel com altura limitada (`max-h-[80dvh]`) em vez de estourar a tela no celular.
-- Galeria de fotos: grade 2 colunas no celular, 3 no tablet, com toque para ampliar.
-- Botão "reler" e indicador de rolagem discreto.
+**Header/Footer**
+- Header transparente no topo, blur ao rolar, esconde ao descer e reaparece ao subir; menu mobile em sheet premium.
+- Novo footer completo: marca, navegação, idioma, contato, legal.
 
-## 4. Nossos Momentos (`MomentosGift.tsx`)
+## Fase 2 — Componentes e presentes
 
-- Grade polaroid: 1 coluna em telas muito estreitas, 2 no celular maior, 3 no tablet, 4 no desktop.
-- Lightbox responsivo (`max-h-[85dvh]`), com swipe para próxima/anterior foto e setas no desktop.
-- Interação nova: leve efeito de "levantar a foto" ao pressionar, e as polaroids entram em cascata conforme o scroll.
-- Momentos sem foto viram cartões de linha do tempo alinhados ao fio dourado.
+**Componentes base** (variantes, sem quebrar API):
+- Botão: hover, active, focus visível, disabled, `loading` com spinner, ripple sutil.
+- Card: elevação e escala sutil no hover, borda discreta.
+- Input/Textarea: estados de erro/sucesso, ícone, mensagem de validação.
+- Dialog/Sheet: blur de fundo, fade + escala na entrada e saída.
+- Skeletons para dashboard, `/g/$slug` e galeria.
 
-## 5. Mapa do Amor (`MapaGift.tsx`)
+**Presentes** (cada um com identidade própria, mecânicas atuais preservadas):
+- Carta: abertura mais suave, papel com textura e sombra projetada.
+- Mixtape: painel de player estilo Spotify ao lado do toca-discos (capa grande, equalizer animado, fila de faixas).
+- Momentos: timeline elegante, fotos maiores, zoom e transições refinadas.
+- Mapa: pins modernos, linha animada entre cidades, tema claro/escuro alternável.
+- Bundle: navegação de álbum premium (capa, índice de capítulos, mini-player já existente refinado).
 
-- Altura do globo passa a ser proporcional à viewport (`h-[60dvh] md:h-[70dvh]`) com redimensionamento no `resize`/rotação de tela.
-- Cards de distância/tempo viram carrossel horizontal no celular e grade no tablet.
-- Interação nova: tocar num marcador abre um cartão com a cidade e a mensagem; botão para reiniciar a animação cinematográfica.
-- Controles de toque (girar/zoom) habilitados com dica visual na primeira interação.
+**Editor e dashboard** (`criar.$type.tsx`, `dashboard.tsx`, `auth.tsx`) recebem o mesmo sistema de cards, inputs e espaçamento.
 
-## 6. Casca do bundle (`BundleGift.tsx`)
+## Fase 3 — Performance, SEO e acessibilidade
 
-- Setas laterais somem no celular (só swipe + rodapé), pontos de capítulo maiores e com rótulo.
-- Mini-player fixo respeita `safe-area-inset-bottom` e encolhe para ícone tocável no celular.
-- Capa e telas de capítulo com espaçamento fluido e sem rolagem forçada.
+- Lazy loading dos presentes pesados (globo 3D, player) e code splitting por rota; imagens em WebP com dimensões declaradas; preload das fontes.
+- `head()` por rota com title dinâmico, description, Open Graph, Twitter Card, canonical e JSON-LD (Organization + FAQPage + Product).
+- `public/robots.txt` e `src/routes/sitemap[.]xml.ts`.
+- WCAG AA: contraste revisado, `focus-visible` em todos os interativos, ARIA labels em botões só-ícone, navegação por teclado nos carrosséis e no bundle, alvos de toque ≥44px.
+- Responsividade validada por captura em 360, 390, 430, 768, 1024, 1280 e 1536px.
+
+---
 
 ## Detalhes técnicos
 
-Somente componentes de apresentação em `src/components/gifts/*` e tokens já existentes em `src/styles.css`. Sem mudança de schema, de dados ou do editor. Animações continuam com `motion/react`; nada de bibliotecas novas. Verificação final: build + captura de telas em 390px, 820px e 1280px via Playwright.
+Tailwind v4 com tokens em `@theme inline`; animações com `motion/react` já instalada (fade/scale/slide/reveal, `whileInView` com `once`), respeitando `prefers-reduced-motion`. Nada de novas dependências de UI. Todas as strings novas passam pelo `src/lib/i18n.tsx` em PT/EN/ES. Cada fase termina com build + typecheck e captura de telas.
