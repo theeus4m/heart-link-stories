@@ -84,29 +84,30 @@
   --violet: #2E2520;      /* alias */
 
   /* Semantic tokens */
-  --background: #F5F0E8;
+  --background: #FBF9F5;
   --foreground: #2E2520;
   --card: #FFFFFF;
   --card-foreground: #2E2520;
   --popover: #FFFFFF;
   --popover-foreground: #2E2520;
   --primary: #6B2737;
-  --primary-foreground: #F5F0E8;
-  --secondary: #EDE5D8;
+  --primary-foreground: #FBF9F5;
+  --secondary: #F2ECE1;
   --secondary-foreground: #2E2520;
-  --muted: #EDE5D8;
-  --muted-foreground: #5a4f47;
+  --muted: #F2ECE1;
+  --muted-foreground: #6a5f56;
   --accent: #C9A84C;
   --accent-foreground: #2E2520;
   --destructive: oklch(0.55 0.20 25);
-  --destructive-foreground: #F5F0E8;
-  --border: #E8E1D3;
-  --input: #EDE6D8;
+  --destructive-foreground: #FBF9F5;
+  --border: #EBE4D7;
+  --input: #EFE9DC;
   --ring: #C9A84C;
 
   --gradient-romance: linear-gradient(135deg, #6B2737 0%, #4A1A26 100%);
-  --gradient-soft: linear-gradient(180deg, #F5F0E8 0%, #EDE5D8 100%);
+  --gradient-soft: linear-gradient(180deg, #FDFCFA 0%, #F5F0E8 100%);
   --gradient-gold: linear-gradient(135deg, #C9A84C 0%, #B8902A 100%);
+
 }
 
 .dark {
