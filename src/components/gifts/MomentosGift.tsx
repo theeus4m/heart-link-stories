@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart } from "lucide-react";
+import { AmbientBackdrop, Lightbox, ProgressiveImage, type LightboxItem } from "./shared";
 
 export type MomentosData = {
   intro: string;
@@ -8,10 +9,17 @@ export type MomentosData = {
   outro: string;
 };
 
+type Moment = MomentosData["moments"][number];
+
 // Deterministic pseudo-random based on index — so polaroid tilts are stable
 function seeded(i: number, salt = 1) {
   const x = Math.sin((i + 1) * 9301 * salt + 49297) * 233280;
   return x - Math.floor(x);
+}
+
+function periodOf(date?: string) {
+  const m = (date || "").match(/(19|20)\d{2}/);
+  return m ? m[0] : "Sempre";
 }
 
 function WashiTape({ tone = "gold" }: { tone?: "gold" | "rose" | "wine" }) {
@@ -22,6 +30,7 @@ function WashiTape({ tone = "gold" }: { tone?: "gold" | "rose" | "wine" }) {
   }[tone];
   return (
     <div
+      aria-hidden
       className={`absolute -top-3 left-1/2 h-6 w-24 -translate-x-1/2 -rotate-2 bg-gradient-to-r ${palette} shadow-[0_2px_6px_rgba(46,37,32,0.18)]`}
       style={{
         backgroundImage:
@@ -36,78 +45,87 @@ function WashiTape({ tone = "gold" }: { tone?: "gold" | "rose" | "wine" }) {
 
 function PolaroidCorner({ pos }: { pos: string }) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      className={`absolute ${pos} h-4 w-4 text-[#C9A84C]/60`}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" className={`absolute ${pos} h-4 w-4 text-[#C9A84C]/60`} aria-hidden="true">
       <path d="M2 2 L22 2 L22 6 L6 6 L6 22 L2 22 Z" fill="currentColor" opacity="0.35" />
     </svg>
   );
 }
 
 function Polaroid({
-  src,
-  caption,
-  date,
+  moment,
   index,
   onOpen,
 }: {
-  src: string;
-  caption?: string;
-  date?: string;
+  moment: Moment;
   index: number;
   onOpen: () => void;
 }) {
-  const rot = (seeded(index) - 0.5) * 10; // -5° → +5°
+  const rot = (seeded(index) - 0.5) * 8;
   const tone = (["gold", "rose", "wine"] as const)[index % 3];
   return (
     <motion.button
       onClick={onOpen}
-      layoutId={`polaroid-${index}`}
-      initial={{ opacity: 0, y: 28, rotate: rot, scale: 0.94 }}
+      initial={{ opacity: 0, y: 26, rotate: rot, scale: 0.95 }}
       whileInView={{ opacity: 1, y: 0, rotate: rot, scale: 1 }}
-      whileHover={{ rotate: 0, scale: 1.04, y: -6 }}
-      whileTap={{ scale: 0.97, rotate: 0, y: -2 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: (index % 4) * 0.06 }}
+      whileHover={{ rotate: 0, scale: 1.035, y: -6 }}
+      whileTap={{ scale: 0.975, rotate: 0, y: -2 }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: (index % 3) * 0.07 }}
       viewport={{ once: true, margin: "-40px" }}
-      className="group relative block w-full max-w-[260px] cursor-pointer rounded-[2px] bg-[#FDFBF7] p-2.5 pb-10 text-left shadow-[0_18px_30px_-12px_rgba(46,37,32,0.35),0_4px_10px_-4px_rgba(46,37,32,0.25)] outline-none transition-shadow hover:shadow-[0_30px_50px_-16px_rgba(46,37,32,0.5)] focus-visible:ring-2 focus-visible:ring-[#C9A84C] sm:p-3 sm:pb-12"
+      className="group relative block w-full max-w-[280px] cursor-pointer rounded-[3px] bg-[#FDFBF7] p-2.5 pb-10 text-left shadow-[0_18px_30px_-12px_rgba(46,37,32,0.35),0_4px_10px_-4px_rgba(46,37,32,0.25)] outline-none transition-shadow hover:shadow-[0_34px_56px_-18px_rgba(46,37,32,0.5)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9A84C] sm:p-3 sm:pb-12"
       style={{ willChange: "transform" }}
-      aria-label="Ampliar foto"
+      aria-label={`Ampliar foto: ${moment.title || "momento"}`}
     >
-
       <WashiTape tone={tone} />
       <PolaroidCorner pos="left-1 top-1" />
       <PolaroidCorner pos="right-1 top-1 rotate-90" />
       <PolaroidCorner pos="left-1 bottom-9 -rotate-90" />
       <PolaroidCorner pos="right-1 bottom-9 rotate-180" />
 
-      <div className="relative aspect-square overflow-hidden bg-[#E8D8C4]">
-        <img
-          src={src}
-          alt={caption || ""}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] [filter:saturate(0.92)_contrast(1.05)_sepia(0.08)]"
+      <div className="relative">
+        <ProgressiveImage
+          src={moment.photo!}
+          alt={moment.title || "Momento"}
+          className="aspect-square w-full"
+          imgClassName="group-hover:scale-[1.06] [filter:saturate(0.92)_contrast(1.05)_sepia(0.08)]"
         />
-        {/* vintage warmth overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#C4714A]/10 via-transparent to-[#6B2737]/15 mix-blend-multiply" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(46,37,32,0.25)_100%)]" />
-        {/* gloss sweep on hover */}
         <div className="pointer-events-none absolute -inset-y-6 -left-1/3 w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/35 to-transparent opacity-0 transition-all duration-700 group-hover:left-[110%] group-hover:opacity-100" />
       </div>
 
       <div className="mt-2.5 px-1 text-center sm:mt-3">
         <p className="line-clamp-2 font-display text-sm italic leading-tight text-[#6B2737] sm:text-base">
-          {caption || "—"}
+          {moment.title || "—"}
         </p>
-        {date && (
+        {moment.date && (
           <p className="mt-0.5 truncate font-mono text-[9px] uppercase tracking-[0.3em] text-[#2E2520]/55 sm:text-[10px]">
-            {date}
+            {moment.date}
           </p>
         )}
       </div>
-
     </motion.button>
+  );
+}
+
+function TextMoment({ moment }: { moment: Moment }) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      className="relative w-full max-w-[280px] rounded-[10px] border border-[#C9A84C]/30 bg-[#FDFBF7]/80 p-5 shadow-[0_18px_34px_-20px_rgba(46,37,32,0.5)] transition-shadow hover:shadow-[0_30px_50px_-20px_rgba(46,37,32,0.55)]"
+    >
+      {moment.date && (
+        <p className="font-mono text-[9px] uppercase tracking-[0.35em] text-[#C4714A]">
+          {moment.date}
+        </p>
+      )}
+      <h3 className="mt-2 font-display text-xl italic text-[#6B2737]">{moment.title}</h3>
+      {moment.caption && (
+        <p className="mt-2 text-sm leading-relaxed text-[#2E2520]/70">{moment.caption}</p>
+      )}
+    </motion.article>
   );
 }
 
@@ -115,44 +133,41 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
   const [revealed, setRevealed] = useState(false);
   const [active, setActive] = useState<number | null>(null);
 
-  const items = useMemo(
-    () => (data.moments || []).filter((m) => m.photo),
-    [data.moments],
+  const moments = useMemo(() => data.moments || [], [data.moments]);
+
+  // photos in original order — lightbox indexes map to these
+  const photos = useMemo<LightboxItem[]>(
+    () =>
+      moments
+        .filter((m) => m.photo)
+        .map((m) => ({ src: m.photo!, title: m.title, date: m.date, caption: m.caption })),
+    [moments],
   );
+
+  const photoIndexOf = useCallback(
+    (m: Moment) => photos.findIndex((p) => p.src === m.photo),
+    [photos],
+  );
+
+  const groups = useMemo(() => {
+    const map = new Map<string, Moment[]>();
+    for (const m of moments) {
+      const key = periodOf(m.date);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(m);
+    }
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [moments]);
 
   const go = useCallback(
     (dir: 1 | -1) =>
-      setActive((a) => (a === null ? a : (a + dir + items.length) % items.length)),
-    [items.length],
+      setActive((a) => (a === null ? a : (a + dir + photos.length) % photos.length)),
+    [photos.length],
   );
-
-  useEffect(() => {
-    if (active === null) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setActive(null);
-      if (e.key === "ArrowRight") go(1);
-      if (e.key === "ArrowLeft") go(-1);
-    };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [active, go]);
 
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-[#F5EFE4]">
-
-      {/* atmospheric backdrop matching Chronelo palette */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.16),transparent_55%),radial-gradient(ellipse_at_bottom,rgba(107,39,55,0.18),transparent_60%)]" />
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")",
-        }}
-      />
+      <AmbientBackdrop particles={16} />
 
       <AnimatePresence>
         {!revealed && (
@@ -174,20 +189,19 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
               </p>
               <button
                 onClick={() => setRevealed(true)}
-                className="mt-8 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#C9A84C] bg-[#FDFBF7] px-6 py-3 font-display text-base italic text-[#6B2737] shadow-[0_10px_30px_-12px_rgba(107,39,55,0.4)] transition hover:bg-[#C9A84C] hover:text-[#FDFBF7] active:scale-95 sm:mt-10 sm:px-7"
+                className="mt-8 inline-flex min-h-[44px] items-center gap-2 rounded-full border border-[#C9A84C] bg-[#FDFBF7] px-6 py-3 font-display text-base italic text-[#6B2737] shadow-[0_10px_30px_-12px_rgba(107,39,55,0.4)] transition hover:bg-[#C9A84C] hover:text-[#FDFBF7] active:scale-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9A84C] sm:mt-10 sm:px-7"
               >
                 Abrir o álbum
-                <Heart className="h-3.5 w-3.5 fill-[#C4714A] text-[#C4714A]" />
+                <Heart className="h-3.5 w-3.5 fill-[#C4714A] text-[#C4714A]" aria-hidden />
               </button>
             </div>
-
           </motion.div>
         )}
       </AnimatePresence>
 
       {revealed && (
         <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 md:py-20">
-          <motion.div
+          <motion.header
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
@@ -199,7 +213,7 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
             <h1 className="mt-3 font-display text-4xl italic text-[#6B2737] sm:text-5xl md:text-6xl">
               {title}
             </h1>
-            <div className="mx-auto mt-5 flex items-center justify-center gap-3 text-[#C9A84C]">
+            <div className="mx-auto mt-5 flex items-center justify-center gap-3 text-[#C9A84C]" aria-hidden>
               <span className="h-px w-10 bg-[#C9A84C]/40" />
               <Heart className="h-3 w-3 fill-current" />
               <span className="h-px w-10 bg-[#C9A84C]/40" />
@@ -209,57 +223,57 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
                 {data.intro}
               </p>
             )}
-          </motion.div>
+          </motion.header>
 
-          {items.length === 0 ? (
-            <p className="mt-16 text-center text-[#2E2520]/60">
-              Ainda não há fotos neste álbum.
-            </p>
+          {moments.length === 0 ? (
+            <p className="mt-16 text-center text-[#2E2520]/60">Ainda não há momentos neste álbum.</p>
           ) : (
-            <div className="mt-10 grid grid-cols-1 place-items-center gap-x-5 gap-y-10 min-[420px]:grid-cols-2 sm:mt-14 md:grid-cols-3 md:gap-x-8 md:gap-y-14 lg:grid-cols-4">
-              {items.map((m, i) => (
-                <Polaroid
-                  key={i}
-                  index={i}
-                  src={m.photo!}
-                  caption={m.title}
-                  date={m.date}
-                  onOpen={() => setActive(i)}
-                />
-              ))}
-            </div>
-          )}
+            <div className="relative mt-12 sm:mt-16">
+              {/* golden timeline rail */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute bottom-4 left-[13px] top-4 w-px bg-gradient-to-b from-transparent via-[#C9A84C]/55 to-transparent sm:left-[15px] md:left-1/2 md:-translate-x-1/2"
+              />
 
-          {/* captions for moments without photos — timeline along the golden thread */}
-          {data.moments?.some((m) => !m.photo) && (
-            <div className="relative mx-auto mt-14 max-w-2xl pl-8 sm:mt-16 sm:pl-12">
-              <span className="pointer-events-none absolute bottom-2 left-3 top-2 w-px bg-gradient-to-b from-transparent via-[#C9A84C]/60 to-transparent sm:left-4" />
-              <div className="space-y-5 sm:space-y-6">
-                {data.moments
-                  .filter((m) => !m.photo)
-                  .map((m, i) => (
+              <div className="space-y-14 sm:space-y-20">
+                {groups.map(([period, list], gi) => (
+                  <section key={period} className="relative pl-10 sm:pl-12 md:pl-0">
+                    {/* period marker */}
                     <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: 16 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true, margin: "-40px" }}
-                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                      className="relative rounded-sm border border-[#C9A84C]/30 bg-[#FDFBF7]/70 p-4 shadow-[0_14px_28px_-18px_rgba(46,37,32,0.5)] sm:p-5"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true, margin: "-60px" }}
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                      className="relative mb-7 flex items-center gap-3 md:justify-center"
                     >
-                      <span className="absolute -left-[1.35rem] top-6 h-2 w-2 rounded-full bg-[#C9A84C] shadow-[0_0_10px_rgba(201,168,76,0.8)] sm:-left-[2.1rem]" />
-                      <p className="font-mono text-[9px] uppercase tracking-[0.35em] text-[#C4714A] sm:text-[10px]">
-                        {m.date}
-                      </p>
-                      <h3 className="mt-2 font-display text-xl italic text-[#6B2737] sm:text-2xl">
-                        {m.title}
-                      </h3>
-                      <p className="mt-2 text-sm text-[#2E2520]/70 sm:text-base">{m.caption}</p>
+                      <span
+                        aria-hidden
+                        className="absolute -left-[2.15rem] h-2.5 w-2.5 rounded-full bg-[#C9A84C] shadow-[0_0_12px_rgba(201,168,76,0.9)] sm:-left-[2.4rem] md:static md:hidden"
+                      />
+                      <h2 className="rounded-full border border-[#C9A84C]/40 bg-[#FDFBF7]/85 px-5 py-1.5 font-mono text-[10px] uppercase tracking-[0.4em] text-[#6B2737] shadow-[0_10px_24px_-16px_rgba(46,37,32,0.6)] backdrop-blur">
+                        {period}
+                      </h2>
                     </motion.div>
-                  ))}
+
+                    <div className="grid grid-cols-1 place-items-center gap-x-6 gap-y-10 min-[430px]:grid-cols-2 md:grid-cols-3 md:gap-x-8 md:gap-y-14">
+                      {list.map((m, i) =>
+                        m.photo ? (
+                          <Polaroid
+                            key={`${gi}-${i}`}
+                            moment={m}
+                            index={gi * 7 + i}
+                            onOpen={() => setActive(photoIndexOf(m))}
+                          />
+                        ) : (
+                          <TextMoment key={`${gi}-${i}`} moment={m} />
+                        ),
+                      )}
+                    </div>
+                  </section>
+                ))}
               </div>
             </div>
           )}
-
 
           {data.outro && (
             <motion.div
@@ -267,110 +281,19 @@ export function MomentosGift({ data, title }: { data: MomentosData; title: strin
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
-              className="relative mx-auto mt-16 max-w-2xl rounded-[6px] border border-[#C9A84C]/40 bg-[#FDFBF7] p-6 text-center shadow-[0_30px_60px_-20px_rgba(107,39,55,0.4)] sm:mt-20 sm:p-10"
+              className="relative mx-auto mt-16 max-w-2xl rounded-[14px] border border-[#C9A84C]/40 bg-[#FDFBF7] p-6 text-center shadow-[0_30px_60px_-20px_rgba(107,39,55,0.4)] sm:mt-24 sm:p-10"
             >
-              <div className="pointer-events-none absolute inset-3 rounded-[4px] border border-[#C9A84C]/25" />
-              <Heart className="mx-auto h-6 w-6 fill-[#C4714A] text-[#C4714A]" />
+              <div className="pointer-events-none absolute inset-3 rounded-[10px] border border-[#C9A84C]/25" />
+              <Heart className="mx-auto h-6 w-6 fill-[#C4714A] text-[#C4714A]" aria-hidden />
               <p className="relative mt-4 font-display text-xl italic text-[#6B2737] sm:text-2xl">
                 {data.outro}
               </p>
-
             </motion.div>
           )}
         </div>
       )}
 
-      {/* Lightbox */}
-      <AnimatePresence>
-        {active !== null && items[active] && (
-          <motion.div
-            key="lightbox"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-            className="fixed inset-0 z-50 grid place-items-center bg-[#2E2520]/85 px-3 py-8 backdrop-blur-md sm:px-4 sm:py-10"
-            onClick={() => setActive(null)}
-          >
-            <button
-              onClick={() => setActive(null)}
-              aria-label="Fechar"
-              className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-[#FDFBF7]/15 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/25 sm:right-5 sm:top-5"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            {items.length > 1 && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    go(-1);
-                  }}
-                  aria-label="Foto anterior"
-                  className="absolute left-2 top-1/2 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-[#FDFBF7]/10 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/20 sm:grid sm:left-5"
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    go(1);
-                  }}
-                  aria-label="Próxima foto"
-                  className="absolute right-2 top-1/2 hidden h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-[#FDFBF7]/10 text-[#FDFBF7] backdrop-blur transition hover:bg-[#FDFBF7]/20 sm:grid sm:right-5"
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </button>
-              </>
-            )}
-
-            <motion.div
-              layoutId={`polaroid-${active}`}
-              onClick={(e) => e.stopPropagation()}
-              drag={items.length > 1 ? "x" : false}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.18}
-              onDragEnd={(_, info) => {
-                if (info.offset.x < -70) go(1);
-                else if (info.offset.x > 70) go(-1);
-              }}
-              className="relative max-h-[88dvh] w-full max-w-xl touch-pan-y overflow-y-auto rounded-[3px] bg-[#FDFBF7] p-3.5 pb-10 shadow-[0_50px_80px_-20px_rgba(0,0,0,0.7)] sm:p-5 sm:pb-16"
-            >
-              <WashiTape tone="gold" />
-              <div className="relative aspect-[4/3] overflow-hidden bg-[#E8D8C4]">
-                <img
-                  src={items[active].photo!}
-                  alt={items[active].title || ""}
-                  className="h-full w-full object-cover [filter:saturate(0.95)_contrast(1.04)_sepia(0.05)]"
-                />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#C4714A]/10 via-transparent to-[#6B2737]/15 mix-blend-multiply" />
-              </div>
-              <div className="mt-4 text-center sm:mt-5">
-                <p className="font-display text-xl italic text-[#6B2737] sm:text-2xl">
-                  {items[active].title}
-                </p>
-                {items[active].date && (
-                  <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.35em] text-[#C4714A] sm:text-[10px]">
-                    {items[active].date}
-                  </p>
-                )}
-                {items[active].caption && (
-                  <p className="mt-3 text-sm leading-relaxed text-[#2E2520]/75">
-                    {items[active].caption}
-                  </p>
-                )}
-                {items.length > 1 && (
-                  <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.35em] text-[#2E2520]/40 sm:hidden">
-                    deslize para ver mais · {active + 1}/{items.length}
-                  </p>
-                )}
-              </div>
-            </motion.div>
-
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Lightbox items={photos} index={active} onClose={() => setActive(null)} onNavigate={go} />
     </div>
   );
 }

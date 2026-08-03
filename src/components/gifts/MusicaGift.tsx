@@ -140,6 +140,18 @@ function MusicaGiftInner({ data, title }: { data: MusicaData; title: string }) {
             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")",
         }}
       />
+      {/* Cover-driven blur wash — Spotify-style ambience */}
+      {data.coverUrl && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <img
+            src={data.coverUrl}
+            alt=""
+            className="h-full w-full scale-125 object-cover opacity-25 blur-[80px] saturate-150"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0608]/60 via-[#0d0608]/70 to-[#0d0608]" />
+        </div>
+      )}
+
 
       <div className="relative mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:gap-8 sm:px-5 sm:py-14">
         {/* Heading */}
@@ -187,22 +199,33 @@ function MusicaGiftInner({ data, title }: { data: MusicaData; title: string }) {
                 reduceMotion={!!reduceMotion}
               />
             ) : (
-              <PlayingStage
-                coverUrl={data.coverUrl}
-                mixtapeName={mixtapeName}
-                couple={data.coupleNames}
-                reduceMotion={!!reduceMotion}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: EASE }}
+                className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10"
+              >
+                <div className="space-y-6">
+                  <PlayingStage
+                    coverUrl={data.coverUrl}
+                    mixtapeName={mixtapeName}
+                    couple={data.coupleNames}
+                    reduceMotion={!!reduceMotion}
+                  />
+                  <div className="hidden lg:block">
+                    <PlayerControls />
+                  </div>
+                </div>
+                <div className="space-y-5">
+                  <NowPlaying coverUrl={data.coverUrl} />
+                  <div className="lg:hidden">
+                    <PlayerControls />
+                  </div>
+                  <Tracklist />
+                </div>
+              </motion.div>
             )}
 
-            {/* Now playing + controls only while on this chapter and playing */}
-            {phase === "playing" && (
-              <>
-                <NowPlaying />
-                <PlayerControls />
-                <Tracklist />
-              </>
-            )}
 
             {/* Instructional hint per phase */}
             {phase !== "playing" && <PhaseHint phase={phase} />}
@@ -796,20 +819,32 @@ function PlayingStage({
 
 /* ─────────────────────── Now playing ─────────────────────── */
 
-function NowPlaying() {
+function NowPlaying({ coverUrl }: { coverUrl?: string }) {
   const { current, idx, tracks, progress, duration, playing, seek } = useMusicPlayer();
   const trackRef = useRef<HTMLDivElement | null>(null);
+  const [hoverPct, setHoverPct] = useState<number | null>(null);
   const pct = duration > 0 ? progress / duration : 0;
 
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+  const pctFromEvent = (clientX: number) => {
     const el = trackRef.current;
-    if (!el || !duration) return;
+    if (!el) return 0;
     const r = el.getBoundingClientRect();
-    const p = (e.clientX - r.left) / r.width;
-    seek(p);
+    return Math.max(0, Math.min(1, (clientX - r.left) / r.width));
   };
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!duration) return;
+    seek(pctFromEvent(e.clientX));
+  };
+
+  const handleKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!duration) return;
+    if (e.key === "ArrowRight") seek(Math.min(1, pct + 0.05));
+    if (e.key === "ArrowLeft") seek(Math.max(0, pct - 0.05));
+  };
+
   return (
-    <div className="relative mx-auto w-full max-w-md rounded-2xl border border-[#C9A84C]/25 bg-[#1a0a10]/70 p-5 shadow-[inset_0_1px_0_rgba(255,220,170,0.08),0_20px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur">
+    <div className="relative mx-auto w-full max-w-md rounded-2xl border border-[#C9A84C]/25 bg-[#1a0a10]/70 p-5 shadow-[inset_0_1px_0_rgba(255,220,170,0.08),0_20px_40px_-20px_rgba(0,0,0,0.6)] backdrop-blur lg:max-w-none">
       <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.35em] text-[#C9A84C]/70">
         <span>
           Faixa {Math.min(idx + 1, Math.max(tracks.length, 1)).toString().padStart(2, "0")} /{" "}
@@ -820,43 +855,76 @@ function NowPlaying() {
           {playing ? "Tocando" : "Pausado"}
         </span>
       </div>
-      <div className="relative mt-2 h-12 overflow-hidden">
-        <AnimatePresence mode="wait">
+
+      <div className="mt-4 flex items-center gap-4">
+        {coverUrl && (
           <motion.div
-            key={idx}
-            initial={{ y: 14, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -14, opacity: 0 }}
-            transition={{ duration: 0.35, ease: EASE }}
+            animate={playing ? { scale: [1, 1.02, 1] } : { scale: 1 }}
+            transition={{ duration: 3.6, repeat: playing ? Infinity : 0, ease: "easeInOut" }}
+            className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-[#C9A84C]/30 shadow-[0_18px_36px_-18px_rgba(0,0,0,0.9)] sm:h-24 sm:w-24"
           >
-            <p className="truncate font-display text-2xl italic text-[#FDFBF7]">
-              {current?.title || `Faixa ${idx + 1}`}
-            </p>
-            <p className="truncate text-xs text-[#FDFBF7]/55">{current?.artist || "—"}</p>
+            <img src={coverUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-black/35 via-transparent to-white/10" />
           </motion.div>
-        </AnimatePresence>
+        )}
+        <div className="relative min-w-0 flex-1 overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={idx}
+              initial={{ y: 14, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -14, opacity: 0 }}
+              transition={{ duration: 0.35, ease: EASE }}
+            >
+              <p className="truncate font-display text-2xl italic text-[#FDFBF7]">
+                {current?.title || `Faixa ${idx + 1}`}
+              </p>
+              <p className="truncate text-xs text-[#FDFBF7]/55">{current?.artist || "—"}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
+
       <div
         ref={trackRef}
         onClick={handleSeek}
+        onKeyDown={handleKey}
+        onMouseMove={(e) => setHoverPct(pctFromEvent(e.clientX))}
+        onMouseLeave={() => setHoverPct(null)}
         role="slider"
         aria-label="Posição da faixa"
+        aria-valuemin={0}
+        aria-valuemax={100}
         aria-valuenow={Math.round(pct * 100)}
         tabIndex={0}
-        className="group relative mt-3 h-1.5 cursor-pointer overflow-visible rounded-full bg-[#FDFBF7]/10"
+        className="group relative mt-5 h-6 cursor-pointer touch-none select-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9A84C]"
       >
-        <div
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#C4714A] via-[#C9A84C] to-[#F0D78C] shadow-[0_0_8px_rgba(201,168,76,0.55)] transition-[width] duration-150"
-          style={{ width: `${Math.min(100, pct * 100)}%` }}
+        <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-[#FDFBF7]/10">
+          {hoverPct !== null && (
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-[#FDFBF7]/15"
+              style={{ width: `${hoverPct * 100}%` }}
+            />
+          )}
+          <div
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-[#C4714A] via-[#C9A84C] to-[#F0D78C] shadow-[0_0_8px_rgba(201,168,76,0.55)] transition-[width] duration-150"
+            style={{ width: `${Math.min(100, pct * 100)}%` }}
+          />
+        </div>
+        <span
+          aria-hidden
+          className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F0D78C] opacity-0 shadow-[0_0_12px_rgba(201,168,76,0.8)] transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100"
+          style={{ left: `${Math.min(100, pct * 100)}%` }}
         />
       </div>
-      <div className="mt-1.5 flex justify-between font-mono text-[10px] tabular-nums text-[#FDFBF7]/55">
+      <div className="mt-1 flex justify-between font-mono text-[10px] tabular-nums text-[#FDFBF7]/55">
         <span>{formatTime(progress)}</span>
-        <span>{formatTime(duration)}</span>
+        <span>-{formatTime(Math.max(0, duration - progress))}</span>
       </div>
     </div>
   );
 }
+
 
 /* ─────────────────────── Controls ─────────────────────── */
 
@@ -962,7 +1030,7 @@ function EqBars() {
 function Tracklist() {
   const { tracks, idx, playing, selectIdx } = useMusicPlayer();
   return (
-    <div className="mx-auto w-full max-w-md rounded-2xl border border-[#C9A84C]/20 bg-[#1a0a10]/60 p-4 backdrop-blur">
+    <div className="mx-auto w-full max-w-md lg:max-w-none rounded-2xl border border-[#C9A84C]/20 bg-[#1a0a10]/60 p-4 backdrop-blur">
       <div className="mb-3 flex items-center justify-between border-b border-[#C9A84C]/20 pb-2">
         <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#C9A84C]/80">
           Lado A · Tracklist
