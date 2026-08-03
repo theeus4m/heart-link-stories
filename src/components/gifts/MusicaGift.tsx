@@ -1030,7 +1030,7 @@ function EqBars() {
 function Tracklist() {
   const { tracks, idx, playing, selectIdx } = useMusicPlayer();
   return (
-    <div className="mx-auto w-full max-w-md rounded-2xl border border-[#C9A84C]/20 bg-[#1a0a10]/60 p-4 backdrop-blur">
+    <div className="mx-auto w-full max-w-md lg:max-w-none rounded-2xl border border-[#C9A84C]/20 bg-[#1a0a10]/60 p-4 backdrop-blur">
       <div className="mb-3 flex items-center justify-between border-b border-[#C9A84C]/20 pb-2">
         <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#C9A84C]/80">
           Lado A · Tracklist
