@@ -199,22 +199,33 @@ function MusicaGiftInner({ data, title }: { data: MusicaData; title: string }) {
                 reduceMotion={!!reduceMotion}
               />
             ) : (
-              <PlayingStage
-                coverUrl={data.coverUrl}
-                mixtapeName={mixtapeName}
-                couple={data.coupleNames}
-                reduceMotion={!!reduceMotion}
-              />
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: EASE }}
+                className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10"
+              >
+                <div className="space-y-6">
+                  <PlayingStage
+                    coverUrl={data.coverUrl}
+                    mixtapeName={mixtapeName}
+                    couple={data.coupleNames}
+                    reduceMotion={!!reduceMotion}
+                  />
+                  <div className="hidden lg:block">
+                    <PlayerControls />
+                  </div>
+                </div>
+                <div className="space-y-5">
+                  <NowPlaying coverUrl={data.coverUrl} />
+                  <div className="lg:hidden">
+                    <PlayerControls />
+                  </div>
+                  <Tracklist />
+                </div>
+              </motion.div>
             )}
 
-            {/* Now playing + controls only while on this chapter and playing */}
-            {phase === "playing" && (
-              <>
-                <NowPlaying />
-                <PlayerControls />
-                <Tracklist />
-              </>
-            )}
 
             {/* Instructional hint per phase */}
             {phase !== "playing" && <PhaseHint phase={phase} />}
