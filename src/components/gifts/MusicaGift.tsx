@@ -140,6 +140,18 @@ function MusicaGiftInner({ data, title }: { data: MusicaData; title: string }) {
             "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")",
         }}
       />
+      {/* Cover-driven blur wash — Spotify-style ambience */}
+      {data.coverUrl && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <img
+            src={data.coverUrl}
+            alt=""
+            className="h-full w-full scale-125 object-cover opacity-25 blur-[80px] saturate-150"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0d0608]/60 via-[#0d0608]/70 to-[#0d0608]" />
+        </div>
+      )}
+
 
       <div className="relative mx-auto grid max-w-5xl gap-6 px-4 py-8 sm:gap-8 sm:px-5 sm:py-14">
         {/* Heading */}
