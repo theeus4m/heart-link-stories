@@ -9,7 +9,7 @@ export function SiteFooter() {
 
   return (
     <footer className="border-t border-gold/20 bg-cream/50">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.4fr_1fr_1fr] md:gap-16">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.6fr_1fr] md:gap-16">
         <div className="min-w-0">
           <span className="font-display text-3xl tracking-[0.04em] text-plum">
             Chr<em className="text-gold">o</em>nelo
