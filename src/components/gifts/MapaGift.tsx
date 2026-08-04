@@ -503,10 +503,11 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
           </p>
           <button
             onClick={() => setShowHearts(true)}
-            className="mt-8 rounded-full bg-white px-8 py-3 font-medium text-plum shadow-romance transition hover:scale-105"
+            className="mt-8 min-h-11 rounded-full bg-white px-8 py-3 font-medium text-plum shadow-romance transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
           >
             ❤️ Eu Te Amo
           </button>
+
         </motion.div>
 
         <div className="py-10 text-center text-xs text-cream/40">Chronelo</div>
