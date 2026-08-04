@@ -291,7 +291,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
       }}
     >
       {/* Ambient stars */}
-      <div className="pointer-events-none absolute inset-0">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
         {Array.from({ length: 70 }).map((_, i) => (
           <motion.span
             key={i}
@@ -303,11 +303,12 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               height: `${1 + (i % 3)}px`,
               opacity: 0.5,
             }}
-            animate={{ opacity: [0.15, 0.8, 0.15] }}
+            animate={reduce ? undefined : { opacity: [0.15, 0.8, 0.15] }}
             transition={{ duration: 2 + (i % 4), repeat: Infinity, delay: i * 0.04 }}
           />
         ))}
       </div>
+
 
       <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <motion.div
