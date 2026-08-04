@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Heart, MapPin, Plane, Sparkles } from "lucide-react";
+import { ProgressiveImage } from "./shared";
+
 
 export type MapaData = {
   coupleNames: string;
@@ -249,11 +251,13 @@ function GlobeStage({
 }
 
 export function MapaGift({ data, title }: { data: MapaData; title: string }) {
+  const reduce = useReducedMotion();
   const theme = data.themeColor || "#f47975";
   const start = new Date(data.startDate || new Date().toISOString());
   const [t, setT] = useState(() => diff(start));
   const [hover, setHover] = useState<null | { label: string; sub: string; whisper: string }>(null);
   const [showHearts, setShowHearts] = useState(false);
+
 
   useEffect(() => {
     const i = setInterval(() => setT(diff(start)), 1000);
@@ -287,7 +291,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
       }}
     >
       {/* Ambient stars */}
-      <div className="pointer-events-none absolute inset-0">
+      <div aria-hidden className="pointer-events-none absolute inset-0">
         {Array.from({ length: 70 }).map((_, i) => (
           <motion.span
             key={i}
@@ -299,11 +303,12 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               height: `${1 + (i % 3)}px`,
               opacity: 0.5,
             }}
-            animate={{ opacity: [0.15, 0.8, 0.15] }}
+            animate={reduce ? undefined : { opacity: [0.15, 0.8, 0.15] }}
             transition={{ duration: 2 + (i % 4), repeat: Infinity, delay: i * 0.04 }}
           />
         ))}
       </div>
+
 
       <div className="relative mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14">
         <motion.div
@@ -456,13 +461,12 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
             transition={{ delay: 0.6 }}
             className="mx-auto mt-10 max-w-sm"
           >
-            <div className="overflow-hidden rounded-3xl border border-white/10 shadow-romance">
-              <img
-                src={data.photo}
-                alt=""
-                className="block aspect-square w-full object-cover"
-              />
-            </div>
+            <ProgressiveImage
+              src={data.photo}
+              alt={data.coupleNames || "Foto do casal"}
+              className="aspect-square w-full rounded-3xl border border-white/10 shadow-romance"
+            />
+
           </motion.div>
         )}
 
@@ -499,10 +503,11 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
           </p>
           <button
             onClick={() => setShowHearts(true)}
-            className="mt-8 rounded-full bg-white px-8 py-3 font-medium text-plum shadow-romance transition hover:scale-105"
+            className="mt-8 min-h-11 rounded-full bg-white px-8 py-3 font-medium text-plum shadow-romance transition hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
           >
             ❤️ Eu Te Amo
           </button>
+
         </motion.div>
 
         <div className="py-10 text-center text-xs text-cream/40">Chronelo</div>

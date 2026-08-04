@@ -1,6 +1,7 @@
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { Heart } from "lucide-react";
+import { AmbientBackdrop, ProgressiveImage, Lightbox, type LightboxItem } from "./shared";
 
 export type CartaData = {
   recipient: string;
@@ -10,94 +11,7 @@ export type CartaData = {
   song?: string;
 };
 
-// Romantic rose petal — curled silhouette with depth, highlight and vein
-function Petal({
-  className = "",
-  style,
-  variant = 0,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-  variant?: number;
-}) {
-  const palettes = [
-    { hi: "#FBE3DA", mid: "#E89A8E", low: "#B14A55", edge: "#6B2737" },
-    { hi: "#F8D2C4", mid: "#D98472", low: "#A23E48", edge: "#5A1E2C" },
-    { hi: "#F5C9B8", mid: "#C4714A", low: "#8B3A36", edge: "#4F1820" },
-    { hi: "#F2BFB0", mid: "#B85D55", low: "#7A2530", edge: "#3F1218" },
-  ];
-  const p = palettes[((variant % palettes.length) + palettes.length) % palettes.length];
-  const uid = `pt-${variant}-${Math.round((style?.width as number) || 0)}`;
-  return (
-    <svg viewBox="0 0 64 72" className={className} style={style} aria-hidden="true">
-      <defs>
-        <radialGradient id={`${uid}-fill`} cx="50%" cy="35%" r="70%">
-          <stop offset="0%" stopColor={p.hi} />
-          <stop offset="42%" stopColor={p.mid} />
-          <stop offset="85%" stopColor={p.low} />
-          <stop offset="100%" stopColor={p.edge} />
-        </radialGradient>
-        <radialGradient id={`${uid}-glow`} cx="50%" cy="28%" r="38%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id={`${uid}-vein`} x1="50%" y1="0%" x2="50%" y2="100%">
-          <stop offset="0%" stopColor={p.edge} stopOpacity="0" />
-          <stop offset="55%" stopColor={p.edge} stopOpacity="0.4" />
-          <stop offset="100%" stopColor={p.edge} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      {/* Soft drop */}
-      <ellipse cx="32" cy="66" rx="14" ry="2.2" fill={p.edge} opacity="0.18" />
-      {/* Petal silhouette: pointed base, curled rounded tip */}
-      <path
-        d="M32 4
-           C 50 10, 60 24, 58 40
-           C 56 54, 44 64, 32 64
-           C 20 64, 8 54, 6 40
-           C 4 24, 14 10, 32 4 Z"
-        fill={`url(#${uid}-fill)`}
-      />
-      {/* Inner curled fold */}
-      <path
-        d="M32 14
-           C 44 18, 50 28, 48 40
-           C 46 50, 38 56, 32 56
-           C 26 56, 18 50, 16 40
-           C 14 28, 20 18, 32 14 Z"
-        fill={p.edge}
-        opacity="0.16"
-      />
-      {/* Curl crease near the tip */}
-      <path
-        d="M14 36 C 22 46, 42 46, 50 36"
-        stroke={p.edge}
-        strokeWidth="0.6"
-        strokeLinecap="round"
-        fill="none"
-        opacity="0.35"
-      />
-      {/* Central vein */}
-      <path d="M32 8 C 30 28, 30 46, 32 60" stroke={`url(#${uid}-vein)`} strokeWidth="0.8" fill="none" />
-      {/* Specular highlight */}
-      <ellipse cx="26" cy="22" rx="10" ry="6" fill={`url(#${uid}-glow)`} />
-    </svg>
-  );
-}
-
-function Rose({
-  className = "",
-  style,
-  variant,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-  variant?: number;
-}) {
-  return <Petal className={className} style={style} variant={variant ?? 0} />;
-}
-
-// Ornate gold flourish divider
+/* Ornate gold flourish divider */
 function Flourish({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 240 24" className={className} aria-hidden="true">
@@ -114,95 +28,56 @@ function Flourish({ className = "" }: { className?: string }) {
 }
 
 export function CartaGift({ data, title: _title }: { data: CartaData; title: string }) {
+  const reduce = useReducedMotion();
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
-  const [zoom, setZoom] = useState<string | null>(null);
+  const [zoom, setZoom] = useState<number | null>(null);
 
-  const sparkles = useMemo(
-    () =>
-      [...Array(18)].map((_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        top: Math.random() * 100,
-        size: 1.5 + Math.random() * 2,
-        delay: Math.random() * 4,
-        duration: 3 + Math.random() * 3,
-      })),
-    [],
+  const photos = useMemo(() => (data.photos ?? []).filter(Boolean), [data.photos]);
+  const lightboxItems: LightboxItem[] = useMemo(
+    () => photos.map((src) => ({ src, title: data.recipient })),
+    [photos, data.recipient],
   );
 
-  // Typewriter effect for the message after the letter opens
+  const message = data.message ?? "";
+  const done = typed.length >= message.length;
+
+  /* Typewriter reveal after the letter unfolds */
   useEffect(() => {
-    if (!open || !data.message) return;
-    const text = data.message;
+    if (!open || !message) return;
+    if (reduce) {
+      setTyped(message);
+      return;
+    }
     setTyped("");
     let i = 0;
+    let interval: number | undefined;
     const start = window.setTimeout(() => {
-      const id = window.setInterval(() => {
+      interval = window.setInterval(() => {
         i += 1;
-        setTyped(text.slice(0, i));
-        if (i >= text.length) window.clearInterval(id);
-      }, 28);
-      // store id on the window timeout via closure cleanup
-      (start as any).__id = id;
-    }, 2100);
+        setTyped(message.slice(0, i));
+        if (i >= message.length && interval) window.clearInterval(interval);
+      }, 26);
+    }, 1900);
     return () => {
       window.clearTimeout(start);
-      const id = (start as any).__id;
-      if (id) window.clearInterval(id);
+      if (interval) window.clearInterval(interval);
     };
-  }, [open, data.message]);
+  }, [open, message, reduce]);
 
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-[#F5EFE4]">
-      {/* Layered ambient glow — warm romantic vignette */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(201,168,76,0.18),transparent_55%),radial-gradient(ellipse_at_center,rgba(196,113,74,0.14),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(107,39,55,0.28),transparent_60%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(46,37,32,0.35)_100%)]" />
+      <AmbientBackdrop particles={16} tone="warm" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_58%,rgba(46,37,32,0.3)_100%)]" />
 
-      {/* Ambient golden dust — subtle, no petals */}
-      <div className="pointer-events-none absolute inset-0 z-10">
-        {sparkles.map((s) => (
-          <motion.div
-            key={`s-${s.id}`}
-            className="absolute rounded-full bg-[#F0D78C]"
-            style={{
-              left: `${s.left}%`,
-              top: `${s.top}%`,
-              width: s.size,
-              height: s.size,
-              filter: "blur(0.4px)",
-              boxShadow: "0 0 10px 1px rgba(240,215,140,0.9)",
-            }}
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0.3, 1.3, 0.3],
-              y: [0, -20, 0],
-            }}
-            transition={{
-              duration: s.duration,
-              delay: s.delay,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        ))}
-      </div>
-
-
-
-
-      <div className="relative z-[30] mx-auto grid min-h-[100dvh] max-w-3xl place-items-center px-4 py-10 sm:px-6 sm:py-12">
+      <div className="relative z-30 mx-auto grid min-h-[100dvh] max-w-3xl place-items-center px-4 py-10 sm:px-6 sm:py-12">
         <AnimatePresence mode="wait">
           {!open ? (
             <motion.button
               key="envelope"
               onClick={() => setOpen(true)}
               initial={{ scale: 0.85, opacity: 0, y: 20 }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-                y: [0, -8, 0],
-              }}
+              animate={{ scale: 1, opacity: 1, y: reduce ? 0 : [0, -8, 0] }}
               transition={{
                 opacity: { duration: 0.9 },
                 scale: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
@@ -211,22 +86,18 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
               exit={{ scale: 1.18, opacity: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } }}
               whileHover={{ scale: 1.035 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative aspect-[7/5] w-[min(92vw,28rem)] cursor-pointer"
+              className="group relative aspect-[7/5] w-[min(92vw,28rem)] cursor-pointer rounded-[14px] focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-[#C9A84C]"
               style={{ perspective: 1600 }}
-              aria-label="Abrir carta"
+              aria-label={`Abrir carta para ${data.recipient || "você"}`}
             >
-              {/* Golden halo behind envelope */}
               <div className="absolute -inset-10 rounded-full bg-[radial-gradient(circle,rgba(201,168,76,0.35),transparent_65%)] blur-2xl" />
 
               {/* Envelope body */}
               <div className="absolute inset-0 overflow-hidden rounded-[14px] bg-gradient-to-br from-[#FDFBF7] via-[#F5EDE2] to-[#E2CFB6] shadow-[0_40px_70px_-20px_rgba(107,39,55,0.55),0_15px_30px_-12px_rgba(46,37,32,0.4),inset_0_1px_0_rgba(255,255,255,0.7)]">
-                {/* Inner texture */}
                 <div className="absolute inset-0 opacity-[0.08] bg-[radial-gradient(circle_at_20%_10%,#6B2737,transparent_40%),radial-gradient(circle_at_80%_90%,#C4714A,transparent_40%)]" />
-                {/* Decorative double border */}
                 <div className="absolute inset-3 rounded-[10px] border border-[#C9A84C]/45" />
                 <div className="absolute inset-[14px] rounded-[8px] border border-[#C9A84C]/20" />
 
-                {/* Monogram content */}
                 <div className="absolute inset-0 grid place-items-center px-6">
                   <div className="text-center">
                     <p className="font-display text-[11px] uppercase tracking-[0.5em] text-[#6B2737]/65">
@@ -243,7 +114,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 </div>
               </div>
 
-              {/* Envelope flap */}
+              {/* Flap */}
               <div
                 className="absolute inset-x-0 top-0 origin-top transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:[transform:rotateX(-18deg)]"
                 style={{ transformStyle: "preserve-3d" }}
@@ -256,81 +127,77 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                     </linearGradient>
                   </defs>
                   <path d="M0 0 L700 0 L700 30 L350 240 L0 30 Z" fill="url(#flap)" />
-                  <path
-                    d="M0 30 L350 240 L700 30"
-                    fill="none"
-                    stroke="#C9A84C"
-                    strokeOpacity="0.5"
-                    strokeWidth="1.2"
-                  />
+                  <path d="M0 30 L350 240 L700 30" fill="none" stroke="#C9A84C" strokeOpacity="0.5" strokeWidth="1.2" />
                 </svg>
               </div>
 
               {/* Wax seal */}
               <motion.div
                 className="absolute left-1/2 top-[58%] z-10 grid h-16 w-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-br from-[#9B3344] via-[#6B2737] to-[#3F1620] shadow-[0_10px_28px_rgba(107,39,55,0.6),inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-4px_8px_rgba(0,0,0,0.45)] sm:h-20 sm:w-20"
-                animate={{ scale: [1, 1.06, 1] }}
+                animate={reduce ? undefined : { scale: [1, 1.06, 1] }}
                 transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
               >
                 <div className="absolute inset-1 rounded-full border border-[#C9A84C]/40" />
                 <Heart className="h-6 w-6 fill-[#C9A84C] text-[#C9A84C] drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)] sm:h-7 sm:w-7" />
               </motion.div>
 
-
-              {/* Shimmer pass over envelope */}
-              <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[14px]">
-                <motion.div
-                  className="absolute -inset-y-4 -left-1/3 w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                  animate={{ x: ["0%", "420%"] }}
-                  transition={{ duration: 4, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
-                />
-              </div>
+              {!reduce && (
+                <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[14px]">
+                  <motion.div
+                    className="absolute -inset-y-4 -left-1/3 w-1/3 rotate-12 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                    animate={{ x: ["0%", "420%"] }}
+                    transition={{ duration: 4, repeat: Infinity, repeatDelay: 2.5, ease: "easeInOut" }}
+                  />
+                </div>
+              )}
             </motion.button>
           ) : (
             <motion.div
               key="letter"
               initial={{ opacity: 0, y: 70, rotateX: -18, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
-              transition={{ delay: 0.7, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ delay: 0.6, duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
               style={{ transformPerspective: 1400 }}
               className="relative w-full"
             >
-              {/* Soft golden halo behind paper */}
               <div className="absolute -inset-8 rounded-[12px] bg-[radial-gradient(ellipse_at_center,rgba(201,168,76,0.3),transparent_70%)] blur-2xl" />
 
               {/* Paper */}
-              <div
-                onClick={() => data.message && setTyped(data.message)}
-                className="relative max-h-[82dvh] overflow-y-auto overscroll-contain rounded-[6px] bg-[#FDFBF7] p-5 shadow-[0_50px_100px_-20px_rgba(107,39,55,0.55),0_20px_40px_-15px_rgba(46,37,32,0.4)] sm:p-8 md:max-h-none md:p-16"
-              >
-                {/* Paper grain & vignette */}
-                <div className="pointer-events-none absolute inset-0 opacity-[0.05] bg-[radial-gradient(circle_at_30%_20%,#2E2520,transparent_60%),radial-gradient(circle_at_70%_80%,#6B2737,transparent_60%)]" />
+              <div className="relative max-h-[84dvh] overflow-y-auto overscroll-contain rounded-[8px] bg-[#FDFBF7] p-5 shadow-[0_50px_100px_-20px_rgba(107,39,55,0.55),0_20px_40px_-15px_rgba(46,37,32,0.4)] sm:p-8 md:max-h-none md:p-16">
+                {/* Grain, fold creases & vignette */}
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-[0.045]"
+                  style={{
+                    backgroundImage:
+                      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='0.85'/></filter><rect width='100%25' height='100%25' filter='url(%23p)'/></svg>\")",
+                  }}
+                />
+                <div className="pointer-events-none absolute inset-x-0 top-1/3 h-px bg-gradient-to-r from-transparent via-[#2E2520]/12 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 top-2/3 h-px bg-gradient-to-r from-transparent via-[#2E2520]/10 to-transparent" />
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(107,39,55,0.08)_100%)]" />
 
-                {/* Gold corner flourishes */}
+                {/* Gold corners */}
                 <div className="pointer-events-none absolute left-3 top-3 h-9 w-9 border-l border-t border-[#C9A84C]/60 sm:left-4 sm:top-4 sm:h-12 sm:w-12" />
                 <div className="pointer-events-none absolute right-3 top-3 h-9 w-9 border-r border-t border-[#C9A84C]/60 sm:right-4 sm:top-4 sm:h-12 sm:w-12" />
                 <div className="pointer-events-none absolute bottom-3 left-3 h-9 w-9 border-b border-l border-[#C9A84C]/60 sm:bottom-4 sm:left-4 sm:h-12 sm:w-12" />
                 <div className="pointer-events-none absolute bottom-3 right-3 h-9 w-9 border-b border-r border-[#C9A84C]/60 sm:bottom-4 sm:right-4 sm:h-12 sm:w-12" />
 
-                {/* Monogram watermark */}
                 <div className="pointer-events-none absolute inset-0 grid place-items-center">
                   <Heart className="h-48 w-48 fill-[#6B2737] text-[#6B2737] opacity-[0.025] sm:h-72 sm:w-72" />
                 </div>
 
-
                 <motion.p
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.3, duration: 0.9 }}
+                  transition={{ delay: 1.1, duration: 0.9 }}
                   className="relative text-center text-[11px] uppercase tracking-[0.55em] text-[#C4714A]"
                 >
                   Para
                 </motion.p>
                 <motion.h1
-                  initial={{ opacity: 0, y: 14, letterSpacing: "0.1em" }}
-                  animate={{ opacity: 1, y: 0, letterSpacing: "0em" }}
-                  transition={{ delay: 1.45, duration: 1 }}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.25, duration: 1 }}
                   className="relative mt-3 text-center font-display text-3xl italic text-[#6B2737] sm:text-5xl md:text-6xl"
                 >
                   {data.recipient || "Meu amor"}
@@ -339,70 +206,77 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 <motion.div
                   initial={{ opacity: 0, scale: 0.6 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.7, duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+                  transition={{ delay: 1.45, duration: 1, ease: [0.22, 1, 0.36, 1] }}
                   className="relative mx-auto my-6 flex justify-center sm:my-8"
                 >
                   <Flourish className="h-4 w-40 sm:h-5 sm:w-56" />
                 </motion.div>
 
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.95, duration: 1 }}
-                  className="relative whitespace-pre-wrap text-center font-display text-lg italic leading-relaxed text-[#2E2520] sm:text-xl md:text-2xl"
-
-                >
-                  {typed}
-                  {typed.length < (data.message?.length ?? 0) && (
-                    <span className="ml-0.5 inline-block h-[1em] w-[2px] -mb-1 animate-pulse bg-[#6B2737]/60" />
+                <p className="relative whitespace-pre-wrap text-center font-display text-lg italic leading-relaxed text-[#2E2520] sm:text-xl md:text-2xl">
+                  <span className="sr-only">{message}</span>
+                  <span aria-hidden>{typed}</span>
+                  {!done && (
+                    <span aria-hidden className="ml-0.5 -mb-1 inline-block h-[1em] w-[2px] animate-pulse bg-[#6B2737]/60" />
                   )}
-                </motion.p>
+                </p>
 
+                {!done && message && (
+                  <div className="relative mt-5 flex justify-center">
+                    <button
+                      onClick={() => setTyped(message)}
+                      className="rounded-full border border-[#C9A84C]/50 px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-[#6B2737]/70 transition hover:bg-[#C9A84C]/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C9A84C]"
+                    >
+                      Ler tudo
+                    </button>
+                  </div>
+                )}
 
                 {data.signature && (
                   <motion.p
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 2.5, duration: 1 }}
-                    className="relative mt-10 text-right font-display text-2xl italic text-[#6B2737]"
+                    transition={{ delay: 2.3, duration: 1 }}
+                    className="relative mt-10 text-right font-display text-2xl italic text-[#6B2737] sm:text-3xl"
                   >
                     — {data.signature}
                   </motion.p>
                 )}
 
-                {data.photos && data.photos.filter(Boolean).length > 0 && (
+                {photos.length > 0 && (
                   <div className="relative mt-8 grid grid-cols-2 gap-2.5 sm:mt-10 sm:grid-cols-3 sm:gap-3">
-                    {data.photos.filter(Boolean).map((src, i) => (
-                      <motion.img
-                        key={i}
-                        src={src}
-                        alt=""
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setZoom(src);
-                        }}
-                        initial={{ opacity: 0, scale: 0.9, y: 14 }}
+                    {photos.map((src, i) => (
+                      <motion.button
+                        key={src + i}
+                        type="button"
+                        onClick={() => setZoom(i)}
+                        aria-label={`Ampliar foto ${i + 1}`}
+                        initial={{ opacity: 0, scale: 0.94, y: 14 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
+                        whileHover={{ y: -4 }}
                         whileTap={{ scale: 0.96 }}
-                        transition={{ delay: 2.7 + i * 0.14, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                        className="aspect-square w-full cursor-zoom-in rounded-sm object-cover shadow-[0_12px_24px_-10px_rgba(46,37,32,0.5)] ring-1 ring-[#C9A84C]/40 transition-shadow hover:shadow-[0_20px_34px_-12px_rgba(46,37,32,0.6)]"
-                      />
+                        transition={{ delay: 2.5 + i * 0.12, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                        className="group relative aspect-square w-full cursor-zoom-in overflow-hidden rounded-[4px] shadow-[0_12px_24px_-10px_rgba(46,37,32,0.5)] ring-1 ring-[#C9A84C]/40 transition-shadow hover:shadow-[0_22px_36px_-12px_rgba(46,37,32,0.6)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C9A84C]"
+                      >
+                        <ProgressiveImage src={src} alt="" className="h-full w-full" />
+                        <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2E2520]/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                      </motion.button>
                     ))}
                   </div>
                 )}
-
 
                 {data.song && data.song.includes("spotify.com") && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 2.9, duration: 0.9 }}
+                    transition={{ delay: 2.8, duration: 0.9 }}
                     className="relative mt-8 overflow-hidden rounded-xl ring-1 ring-[#C9A84C]/30"
                   >
                     <iframe
+                      title="Música da carta"
                       src={data.song.replace("/track/", "/embed/track/")}
                       width="100%"
                       height="80"
+                      loading="lazy"
                       allow="encrypted-media"
                       className="border-0"
                     />
@@ -412,7 +286,7 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
                 <motion.div
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 3.1, duration: 0.7 }}
+                  transition={{ delay: 3, duration: 0.7 }}
                   className="relative mt-12 flex justify-center"
                 >
                   <Heart className="h-7 w-7 animate-heartbeat fill-[#C4714A] text-[#C4714A] drop-shadow-[0_2px_6px_rgba(196,113,74,0.4)]" />
@@ -423,29 +297,14 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
         </AnimatePresence>
       </div>
 
-      {/* Photo lightbox */}
-      <AnimatePresence>
-        {zoom && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setZoom(null)}
-            className="fixed inset-0 z-[80] grid place-items-center bg-[#2E2520]/85 p-4 backdrop-blur-md"
-          >
-            <motion.img
-              src={zoom}
-              alt=""
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="max-h-[85dvh] w-auto max-w-[92vw] rounded-sm object-contain shadow-[0_50px_80px_-20px_rgba(0,0,0,0.7)] ring-1 ring-[#C9A84C]/40"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      <Lightbox
+        items={lightboxItems}
+        index={zoom}
+        onClose={() => setZoom(null)}
+        onNavigate={(dir) =>
+          setZoom((i) => (i === null ? null : (i + dir + lightboxItems.length) % lightboxItems.length))
+        }
+      />
     </div>
   );
 }
