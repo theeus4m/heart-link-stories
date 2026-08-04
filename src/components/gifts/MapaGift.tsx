@@ -460,13 +460,12 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
             transition={{ delay: 0.6 }}
             className="mx-auto mt-10 max-w-sm"
           >
-            <div className="overflow-hidden rounded-3xl border border-white/10 shadow-romance">
-              <img
-                src={data.photo}
-                alt=""
-                className="block aspect-square w-full object-cover"
-              />
-            </div>
+            <ProgressiveImage
+              src={data.photo}
+              alt={data.coupleNames || "Foto do casal"}
+              className="aspect-square w-full rounded-3xl border border-white/10 shadow-romance"
+            />
+
           </motion.div>
         )}
 
