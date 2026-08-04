@@ -251,11 +251,13 @@ function GlobeStage({
 }
 
 export function MapaGift({ data, title }: { data: MapaData; title: string }) {
+  const reduce = useReducedMotion();
   const theme = data.themeColor || "#f47975";
   const start = new Date(data.startDate || new Date().toISOString());
   const [t, setT] = useState(() => diff(start));
   const [hover, setHover] = useState<null | { label: string; sub: string; whisper: string }>(null);
   const [showHearts, setShowHearts] = useState(false);
+
 
   useEffect(() => {
     const i = setInterval(() => setT(diff(start)), 1000);
