@@ -21,16 +21,8 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <nav aria-label={t("footer.explore")} className="min-w-0">
-          <h2 className="caption uppercase tracking-[0.28em] text-plum">{t("footer.explore")}</h2>
-          <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#presentes">{t("nav.presents")}</a></li>
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#como-funciona">{t("nav.how")}</a></li>
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#depoimentos">{t("testi.eyebrow")}</a></li>
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#faq">{t("nav.faq")}</a></li>
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#precos">{t("nav.pricing")}</a></li>
-          </ul>
-        </nav>
+
+
 
         <div className="min-w-0">
           <h2 className="caption uppercase tracking-[0.28em] text-plum">{t("footer.company")}</h2>
