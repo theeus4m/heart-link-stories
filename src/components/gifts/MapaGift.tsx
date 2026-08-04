@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { Heart, MapPin, Plane, Sparkles } from "lucide-react";
+import { ProgressiveImage } from "./shared";
+
 
 export type MapaData = {
   coupleNames: string;
