@@ -56,7 +56,7 @@ export const Route = createFileRoute("/")({
           brand: { "@type": "Brand", name: "Chronelo" },
           offers: {
             "@type": "Offer",
-            price: "40.00",
+            price: "20.00",
             priceCurrency: "BRL",
             availability: "https://schema.org/InStock",
             url: "https://heart-link-stories.lovable.app/",
@@ -448,7 +448,7 @@ function Landing() {
                 <h3 className="mt-3 font-display text-3xl text-plum">{t("price.name")}</h3>
                 <div className="mt-6 flex items-baseline gap-3">
                   <span className="text-sm text-muted-foreground line-through">R$ 97</span>
-                  <span className="font-display text-6xl text-plum sm:text-7xl">R$ 40</span>
+                  <span className="font-display text-6xl text-plum sm:text-7xl">R$ 20</span>
                 </div>
                 <p className="mt-1 text-xs uppercase tracking-[0.2em] text-coral">{t("price.cycle")}</p>
 
