@@ -9,7 +9,7 @@ export function SiteFooter() {
 
   return (
     <footer className="border-t border-gold/20 bg-cream/50">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.4fr_1fr_1fr] md:gap-16">
+      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-[1.6fr_1fr] md:gap-16">
         <div className="min-w-0">
           <span className="font-display text-3xl tracking-[0.04em] text-plum">
             Chr<em className="text-gold">o</em>nelo
@@ -21,16 +21,8 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <nav aria-label={t("footer.explore")} className="min-w-0">
-          <h2 className="caption uppercase tracking-[0.28em] text-plum">{t("footer.explore")}</h2>
-          <ul className="mt-4 space-y-2.5 text-sm text-muted-foreground">
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#presentes">{t("nav.presents")}</a></li>
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#como-funciona">{t("nav.how")}</a></li>
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#depoimentos">{t("testi.eyebrow")}</a></li>
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#faq">{t("nav.faq")}</a></li>
-            <li><a className="focus-ring rounded transition-colors hover:text-vinho" href="#precos">{t("nav.pricing")}</a></li>
-          </ul>
-        </nav>
+
+
 
         <div className="min-w-0">
           <h2 className="caption uppercase tracking-[0.28em] text-plum">{t("footer.company")}</h2>
