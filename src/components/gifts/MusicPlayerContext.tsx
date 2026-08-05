@@ -187,12 +187,13 @@ export function MusicPlayerProvider({
       return;
     }
     tickRef.current = window.setInterval(() => {
+      if (document.hidden) return;
       const p = playerRef.current;
       if (!p?.getCurrentTime) return;
       setProgress(p.getCurrentTime() || 0);
       const d = p.getDuration?.() || 0;
       if (d && d !== duration) setDuration(d);
-    }, 250);
+    }, 500);
     return () => {
       if (tickRef.current) window.clearInterval(tickRef.current);
     };

@@ -1,11 +1,16 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { lazy, Suspense, useState, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, type PanInfo } from "motion/react";
 import { Heart, ChevronRight, ChevronLeft, Sparkles, Play, Pause, Music } from "lucide-react";
-import { CartaGift, type CartaData } from "./CartaGift";
-import { MusicaGift, type MusicaData } from "./MusicaGift";
-import { MomentosGift, type MomentosData } from "./MomentosGift";
-import { MapaGift, type MapaData } from "./MapaGift";
+import type { CartaData } from "./CartaGift";
+import type { MusicaData } from "./MusicaGift";
+import type { MomentosData } from "./MomentosGift";
+import type { MapaData } from "./MapaGift";
 import { MusicPlayerProvider, useMusicPlayer } from "./MusicPlayerContext";
+
+const CartaGift = lazy(() => import("./CartaGift").then((module) => ({ default: module.CartaGift })));
+const MusicaGift = lazy(() => import("./MusicaGift").then((module) => ({ default: module.MusicaGift })));
+const MomentosGift = lazy(() => import("./MomentosGift").then((module) => ({ default: module.MomentosGift })));
+const MapaGift = lazy(() => import("./MapaGift").then((module) => ({ default: module.MapaGift })));
 
 export type BundleData = {
   recipient?: string;
@@ -535,17 +540,19 @@ function BundleGiftInner({ data, title }: { data: BundleData; title: string }) {
             className="relative z-20"
           >
             <div className="mx-auto overflow-hidden">
-              {stage === 0 && (
-                <MusicaGift title={data.musica?.mixtapeName || title} data={data.musica} />
-              )}
-              {stage === 1 && (
-                <CartaGift
-                  title={data.carta?.recipient ? `Para ${data.carta.recipient}` : title}
-                  data={data.carta}
-                />
-              )}
-              {stage === 2 && <MomentosGift title={title} data={data.momentos} />}
-              {stage === 3 && <MapaGift title={data.mapa?.coupleNames || title} data={data.mapa} />}
+              <Suspense fallback={<ChapterLoading />}>
+                {stage === 0 && (
+                  <MusicaGift title={data.musica?.mixtapeName || title} data={data.musica} />
+                )}
+                {stage === 1 && (
+                  <CartaGift
+                    title={data.carta?.recipient ? `Para ${data.carta.recipient}` : title}
+                    data={data.carta}
+                  />
+                )}
+                {stage === 2 && <MomentosGift title={title} data={data.momentos} />}
+                {stage === 3 && <MapaGift title={data.mapa?.coupleNames || title} data={data.mapa} />}
+              </Suspense>
             </div>
 
             {/* Chapter navigation footer */}
@@ -650,6 +657,17 @@ function BundleGiftInner({ data, title }: { data: BundleData; title: string }) {
           </motion.section>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+function ChapterLoading() {
+  return (
+    <div className="grid min-h-[70dvh] place-items-center text-gold">
+      <div className="text-center">
+        <Sparkles className="mx-auto h-6 w-6 animate-pulse" />
+        <p className="mt-3 text-[10px] uppercase tracking-[0.4em]">Abrindo capítulo</p>
+      </div>
     </div>
   );
 }

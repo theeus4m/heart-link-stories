@@ -6,6 +6,8 @@ import { toast } from "sonner";
 
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic"];
+const signedUrlCache = new Map<string, Promise<string | null>>();
+const pendingUploads = new Map<string, Promise<string | null>>();
 
 export type PhotoUploaderProps = {
   value: string[]; // array of storage paths (e.g. "uid/abc.jpg") or empty strings
@@ -16,9 +18,49 @@ export type PhotoUploaderProps = {
 
 async function getSignedUrl(path: string): Promise<string | null> {
   if (!path) return null;
-  if (path.startsWith("http")) return path; // legacy URLs
-  const { data } = await supabase.storage.from("gift-photos").createSignedUrl(path, 60 * 60);
-  return data?.signedUrl ?? null;
+  if (path.startsWith("http") || path.startsWith("blob:")) return path;
+  const cached = signedUrlCache.get(path);
+  if (cached) return cached;
+  const request = supabase.storage
+    .from("gift-photos")
+    .createSignedUrl(path, 60 * 60)
+    .then(({ data }) => data?.signedUrl ?? null)
+    .catch(() => null);
+  signedUrlCache.set(path, request);
+  return request;
+}
+
+async function optimizePhoto(file: File): Promise<Blob> {
+  if (file.type === "image/gif" || file.type === "image/heic" || file.size < 700_000) return file;
+  const bitmap = await createImageBitmap(file);
+  const maxEdge = 1920;
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) {
+    bitmap.close();
+    return file;
+  }
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const optimized = await new Promise<Blob | null>((resolve) =>
+    canvas.toBlob(resolve, "image/webp", 0.84),
+  );
+  return optimized && optimized.size < file.size ? optimized : file;
+}
+
+async function uploadPhoto(file: File, uid: string): Promise<string | null> {
+  const optimized = await optimizePhoto(file).catch(() => file);
+  const useWebp = optimized.type === "image/webp" && file.type !== "image/gif";
+  const ext = useWebp ? "webp" : file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `${uid}/${crypto.randomUUID()}.${ext}`;
+  const { error } = await supabase.storage.from("gift-photos").upload(path, optimized, {
+    contentType: optimized.type || file.type,
+    upsert: false,
+  });
+  return error ? null : path;
 }
 
 function PhotoThumb({ path, onRemove }: { path: string; onRemove: () => void }) {
@@ -34,7 +76,7 @@ function PhotoThumb({ path, onRemove }: { path: string; onRemove: () => void }) 
   return (
     <div className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-muted">
       {url ? (
-        <img src={url} alt="" className="h-full w-full object-cover" />
+        <img src={url} alt="" className="h-full w-full object-cover" decoding="async" />
       ) : (
         <div className="grid h-full w-full place-items-center text-muted-foreground">
           <Loader2 className="h-5 w-5 animate-spin" />
@@ -68,42 +110,36 @@ export function PhotoUploader({ value, onChange, max = 6 }: PhotoUploaderProps) 
       return;
     }
 
+    const valid = list.filter((file) => {
+      if (!ACCEPTED.includes(file.type)) {
+        toast.error(`Formato não suportado: ${file.name}`);
+        return false;
+      }
+      if (file.size > MAX_SIZE) {
+        toast.error(`${file.name} é maior que 5MB.`);
+        return false;
+      }
+      return true;
+    });
+    if (valid.length === 0) return;
+
+    const previews = valid.map((file) => URL.createObjectURL(file));
+    onChange([...filled, ...previews]);
     setUploading(true);
     try {
       const { data: session } = await supabase.auth.getUser();
       const uid = session.user?.id;
       if (!uid) {
         toast.error("Sessão expirada. Faça login novamente.");
+        previews.forEach((preview) => URL.revokeObjectURL(preview));
         return;
       }
 
-      const uploaded: string[] = [];
-      for (const file of list) {
-        if (!ACCEPTED.includes(file.type)) {
-          toast.error(`Formato não suportado: ${file.name}`);
-          continue;
-        }
-        if (file.size > MAX_SIZE) {
-          toast.error(`${file.name} é maior que 5MB.`);
-          continue;
-        }
-        const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const path = `${uid}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage
-          .from("gift-photos")
-          .upload(path, file, { contentType: file.type, upsert: false });
-        if (error) {
-          toast.error(`Falha ao enviar ${file.name}`);
-          continue;
-        }
-        uploaded.push(path);
-      }
-
-      if (uploaded.length) {
-        const next = [...filled, ...uploaded];
-        onChange(next);
-        toast.success(`${uploaded.length} foto(s) enviadas`);
-      }
+      const requests = valid.map((file) => uploadPhoto(file, uid));
+      previews.forEach((preview, index) => pendingUploads.set(preview, requests[index]));
+      const uploaded = (await Promise.all(requests)).filter((path): path is string => Boolean(path));
+      if (uploaded.length < valid.length) toast.error("Algumas fotos não puderam ser enviadas.");
+      if (uploaded.length) toast.success(`${uploaded.length} foto(s) enviadas`);
     } finally {
       setUploading(false);
       if (fileInput.current) fileInput.current.value = "";
@@ -115,7 +151,13 @@ export function PhotoUploader({ value, onChange, max = 6 }: PhotoUploaderProps) 
     const path = filled[index];
     const next = filled.filter((_, i) => i !== index);
     onChange(next);
-    if (path && !path.startsWith("http")) {
+    if (path?.startsWith("blob:")) {
+      const uploadedPath = await pendingUploads.get(path);
+      pendingUploads.delete(path);
+      URL.revokeObjectURL(path);
+      if (uploadedPath) await supabase.storage.from("gift-photos").remove([uploadedPath]);
+    } else if (path && !path.startsWith("http")) {
+      signedUrlCache.delete(path);
       await supabase.storage.from("gift-photos").remove([path]);
     }
   }
@@ -189,4 +231,22 @@ export function PhotoUploader({ value, onChange, max = 6 }: PhotoUploaderProps) 
 export async function resolvePhotoUrls(paths: string[]): Promise<string[]> {
   const results = await Promise.all(paths.filter(Boolean).map((p) => getSignedUrl(p)));
   return results.filter((u): u is string => !!u);
+}
+
+export async function settlePhotoUploads<T>(value: T): Promise<T> {
+  if (typeof value === "string" && value.startsWith("blob:")) {
+    const path = await pendingUploads.get(value);
+    if (!path) throw new Error("Não foi possível concluir o envio de uma foto.");
+    return path as T;
+  }
+  if (Array.isArray(value)) {
+    return Promise.all(value.map((item) => settlePhotoUploads(item))) as T;
+  }
+  if (value && typeof value === "object") {
+    const entries = await Promise.all(
+      Object.entries(value as Record<string, unknown>).map(async ([key, item]) => [key, await settlePhotoUploads(item)]),
+    );
+    return Object.fromEntries(entries) as T;
+  }
+  return value;
 }

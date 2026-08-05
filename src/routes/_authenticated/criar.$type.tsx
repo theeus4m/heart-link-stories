@@ -13,7 +13,7 @@ import { MusicaGift, type MusicaData } from "@/components/gifts/MusicaGift";
 import { MomentosGift, type MomentosData } from "@/components/gifts/MomentosGift";
 import { MapaGift, type MapaData } from "@/components/gifts/MapaGift";
 import { BundleGift, type BundleData } from "@/components/gifts/BundleGift";
-import { PhotoUploader, resolvePhotoUrls } from "@/components/PhotoUploader";
+import { PhotoUploader, resolvePhotoUrls, settlePhotoUploads } from "@/components/PhotoUploader";
 import { geocodeCity } from "@/lib/geocode";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -126,14 +126,15 @@ function Editor() {
   async function save() {
     setSaving(true);
     try {
-      let payload = data;
+      let payload = await settlePhotoUploads(data);
       if (type === "mapa") {
-        payload = await geocodeIfNeeded(data as MapaData);
+        payload = await geocodeIfNeeded(payload as MapaData);
         setData(payload);
       }
       if (type === "bundle") {
-        const mapa = await geocodeIfNeeded(data.mapa as MapaData);
-        payload = { ...data, mapa };
+        const bundlePayload = payload as BundleData;
+        const mapa = await geocodeIfNeeded(bundlePayload.mapa as MapaData);
+        payload = { ...bundlePayload, mapa };
         setData(payload);
       }
       const row = await create({ data: { type, title, data: payload } });
@@ -449,13 +450,13 @@ function ResolvedPreview({ type, title, data }: { type: GiftType; title: string;
     (async () => {
       let next: any;
       if (type === "bundle") {
-        next = {
-          ...data,
-          carta: await resolveOne("carta", data.carta),
-          musica: await resolveOne("musica", data.musica),
-          momentos: await resolveOne("momentos", data.momentos),
-          mapa: await resolveOne("mapa", data.mapa),
-        };
+        const [carta, musica, momentos, mapa] = await Promise.all([
+          resolveOne("carta", data.carta),
+          resolveOne("musica", data.musica),
+          resolveOne("momentos", data.momentos),
+          resolveOne("mapa", data.mapa),
+        ]);
+        next = { ...data, carta, musica, momentos, mapa };
       } else {
         next = await resolveOne(type, data);
       }
