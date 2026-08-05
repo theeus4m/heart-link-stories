@@ -50,12 +50,6 @@ export function SiteHeader() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  const anchors = [
-    { href: "#como-funciona", label: t("nav.how") },
-    { href: "#presentes", label: t("nav.presents") },
-    { href: "#precos", label: t("nav.pricing") },
-  ];
-
   return (
     <header
       className={cn(
