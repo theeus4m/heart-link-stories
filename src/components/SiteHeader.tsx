@@ -73,18 +73,8 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-1.5">
-          <div className="mr-1 hidden items-center gap-1 lg:flex">
-            {anchors.map((a) => (
-              <a
-                key={a.href}
-                href={a.href}
-                className="focus-ring rounded-md px-2.5 py-1.5 text-xs uppercase tracking-[0.22em] text-plum/80 transition-colors duration-300 hover:text-vinho"
-              >
-                {a.label}
-              </a>
-            ))}
-            <HeaderInfoDialogs />
-          </div>
+
+
 
           {authed ? (
             <>
