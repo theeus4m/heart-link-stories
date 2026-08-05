@@ -52,6 +52,33 @@ function diff(start: Date) {
   return { years, months: Math.floor(months), days, hours, minutes, seconds: Math.floor(s) };
 }
 
+function LiveCounter({ startDate }: { startDate: string }) {
+  const start = useMemo(() => new Date(startDate || new Date().toISOString()), [startDate]);
+  const [time, setTime] = useState(() => diff(start));
+  useEffect(() => {
+    const update = () => setTime(diff(start));
+    const interval = window.setInterval(update, 1000);
+    const onVisibility = () => {
+      if (!document.hidden) update();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [start]);
+  return (
+    <>
+      <p className="mt-1 font-display text-2xl tabular-nums">
+        {time.years}a {time.months}m {time.days}d
+      </p>
+      <p className="text-[11px] italic text-cream/60">
+        {String(time.hours).padStart(2, "0")}:{String(time.minutes).padStart(2, "0")}:{String(time.seconds).padStart(2, "0")} amando você
+      </p>
+    </>
+  );
+}
+
 function GlobeStage({
   a,
   b,
@@ -72,6 +99,7 @@ function GlobeStage({
     let globe: any;
     let resizeObs: ResizeObserver | null = null;
     let particleTimer: any;
+    let cinematicTimer: number | undefined;
 
     (async () => {
       const GlobeMod = await import("globe.gl");
@@ -154,11 +182,13 @@ function GlobeStage({
         });
       }
       let idx = 0;
-      particleTimer = setInterval(() => {
+      const updateParticle = () => {
+        if (document.hidden) return;
         const p = interpPoints[idx % interpPoints.length];
         globe.ringsData([{ lat: p.lat, lng: p.lng }]);
         idx++;
-      }, 220);
+      };
+      particleTimer = setInterval(updateParticle, 360);
 
       // Controls + cinematic intro
       const controls = globe.controls();
@@ -172,7 +202,7 @@ function GlobeStage({
       controls.autoRotate = true;
       controls.autoRotateSpeed = 1.4;
 
-      setTimeout(() => {
+      cinematicTimer = window.setTimeout(() => {
         if (disposed) return;
         controls.autoRotate = false;
         globe.pointOfView({ lat: mid.lat, lng: mid.lng, altitude: 2.4 }, 3500);
@@ -181,7 +211,7 @@ function GlobeStage({
       // Add starfield + soft pink lighting
       const scene = globe.scene();
       const starGeo = new THREE.BufferGeometry();
-      const starCount = 1200;
+      const starCount = window.innerWidth < 768 ? 420 : 800;
       const positions = new Float32Array(starCount * 3);
       for (let i = 0; i < starCount; i++) {
         const r = 600 + Math.random() * 400;
@@ -224,6 +254,7 @@ function GlobeStage({
     return () => {
       disposed = true;
       if (particleTimer) clearInterval(particleTimer);
+      if (cinematicTimer) window.clearTimeout(cinematicTimer);
       if (resizeObs) resizeObs.disconnect();
       if (globe && containerRef.current) {
         try {
@@ -253,16 +284,8 @@ function GlobeStage({
 export function MapaGift({ data, title }: { data: MapaData; title: string }) {
   const reduce = useReducedMotion();
   const theme = data.themeColor || "#f47975";
-  const start = new Date(data.startDate || new Date().toISOString());
-  const [t, setT] = useState(() => diff(start));
   const [hover, setHover] = useState<null | { label: string; sub: string; whisper: string }>(null);
   const [showHearts, setShowHearts] = useState(false);
-
-
-  useEffect(() => {
-    const i = setInterval(() => setT(diff(start)), 1000);
-    return () => clearInterval(i);
-  }, [data.startDate]);
 
   const a = data.personA;
   const b = data.personB;
@@ -292,7 +315,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
     >
       {/* Ambient stars */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
-        {Array.from({ length: 70 }).map((_, i) => (
+        {Array.from({ length: reduce ? 24 : 42 }).map((_, i) => (
           <motion.span
             key={i}
             className="absolute rounded-full bg-white"
@@ -346,15 +369,15 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
           {hasCoords ? (
             <GlobeStage
               a={{
-                lat: a.lat!,
-                lng: a.lng!,
+                lat: a.lat as number,
+                lng: a.lng as number,
                 label: a.name,
                 sub: `${a.city}${a.country ? `, ${a.country}` : ""}`,
                 whisper: "onde tudo começou em pensamento",
               }}
               b={{
-                lat: b.lat!,
-                lng: b.lng!,
+                lat: b.lat as number,
+                lng: b.lng as number,
                 label: b.name,
                 sub: `${b.city}${b.country ? `, ${b.country}` : ""}`,
                 whisper: "onde meu coração mora",
@@ -441,14 +464,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
               <p className="mt-2 text-[10px] uppercase tracking-[0.3em] text-cream/60">
                 Há
               </p>
-              <p className="mt-1 font-display text-2xl tabular-nums">
-                {t.years}a {t.months}m {t.days}d
-              </p>
-              <p className="text-[11px] italic text-cream/60">
-                {String(t.hours).padStart(2, "0")}:
-                {String(t.minutes).padStart(2, "0")}:
-                {String(t.seconds).padStart(2, "0")} amando você
-              </p>
+              <LiveCounter startDate={data.startDate} />
             </div>
           </motion.div>
         )}
@@ -523,7 +539,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
             className="fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur"
             onClick={() => setShowHearts(false)}
           >
-            {Array.from({ length: 80 }).map((_, i) => (
+            {Array.from({ length: reduce ? 12 : 30 }).map((_, i) => (
               <motion.div
                 key={i}
                 className="absolute"
@@ -532,7 +548,7 @@ export function MapaGift({ data, title }: { data: MapaData; title: string }) {
                 transition={{
                   duration: 3 + (i % 4),
                   delay: (i % 10) * 0.1,
-                  repeat: Infinity,
+                  repeat: reduce ? 0 : Infinity,
                 }}
                 style={{ left: `${(i * 13) % 100}%` }}
               >
