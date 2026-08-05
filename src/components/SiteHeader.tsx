@@ -126,19 +126,6 @@ export function SiteHeader() {
             >
               <div className="mt-8 flex flex-col gap-1">
                 <LogoTipo className="mb-6 text-3xl text-plum" />
-                {anchors.map((a) => (
-                  <a
-                    key={a.href}
-                    href={a.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="focus-ring rounded-md px-1 py-3 font-display text-2xl text-plum transition-colors hover:text-vinho"
-                  >
-                    {a.label}
-                  </a>
-                ))}
-                <div className="mt-4 flex flex-col items-start gap-2 border-t border-gold/20 pt-5">
-                  <HeaderInfoDialogs />
-                </div>
                 <div className="mt-6 sm:hidden">
                   <LanguageSwitcher />
                 </div>
