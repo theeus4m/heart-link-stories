@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/i18n";
-import { HeaderInfoDialogs } from "@/components/HeaderInfoDialogs";
 import { cn } from "@/lib/utils";
 
 function LogoTipo({ className = "" }: { className?: string }) {
