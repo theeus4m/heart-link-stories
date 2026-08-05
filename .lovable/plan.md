@@ -1,62 +1,56 @@
 ## Objetivo
 
-Elevar o Chronelo ao acabamento de Apple/Stripe/Linear, mantendo a identidade (vinho, terracota, dourado, creme) mas com fundo mais claro, cantos suaves de 20px, sombras discretas e hierarquia tipográfica profissional. Nenhuma lógica de negócio, integração ou componente é removido — só a camada visual e de experiência.
+Revisar o Chronelo de ponta a ponta para reduzir tempo de carregamento e travamentos na home, editor, dashboard e presentes, preservando a aparência e as interações atuais. A capa escolhida para a Mixtape deverá aparecer imediatamente no editor e na prévia do vinil, sem aguardar o envio terminar.
 
-Depoimentos, número de países e volume de presentes ficam com estrutura pronta e texto neutro até você enviar os dados reais.
+## Diagnóstico confirmado
 
----
+- As consultas do banco estão rápidas (médias abaixo de 1 ms); não há evidência de gargalo no banco.
+- O upload atual envia arquivos de até 5 MB sem otimização, um por vez, e só atualiza a interface depois de concluir o envio de todos.
+- Depois do upload, a miniatura e a prévia solicitam novas URLs temporárias, adicionando outra espera de rede.
+- A rota pública carrega estaticamente os quatro presentes. Na medição atual, Bundle, Mixtape e Mapa estão entre os recursos mais demorados, mesmo antes de o usuário abrir todos os capítulos.
+- O Mapa inicia WebGL, 1.200 estrelas, timers e texturas externas; vários presentes também mantêm animações infinitas, filtros de blur e atualizações frequentes.
 
-## Fase 1 — Design system + Landing + Navegação
+## Implementação
 
-**Design system (`src/styles.css`)**
-- `--radius: 1.25rem` (20px), com escala derivada; cantos retos ficam só em detalhes editoriais.
-- Fundo evolui para creme quase-branco (#FBF9F5) com superfícies em branco puro; vinho e dourado passam a acentos, não blocos.
-- Nova escala de sombras: `--shadow-xs/sm/md/lg` suaves e difusas — nada de cards achatados.
-- Escala tipográfica declarada (H1→legenda) com pesos e line-height fixos, aplicada por utilitários (`.h1`, `.h2`, `.body-lg`, `.caption`).
-- Gradientes discretos (creme→branco, dourado 8% de opacidade) para fundos de seção.
+### 1. Foto instantânea e upload eficiente
 
-**Landing (`src/routes/index.tsx`)** reconstruída em seções componentizadas dentro de `src/components/landing/`:
-1. Hero — headline grande, subtítulo curto, dois CTAs (criar / ver exemplo), preview do produto, gradiente suave, elementos flutuantes discretos, prova social (★ 4.9 + contadores, texto neutro até você enviar).
-2. Como funciona — Escolha → Personalize → Compartilhe, três passos ilustrados.
-3. Demonstração interativa — mini-preview navegável dos 4 capítulos.
-4. Benefícios — grade de cards premium.
-5. Galeria de exemplos — reaproveita a seção "Anteprime" existente, reformulada.
-6. Depoimentos — carrossel com estrutura neutra.
-7. FAQ — acordeão (mesmo conteúdo dos diálogos do header).
-8. CTA final com o preço atual.
+- Mostrar a imagem selecionada imediatamente com uma URL local temporária (`URL.createObjectURL`), tanto na miniatura quanto na capa, selo central e ambiente do vinil.
+- Separar o estado de prévia local do caminho persistido no armazenamento: o editor usa a imagem local durante o envio e troca silenciosamente pela URL final quando concluir.
+- Redimensionar e comprimir fotos grandes no navegador antes do upload, preservando qualidade visual adequada para celular, tablet e desktop.
+- Enviar múltiplas fotos em paralelo com limite de concorrência, em vez do laço sequencial atual.
+- Reutilizar URLs temporárias já resolvidas em memória para evitar solicitações repetidas ao alternar abas ou abrir a prévia.
+- Revogar URLs locais ao substituir/remover imagens e apresentar progresso/erro por arquivo sem bloquear o restante do formulário.
 
-**Header/Footer**
-- Header transparente no topo, blur ao rolar, esconde ao descer e reaparece ao subir; menu mobile em sheet premium.
-- Novo footer completo: marca, navegação, idioma, contato, legal.
+### 2. Carregamento sob demanda dos presentes
 
-## Fase 2 — Componentes e presentes
+- Dividir Carta, Mixtape, Momentos, Mapa e Bundle em chunks carregados apenas quando necessários na rota pública e na prévia do editor.
+- No Bundle, carregar o conteúdo pesado do capítulo somente ao entrar nele; manter apenas capa, navegação e player persistente no carregamento inicial.
+- Adicionar estados de transição leves para que o usuário receba resposta visual imediata enquanto um capítulo é preparado.
+- Pré-carregar discretamente apenas o próximo capítulo provável após a primeira tela ficar interativa.
 
-**Componentes base** (variantes, sem quebrar API):
-- Botão: hover, active, focus visível, disabled, `loading` com spinner, ripple sutil.
-- Card: elevação e escala sutil no hover, borda discreta.
-- Input/Textarea: estados de erro/sucesso, ícone, mensagem de validação.
-- Dialog/Sheet: blur de fundo, fade + escala na entrada e saída.
-- Skeletons para dashboard, `/g/$slug` e galeria.
+### 3. Redução de trabalho visual e travamentos
 
-**Presentes** (cada um com identidade própria, mecânicas atuais preservadas):
-- Carta: abertura mais suave, papel com textura e sombra projetada.
-- Mixtape: painel de player estilo Spotify ao lado do toca-discos (capa grande, equalizer animado, fila de faixas).
-- Momentos: timeline elegante, fotos maiores, zoom e transições refinadas.
-- Mapa: pins modernos, linha animada entre cidades, tema claro/escuro alternável.
-- Bundle: navegação de álbum premium (capa, índice de capítulos, mini-player já existente refinado).
+- Pausar animações, timers e reprodução visual quando o capítulo estiver oculto ou a aba do navegador estiver em segundo plano.
+- Reduzir a frequência de atualização do progresso musical e do contador sem alterar a percepção de fluidez.
+- Simplificar partículas, blurs grandes e camadas animadas em aparelhos menores ou com preferência por movimento reduzido.
+- No globo 3D, diminuir a carga gráfica conforme o dispositivo, cancelar todos os timers ao sair e evitar baixar/recriar recursos antes de o usuário abrir o Mapa.
+- Declarar dimensões e política de carregamento/decodificação nas imagens para evitar saltos de layout e trabalho desnecessário.
 
-**Editor e dashboard** (`criar.$type.tsx`, `dashboard.tsx`, `auth.tsx`) recebem o mesmo sistema de cards, inputs e espaçamento.
+### 4. Home, editor e dashboard
 
-## Fase 3 — Performance, SEO e acessibilidade
+- Evitar montar componentes abaixo da dobra antes de se aproximarem da área visível, mantendo os conteúdos e o design existentes.
+- Remover renders e cálculos repetidos no editor ao digitar ou alternar presentes.
+- Fazer a prévia resolver somente as fotos do presente/capítulo aberto, em vez de aguardar as quatro experiências.
+- Revisar feedbacks de carregamento, botões desabilitados e estados de erro para que nenhuma ação pareça travada.
 
-- Lazy loading dos presentes pesados (globo 3D, player) e code splitting por rota; imagens em WebP com dimensões declaradas; preload das fontes.
-- `head()` por rota com title dinâmico, description, Open Graph, Twitter Card, canonical e JSON-LD (Organization + FAQPage + Product).
-- `public/robots.txt` e `src/routes/sitemap[.]xml.ts`.
-- WCAG AA: contraste revisado, `focus-visible` em todos os interativos, ARIA labels em botões só-ícone, navegação por teclado nos carrosséis e no bundle, alvos de toque ≥44px.
-- Responsividade validada por captura em 360, 390, 430, 768, 1024, 1280 e 1536px.
+### 5. Validação
 
----
+- Comparar antes/depois em home, dashboard, editor e link público.
+- Testar seleção de capa do vinil com foto grande e confirmar que ela aparece imediatamente antes do upload terminar.
+- Validar troca de capítulos, música persistente, globo, galeria e publicação do link sem regressões.
+- Verificar celular (390 px), tablet (768 px) e desktop, incluindo rede mais lenta, redução de movimento, console e requisições.
+- Registrar métricas de navegação, quantidade de recursos e recursos mais lentos para confirmar a melhoria.
 
 ## Detalhes técnicos
 
-Tailwind v4 com tokens em `@theme inline`; animações com `motion/react` já instalada (fade/scale/slide/reveal, `whileInView` com `once`), respeitando `prefers-reduced-motion`. Nada de novas dependências de UI. Todas as strings novas passam pelo `src/lib/i18n.tsx` em PT/EN/ES. Cada fase termina com build + typecheck e captura de telas.
+As otimizações usarão APIs nativas do navegador e os recursos já instalados. Os caminhos persistidos no banco continuarão iguais; URLs locais existirão apenas durante a edição. A prioridade será melhorar o carregamento percebido primeiro e, em seguida, reduzir bytes, CPU/GPU e trabalho em segundo plano sem remover a experiência premium.
