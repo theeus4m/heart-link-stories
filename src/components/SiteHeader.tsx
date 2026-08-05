@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/lib/i18n";
-import { HeaderInfoDialogs } from "@/components/HeaderInfoDialogs";
 import { cn } from "@/lib/utils";
 
 function LogoTipo({ className = "" }: { className?: string }) {
@@ -51,12 +50,6 @@ export function SiteHeader() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  const anchors = [
-    { href: "#como-funciona", label: t("nav.how") },
-    { href: "#presentes", label: t("nav.presents") },
-    { href: "#precos", label: t("nav.pricing") },
-  ];
-
   return (
     <header
       className={cn(
@@ -73,18 +66,8 @@ export function SiteHeader() {
         </Link>
 
         <nav className="flex items-center gap-1.5">
-          <div className="mr-1 hidden items-center gap-1 lg:flex">
-            {anchors.map((a) => (
-              <a
-                key={a.href}
-                href={a.href}
-                className="focus-ring rounded-md px-2.5 py-1.5 text-xs uppercase tracking-[0.22em] text-plum/80 transition-colors duration-300 hover:text-vinho"
-              >
-                {a.label}
-              </a>
-            ))}
-            <HeaderInfoDialogs />
-          </div>
+
+
 
           {authed ? (
             <>
@@ -136,19 +119,6 @@ export function SiteHeader() {
             >
               <div className="mt-8 flex flex-col gap-1">
                 <LogoTipo className="mb-6 text-3xl text-plum" />
-                {anchors.map((a) => (
-                  <a
-                    key={a.href}
-                    href={a.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="focus-ring rounded-md px-1 py-3 font-display text-2xl text-plum transition-colors hover:text-vinho"
-                  >
-                    {a.label}
-                  </a>
-                ))}
-                <div className="mt-4 flex flex-col items-start gap-2 border-t border-gold/20 pt-5">
-                  <HeaderInfoDialogs />
-                </div>
                 <div className="mt-6 sm:hidden">
                   <LanguageSwitcher />
                 </div>
