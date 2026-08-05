@@ -50,18 +50,19 @@ export function CartaGift({ data, title: _title }: { data: CartaData; title: str
       return;
     }
     setTyped("");
-    let i = 0;
-    let interval: number | undefined;
+    let frame: number | undefined;
     const start = window.setTimeout(() => {
-      interval = window.setInterval(() => {
-        i += 1;
-        setTyped(message.slice(0, i));
-        if (i >= message.length && interval) window.clearInterval(interval);
-      }, 26);
+      const startedAt = performance.now();
+      const tick = (now: number) => {
+        const length = Math.min(message.length, Math.floor((now - startedAt) / 30));
+        setTyped(message.slice(0, length));
+        if (length < message.length) frame = window.requestAnimationFrame(tick);
+      };
+      frame = window.requestAnimationFrame(tick);
     }, 1900);
     return () => {
       window.clearTimeout(start);
-      if (interval) window.clearInterval(interval);
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, [open, message, reduce]);
 
